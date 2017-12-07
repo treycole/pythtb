@@ -1,0 +1,79 @@
+
+ ***************************************
+ ***************************************
+ **                                   **
+ **      THIS FILE IS OBSOLETE!       **
+ **  INSTEAD USE release/release.rst  **
+ **                                   **
+ ***************************************
+ ***************************************
+
+
+
+
+Version 1.6.1
+
+=======================================================================
+
+Changed name to PythTB, added 1d maxloc centeres.
+
+
+Version 1.5.1
+
+=======================================================================
+
+Cleaned up source, renamed few objects. Added autodoc documentation.
+
+
+Version 1.5
+
+=======================================================================
+
+Cleaned up soruce a bit
+
+
+Version 1.4RC5
+
+=======================================================================
+
+Fixed bug in nicefy routine.
+
+
+Version 1.4RC4
+
+=======================================================================
+
+Fixed visualisation routine.
+
+
+Version 1.4RC3
+
+=======================================================================
+
+Fixed some minor bugs.
+
+Version 1.4RC2
+
+=======================================================================
+
+Increased maximal dimension to 4.
+
+Added function which reduces dimensionality of a model by choosing
+some value of k vector component.
+
+Allowed to draw eigenstates as well.
+
+Version 1.4RC1
+
+=======================================================================
+
+Added wf_array object.
+
+Added tbmodel.cut_piece function.
+
+Added parametr "per" to tbmodel.__init__ with which can choose which
+directions are periodic in the model. So far it was always that first
+self._dimk out of self._dimr dimensions were periodic.
+
+Added tbmodel.visualize to be able to draw tight binding models.
+
