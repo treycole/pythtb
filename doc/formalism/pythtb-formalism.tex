@@ -1,0 +1,765 @@
+\documentclass[11pt]{article}
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{cite}
+
+\numberwithin{equation}{section} % so that it is easier to refer to
+                                 % equations if we make changes to .tex file
+
+% ------------------------------------------------------------------------
+\def\dis{\displaystyle}
+\def\wt#1{\widetilde{#1}}
+\def\ra{\rightarrow}
+
+\def\n{\noindent}
+\def\nn{\nonumber\\}
+\def\bea{\begin{eqnarray}}
+\def\eea{\end{eqnarray}}
+\def\beq{\begin{equation}}
+\def\eeq{\end{equation}}
+\newcommand{\equ}[1]{Eq.~(\ref{eq:#1})}
+
+\renewcommand{\Im}{\textrm{Im}}
+
+\def\PythTB{{\sc PythTB}}
+
+\def\ket#1{\vert #1 \rangle}
+\def\bra#1{\langle #1 \vert}
+\def\me#1#2#3{\bra{#1}#2\ket{#3}}
+\def\ip#1#2{\langle #1 \vert #2 \rangle}
+
+\def\A{{\bf A}}
+\def\O{{\Omega}}
+\def\bO{\mathbf{\Omega}}
+\def\Ai{{\cal A}_i}
+\def\Aj{{\cal A}_j}
+\def\Ak{{\cal A}_k}
+\def\pa{\partial_a}
+\def\pb{\partial_b}
+\def\pc{\partial_c}
+\def\d{\delta}
+\def\s{^{\star}}
+\def\ss{^{\star}}
+\def\uk{u_{\bf k}}
+\def\k{{\bf k}}
+\def\r{{\bf r}}
+\def\R{{\bf R}}
+\def\G{{\bf G}}
+\def\P{{\bf P}}
+\def\T{{\bf T}}
+\def\t{{\bf t}}
+\def\S{{\bf S}}
+\def\U{{\bf U}}
+\def\V{{\bf V}}
+\def\Y{{\bf Y}}
+\def\Z{{\bf Z}}
+\def\0{{\bf 0}}
+\def\a{{\bf a}}
+\def\b{{\bf b}}
+\def\t{{\bf t}}
+
+\def\Ct{{\widetilde{C}}}
+\def\chit{{\widetilde{\chi}}}
+\def\Ht{{\widetilde{H}}}
+\def\cHt{{\widetilde{\cal H}}}
+\def\cCt{{\widetilde{\cal C}}}
+
+\def\l{\lambda}
+\def\L{\Lambda}
+\def\bL{\mathbf{\Lambda}}
+
+\def\Im{\textrm{Im}\,}
+\def\Re{\textrm{Re}\,}
+\def\Tr{\textrm{Tr}\,}
+
+\def\cC{{\cal C}}
+\def\cS{{\cal S}}
+
+\def\ve{\varepsilon}
+
+\def\Nb{N_\textrm{b}}
+
+\def\half{\frac{\textstyle{1}}{\textstyle{2}}}
+% ------------------------------------------------------------------------
+
+%==================================================================
+\title{\Large Tight-Binding Formalism in the Context of the \PythTB\ Package}
+%==================================================================
+
+\author{Tahir Yusufaly\footnote{First draft. Contact at
+yusufaly@physics.rutgers.edu.},
+David Vanderbilt\footnote{Extensive revisions.  Contact at
+dhv@physics.rutgers.edu.}, and
+Sinisa Coh\footnote{Additional revisions.  Contact at
+sinisacoh@gmail.com.}
+}
+
+\date{(Updated \today)}
+
+\begin{document}
+\maketitle
+
+%==================================================================
+\section{Introduction}
+%==================================================================
+
+The empirical tight-binding (TB) method is a useful tool for
+constructing and solving simple models of the electronic structure
+of solid-state systems.  Essentially, one parametrizes the
+Hamiltonian matrix elements connecting localized atomic-like basis orbitals,
+and uses this to compute the band energies and Bloch eigenvectors.
+Such TB models can, for example, give a highly informative first-order
+picture of the electronic structure of the CuO planes in a
+high-$T_{\rm c}$ superconductor, or of the $\pi$ bands in
+graphene or carbon nanotubes.  For basic references about the
+TB approach, see the Wikipedia article~\cite{wiki-tb},
+the text by Harrison~\cite{harrison-book},
+or almost any standard solid-state physics text.
+
+With the strong development of interest in topological insulators
+after about 2005, TB models have again played a central role as
+model systems.  Examples include the models of Haldane~\cite{haldane},
+Kane and Mele~\cite{km}, and Fu, Kane and Mele~\cite{fkm}.
+In connection with the topological properties, it also becomes
+crucial to be able to calculate, within the context of the
+TB model, various quantities that are related in some way to
+Berry phases or curvatures, including electric polarization,
+orbital magnetization, anomalous Hall conductivity, Chern
+indices, the effects of adiabatic cycling of the Hamiltonian,
+and the like.  The definitions of these quantities and practical
+methods for calculating them are discussed in several review
+articles~\cite{resta-rmp,vand-resta,xcn,resta-jpcm} and
+a relevant Wikipedia page~\cite{wiki-berry}.
+
+The \PythTB\ package (http://www.physics.rutgers.edu/pythtb)
+is an open-source software package, written in
+the Python programming/scripting language, that
+allows for the construction and solution of simple TB models
+such as those mentioned above.  Moreover, it includes tools
+for calculating many of the Berry-phase related quantities mentioned
+above.  As such, it can be used as a research tool for determining
+the behavior of model systems, or as a pedagogical tool at the
+level of a graduate or upper-level undergraduate solid-state
+physics course.
+
+The present notes outline the TB formalism as it pertains to the
+\PythTB\ package, providing needed definitions and basic results.
+In keeping with the capabilities of the \PythTB\ package, we restrict
+ourselves here to the \textit{orthogonal tight binding} approach, in which
+the TB basis orbitals are assumed to be orthonormal.  We also
+emphasize that the code is not currently set up to handle realistic
+chemical interactions. So for example, the Slater-Koster
+forms~\cite{wiki-tb-me} for interactions between $s$, $p$ and $d$
+orbitals are not currently coded, although the addition of such
+features could be considered for a future release.
+
+%==================================================================
+\section{Basic definitions}
+%==================================================================
+
+For the case of a 3D crystal, the lattice vectors are
+%
+\beq
+\R=n_1\a_1+n_2\a_2+n_3\a_3
+\eeq
+%
+and the corresponding reciprocal lattice vectors are
+%
+\beq
+\G=m_1\b_1+m_2\b_2+m_3\b_3
+\eeq
+%
+where $n_i$ and $m_i$ are integers, and the primitive real
+and reciprocal lattice vectors obey
+%
+\beq
+\a_i\cdot\b_j=2\pi\,\delta_{ij} \;.
+\eeq
+%
+It follows that
+%
+\beq
+e^{i\G\cdot\R}=1
+\label{eq:ide}
+\eeq
+%
+for any pair of real and reciprocal lattice vectors.
+A wavevector $\k$ in the Brillouin zone (BZ) can be written either in
+Cartesian coordinates, $\k=k_x\hat{x}+k_y\hat{y}+k_z\hat{z}$, or
+in internal coordinates, $\k=k_1\b_1+\k_2\b_2+\k_3\b_3$.
+
+The generalization to $d$ dimensions is obvious.  (The \PythTB\ code
+also handles the case of $d$=0, corresponding to an isolated molecule,
+cluster, or finite sample.)
+
+Let $\mu$ label the atoms in the primitive cell and $\alpha$ label the
+orbitals on a given atom, and let the TB basis orbitals
+be $\varphi_{\mu\alpha}(\r-\R-\t_\mu)$ where $\t_\mu$ is the location of
+atom $\mu$ in the home unit cell.  Note that it
+is possible for $\r$ and $\t$ to live in a higher-dimensional
+space than $\R$ and $\k$.  For example, $\R$ and $\k$ would be
+one-dimensional for a polymer, and they would be two-dimensional
+for an infinite slab of finite thickness, while  $\r$ and $\t$
+would remain three-dimensional in both cases.
+
+We now introduce a compound index $j=\{\mu\alpha\}$ that runs over
+all the $L$ TB orbitals in the primitive cell, and define
+%
+\beq
+\phi_{\R j}(\r)=\phi_j(\r-\R)=\varphi_{\mu\alpha}(\r-\R-\t_\mu)
+\eeq
+%
+to be the TB basis orbital of type $j$ in cell $\R$.
+From now on we drop indices ${s\alpha}$ and work only with $j$,
+letting $\t_s\rightarrow \t_j$.
+
+We now restrict ourselves to a \textit{minimal TB model} having the
+property that the basis orbitals are orthonormal,
+%
+\beq
+\ip{\phi_{\R i}}{\phi_{\R' j}}=\delta_{\R\R'}\,\delta_{ij}
+\label{eq:ortho}
+\eeq
+%
+and that the position matrix have the simplest possible form,
+%
+\beq
+\me{\phi_{\R i}}{\r}{\phi_{\R' j}}=(\R+\t_j)\,\delta_{\R\R'}\,\delta_{ij} \;.
+\label{eq:posit}
+\eeq
+%
+The Hamiltonian is assumed to have translational symmetry, so that its
+matrix elements are defined via
+%
+\beq
+H_{ij}(\R)=\me{\phi_{\R'i}}{H}{\phi_{\R'+\R,j}} 
+          =\me{\phi_{\0 i}}{H}{\phi_{\R,j}}
+\label{eq:ham}
+\eeq
+%
+and we assume that $H_{ij}(\R)$ decays rapidly with increasing $\R$.
+
+%==================================================================
+\section{Transition to the Bloch representation}
+%==================================================================
+
+%------------------------------------------------------------------
+\subsection{Convention I}
+%------------------------------------------------------------------
+
+We construct Bloch-like basis functions
+%
+\beq
+\chi^\k_j(\r)=\sum_\R e^{i\k\cdot(\R+\t_j)}\,\phi_j(\r-\R)
+\eeq
+%
+which we write henceforth in a bra-ket language as
+%
+\beq
+\ket{\chi^\k_j}=\sum_\R e^{i\k\cdot(\R+\t_j)}\,\ket{\phi_{\R j}}
+\eeq
+%
+with the understanding that the normalization is to a single
+unit cell, i.e.,
+%
+\beq
+\ip{\chi}{\chi'} \equiv \int_\textrm{cell} d^3r\,\chi^*(\r) \,\chi'(\r)\;.
+\eeq
+%
+It follows from \equ{ortho} that
+%
+\beq
+\ip{\chi^\k_i}{\chi^{\k}_j}=\delta_{ij} \;.
+\eeq
+%
+The Bloch eigenstates are then expanded as
+%
+\beq
+\ket{\psi_{n\k}} = \sum_j C_j^{n\k} \, \ket{\chi^\k_j}
+\eeq
+%
+and the Hamiltonian matrix is constructed as
+%
+\beq
+H_{ij}^\k = \me{\chi_i^\k}{H}{\chi_j^\k}
+=\sum_\R e^{i\k\cdot(\R+\t_j-\t_i)}\,H_{ij}(\R) \;.
+\label{eq:Hk}
+\eeq
+%
+The secular equation to be solved is
+%
+\beq
+{\cal H}_\k\cdot {\cal C}_{n\k} = E_{n\k}\,{\cal C}_{n\k}
+\eeq
+%
+where ${\cal H}_\k$ is the $L\times L$ matrix of elements
+$H_{ij}^\k$ and ${\cal C}_{n\k}$ is the column vector of
+elements $C_j^{n\k}$.
+
+This secular equation can be straightforwardly diagonalized to
+give the TB solution for the energy eigenvalues and eigenvectors.
+Of course, this TB solution only produces $L$ bands, where $L$ is
+the number of TB basis orbitals per cell, representing an approximation
+to the $L$ bands of the crystal that are built from these TB
+orbitals (usually these are the $L$ lowest valence and
+conduction bands).
+
+%------------------------------------------------------------------
+\subsection{Convention II}
+%------------------------------------------------------------------
+
+In this convention the phase factor $e^{i\k\cdot\t_j}$ is not
+included in the definition of the Bloch-like basis functions.  Using
+tilde'd quantities to denote objects defined in Convention II, we
+get
+%
+\beq
+\ket{\chit^\k_j}=\sum_\R e^{i\k\cdot\R}\,\ket{\phi_{\R j}} \;,
+\eeq
+%
+\beq
+\ket{\psi_{n\k}} = \sum_j \Ct_j^{n\k} \, \ket{\chit^\k_j} \;,
+\eeq
+%
+\beq
+\Ht_{ij}^\k = \me{\chit_i^\k}{H}{\chit_j^\k}
+=\sum_\R e^{i\k\cdot\R}\,H_{ij}(\R) \;.
+\eeq
+%
+\beq
+\cHt_\k\cdot \cCt_{n\k} = E_{n\k}\,\cCt_{n\k} \;.
+\eeq
+
+%------------------------------------------------------------------
+\subsection{Relationship between the two conventions}
+\label{sec:rel}
+%------------------------------------------------------------------
+
+The quantities in the two conventions are related via
+%
+\beq
+\Ht_{ij}^\k=e^{i\k\cdot(\t_i-\t_j)}\,H_{ij}^\k
+\eeq
+%
+and
+\beq
+\Ct_j^{n\k}=e^{i\k\cdot\t_j}\,C_j^{n\k} \;.
+\eeq
+%
+The two conventions are essentially just related by a unitary
+rotation in the $L$-dimensional space.
+
+When reading the literature, it is a good idea to be careful to
+determine which convention the authors are using.  Convention II
+is probably the more common one, because the extra factors of
+$e^{i\k\cdot\t_j}$ can be ignored.  However, Convention I is in
+many ways more natural, especially in connection with the calculation
+of electric polarization and related Berry-phase quantities, and
+is the convention adopted in the \PythTB\ code.
+
+One way of seeing this is to draw an analogy between the
+Bloch function $\psi_{n\k}(\r)$ and
+$\Ct_j^{n\k}$, and between the cell-periodic Bloch function
+$u_{n\k}(\r)$ and $C_j^{n\k}$.
+Recalling that
+%
+\beq
+\psi_{n\k}(\r)=e^{i\k\cdot\r}u_{n\k}(\r) \;,
+\label{eq:Bloch}
+\eeq
+%
+and temporarily adopting the change of notation $C^{n\k}_j
+\rightarrow C_{n\k}(j)$ and similarly for $\Ct$, we can write
+%
+\bea
+\ket{\psi_{n\k}}&=&\sum_\R\int_\textrm{cell} d^3r\;\psi_{n\k}(\r)\,
+e^{i\k\cdot\R}\,\ket{\R+\r} \;,\nn\\
+                &=&\sum_\R\sum_j \Ct_{n\k}(j)\,
+e^{i\k\cdot\R}\,\ket{\phi_{\R j}} \;,
+\eea
+%
+while
+%
+\bea
+\ket{\psi_{n\k}}&=&\sum_\R\int_\textrm{cell} d^3r\;u_{n\k}(\r)\,
+e^{i\k\cdot(\R+\r)}\,\ket{\R+\r} \;,\nn\\
+                &=&\sum_\R\sum_j C_{n\k}(j)\,
+e^{i\k\cdot(\R+\t_j)}\,\ket{\phi_{\R j}} \;.
+\eea
+%
+To summarize, then, the analogy is
+%
+\[
+\psi_{n\k}(\r)\;\Leftrightarrow\;\Ct^{n\k}_j
+\qquad\textrm{and}\qquad
+u_{n\k}(\r)\;\Leftrightarrow\;C^{n\k}_j
+\]
+
+As we shall see in Sec.~\ref{sec:berry}, it is the cell-periodic
+functions $u_{n\k}(\r)$ that play a central role in the formulation
+of Berry-phase quantities such as electric polarization.  It is
+largely for this reason that we have adopted Convention I for our
+\PythTB\ implementation, and this convention is assumed for the remainder
+of these notes.
+
+%------------------------------------------------------------------
+\subsection{Spinor models}
+\label{sec:spinors}
+%------------------------------------------------------------------
+
+Up to this point, the formalism has been written as though for
+a TB model for ``spinless electrons.'' However, it is easy to
+generalize to the case of spinors by doubling each TB orbital.
+That is, we now take the label `$j$' (in, e.g., $C^{n\k}_j$)
+be a condensed notation $j=\{\mu\alpha s\}$ for spin $s$ (up or
+down along $z$) and orbital $\alpha$ on atom $\mu$, with
+$j=1,...,2L$.  The real-space Hamiltonian becomes
+$H_{ij,ss'}(\R)=\me{\phi_{0is}}{H}{\phi_{\R js'}}$
+and $H_{ij,ss'}^\k$ is constructed from it in analogy
+with \equ{Hk}.  From the Bloch solutions, spin densities
+%
+\beq
+n_{i,ss'}=\frac{1}{N}\sum_{n\k}^\textrm{occ}
+(C^{n\k}_{is})^*\, C^{n\k}_{is'}
+\eeq
+%
+can also be constructed, where $N$ is the number of $\k$-points
+in the BZ. The particle density $n_i$ is the trace of the
+corresponding spin density matrix.
+
+Clearly the Hamiltonian can be regarded as an $L\times L$
+matrix of $2\times 2$ blocks.  An alternative notation (either in
+real or reciprocal space) is
+%
+\beq
+H_{ij,ss'} = \sum_a h_{ij,a} \sigma_{a,ss'}
+\eeq
+%
+where $a=\{0,1,2,3\}$, $\sigma_0=E$ (the $2\times2$ identity),
+and $\sigma_a$ is the Pauli spin matrix for $a\ne0$.
+A similar notation can be adopted for spin densities.
+
+The \PythTB\ code package has features to allow the user to define
+a spinor TB Hamiltonian and to set spin-independent or spin-dependent
+onsite energies and intersite hoppings.  Spin-dependent terms
+can be input either as $2\times 2$ matrices or using the $\sum_a
+h_{ij,a} \sigma_{a,ss'}$ four-vector notation.
+
+%==================================================================
+\section{Berry potential, Berry curvature, and Berry phase}
+\label{sec:berry}
+%==================================================================
+
+In this section we concentrate on establishing the definitions of,
+and basic relations among, the various quantities related to
+Berry phases.  The reader is referred to the
+references~\cite{resta-rmp,vand-resta,xcn,resta-jpcm,wiki-berry}
+mentioned in the Introduction for derivations and for explanations
+of the physical significance of the various quantities.
+
+In view of the comments in Sec.~\ref{sec:rel}, we now change notation
+and write the column vector of coefficients $C^{\n\k}_j$ as a ket
+vector $\ket{u_n(\k)}$,
+%
+\beq
+\begin{pmatrix}
+C^{\n\k}_1 \cr \vdots \cr C^{\n\k}_d
+\end{pmatrix}
+\qquad\Rightarrow\qquad
+\ket{u_n(\k)}
+\label{eq:notat}
+\eeq
+%
+and the corresponding row vector of conjugated
+elements as $\bra{u_n(\k)}$.  We also consider that the Bloch
+states may be functions of a set of $g$ parameters $\l_1,...,\l_g$
+in addition to the $d$ elements of $\k=k_1,...,k_d$.  In fact,
+we further generalize the notation so that
+$\bL=\{\L_1,...,\L_{d+g}\} = \{k_1,...,k_d,\l_1,...,\l_g\}$.
+(In special cases it is possible to have $g=0$, signifying no
+external parameters, or to have $d$=0, as for a molecule
+subjected to a set of external fields.)
+We assume that the state (or band) $n$ remains non-degenerate with neighboring
+states (or bands) throughout the relevant region of $\bL$-space.
+
+The Schr\"odinger equation is then
+%
+\beq
+H_\bL\,\ket{u_n(\L)} = E_n(\L)\,\ket{u_n(\L)}
+\eeq
+%
+where $H_\bL=H_\k(\l_1,...,\l_g)$.  In what follows we will
+typically drop the explicit argument $\bL$, letting it be
+understood that all quantities (including $A$ and $\Omega$ to
+be defined shortly) are functions of $\L$ as well.  We also
+henceforth adopt the notation that $\pa=\partial/\partial\L_a$.
+
+%------------------------------------------------------------------
+\subsection{Single band}
+%------------------------------------------------------------------
+
+For a single isolated band $n$ (i.e., one that does not touch a
+higher or lower band anywhere in the BZ) we define the Berry connection
+%
+\beq
+A_{n,a}=i\ip{u_n}{\pa u_n} \;,
+\eeq
+%
+and the Berry curvature
+%
+\bea
+\O_{n,ab}&=& \pa A_{n,b}-\pb A_{n,a} \nn
+   &=& i\ip{\pa u_n}{\pb u_n}-i\ip{\pb u_n}{\pa u_n}
+   = -2\,\Im\ip{\pa u_n}{\pb u_n}\;,
+\eea
+%
+where $a$ and $b$ run over the $(d+g)$-dimensional generalized
+parameter space.  A Berry phase $\phi_n$ is associated with the
+phase evolution of the $n$'th state over a closed curve $\cC$ in
+this space via
+%
+\beq
+\phi_n=\oint_\cC \A_n\cdot d\bL=\oint_\cC  A_{n,a}\,d\L_a \;,
+\eeq
+%
+where an implied sum notation is used on the right side of the
+second equality and similarly in other
+equations to follow.  If $\cC$ is the boundary of
+a surface $S$, then by Stokes's theorem we may also write
+%
+\beq
+\phi_n=\int_\cS \ve_{abc}\,\O_{n,ab}\,dS_c \;.
+\label{eq:Oint}
+\eeq
+%
+In the special case that $S$ is a closed surface, the integral
+of its Berry curvature is guaranteed to be $2\pi$ times an
+integer index knows as the Chern number (or, more precisely,
+the ``first Chern index'').  That is,
+%
+\beq
+\oint_\cS \ve_{abc}\,\O_{n,ab}\,dS_c=2\pi c_n
+\eeq
+%
+where $c_n$ is the Chern number.
+
+There is a ${\cal U}(1)$ ``gauge freedom'' in the choice of the
+phases of the Bloch functions.  That is, given a manifold
+$\ket{u_n(\bL)}$, one can define a physically identical manifold
+%
+\beq
+\ket{\tilde{u}_n(\bL)}=e^{i\beta(\bL)}\,\ket{u_n(\bL)}
+\eeq
+%
+where $\beta(\bL)$ is a smooth and continuous real function of $\bL$.
+The Berry potential $A_{n,a}(\bL)$ is gauge-dependent;
+the Berry phase $\phi_n$ is gauge-invariant modulo $2\pi$;\footnote{If 
+  the loop $\cC$ is continuously contractible to zero in an
+  obvious way, then a unique Berry phase can be assigned by
+  assuming $\phi_n$ to vanish for the zero-size loop.  This may
+  not be possible, however, if the loop surrounds a region
+  of degeneracy with neighboring bands, or if it is defined on
+  a topologically nontrivial space with uncontractible cycles (see, e.g.,
+  Sec.~\ref{sec:periodic}).}
+%
+and the Berry curvature $\O_{n,ab}(\bL)$ (and therefor the Chern
+number $c_n$) is fully gauge-invariant.
+
+%------------------------------------------------------------------
+\subsection{Two and three dimensions}
+%------------------------------------------------------------------
+
+In two dimensions, it is convenient to treat $\O_n=-\Im
+\ip{\partial_1 u_n}{\partial_2 u_n}$ as a scalar, and the Berry
+phase is just $\phi_n=\oint_\cC \O_n\,dS$.
+
+In three dimensions, it is a common practice to use the axial vector
+notation for the Berry curvature, i.e.,
+%
+\beq
+\O_{n,a}= \ve_{abc}\,\O_{n,bc} \qquad\Leftrightarrow\qquad
+\O_{n,bc} = \half  \ve_{abc} \O_{n,a}
+\eeq
+%
+in which case the Berry phase is just
+$\phi_n=\int_\cS \bO_n\cdot\,d\mathbf{S}$.
+
+%------------------------------------------------------------------
+\subsection{Multiband case}
+%------------------------------------------------------------------
+
+It is often the case that one wants to treat all the $\Nb$ occupied
+bands of an insulator as a joint band manifold.  This is sometimes
+referred to as the ``non-Abelian'' case, because the formalism
+involves $\Nb\times\Nb$ matrices that do not necessarily commute.
+We now assume that this group of bands does not touch with those
+below or above in energy in the relevant region of $\bL$-space;
+assuming the bands of interest are the occupied valence bands of
+a crystalline solid, this follows if the crystal is an insulator.
+The appropriate generalizations of the above equations are
+as follows.
+%
+\beq
+A_{mn,a}=i\ip{u_m}{\pa u_n} \;,
+\eeq
+%
+\bea
+\O_{mn,ab} &=& \pa A_{mn,b} - \pb A_{mn,a} -i[A_a,A_b]_{mn} \nn
+   &=&  i\ip{\pa u_m}{\pb u_n}-i\ip{\pb u_m}{\pa u_n} \;,
+\eea
+%
+\bea
+\phi
+&=&\oint_\cC \Tr[A_a]\,d\L_a \label{eq:bp}\\
+&=& \int_\cS \ve_{abc}\,\Tr[\O_{ab}]\,dS_c \;.
+\eea
+%
+and
+%
+\beq
+\oint_\cS \ve_{abc}\,\Tr[\O_{ab}]\,dS_c=2\pi c
+\eeq
+%
+where $\Tr$ denotes a trace over an $\Nb\times\Nb$ matrix.
+
+There is now a ${\cal U}(\Nb)$ gauge freedom in the choice of the
+Bloch functions.  That is, given a manifold
+$\ket{u_m(\L)}$, one can define a physically identical manifold
+%
+\beq
+\ket{\tilde{u}_n(\bL)}=\sum_m U_{mn}(\bL)\,\ket{u_m(\bL)}
+\eeq
+%
+where $U_{mn}(\bL)$ is an $\Nb\times\Nb$ unitary matrix that
+depends smoothly and continuously on $\bL$.
+The Berry potential $A_{mn,a}(\bL)$ is gauge-dependent;
+the Berry phase $\phi$ is gauge-invariant modulo $2\pi$;
+the Berry curvature $\O_{mn,ab}(\bL)$ is gauge-covariant;
+and its trace, and therefore the Chern number $c$, are fully
+gauge-invariant.
+
+%------------------------------------------------------------------
+\subsection{Periodic gauge in $\k$-space and cycles in the BZ}
+\label{sec:periodic}
+%------------------------------------------------------------------
+
+The Bloch solutions $\psi_{n,\k+\G}(\r)$ and $\psi_{n,\k}(\r)$
+represent the same physical state, since they obey the same
+Schr\"odinger equation and the same boundary conditions
+$\psi_{n,\k}(\r+\R)=e^{i\k\cdot\r}\,\psi_{n,\k}(\r)$,
+as follows from \equ{ide}.  It follows that $\psi_{n,\k+\G}(\r)$
+and $\psi_{n,\k}(\r)$ can differ only by a phase.  By convention,
+we normally take them to be exactly equal,
+%
+\beq
+\psi_{n,\k+\G}(\r)=\psi_{n,\k}(\r) \;,
+\label{eq:pergauge}
+\eeq
+%
+a conditions that is
+knows as the ``periodic gauge'' condition.  It then follows from
+\equ{Bloch} that
+%
+\beq
+u_{n,\k+\G}(\r)=e^{-i\G\cdot\r}\,u_{n\k}(\r)
+\label{eq:pergaugeu}
+\eeq
+%
+Reversing the notation of \equ{notat} back into the explicit TB
+language, this means that
+%
+\beq
+C^{n,\k+\G}_j=e^{-i\G\cdot\t_j}\,C^{n\k}_j \;.
+\label{eq:pergaugeC}
+\eeq
+
+Because of this periodicity, the BZ in $d$ dimensional $\k$-space
+can be regarded as a $d$-torus.
+We are often interested in calculating the Berry phase
+as we go around a loop in $\k$-space that cycles around the
+torus.  For example, the component of the electric polarization
+in the direction of primitive lattice vector $\a_j$ is computed
+by considering cycles in which $\k \rightarrow \k+\b_j$ from
+beginning to end.  When closing the loop and identifying
+$\k$ with $\k+\b_j$, it is important to remember to use
+\equ{pergaugeC}.  The Berry phase associated with the electric
+polarization has an intrinsic ambiguity modulo $2\pi$, since
+the loop on which it is defined is not contractible to zero.
+
+%------------------------------------------------------------------
+\subsection{Discretized formulas for Berry quantities}
+%------------------------------------------------------------------
+
+Practical calculations are done on a mesh of $\k$-points or
+parameter values.  For example, to compute the Berry phase
+associated with a given loop in $\bL$-space, the loop $\cC$ is
+discretized into a large number of closely spaced points
+$\bL_i$, and the integrand of \equ{bp} is approximated
+by the discretized formula for the (traced) Berry connection
+%
+\beq
+\Tr[\A]\cdot\Delta\bL = -\Im\ln\det M^{(\bL_i,\bL_{i+1})}
+\eeq
+%
+where $M$ is a $\Nb\times\Nb$ matrix defined as
+%
+\beq
+M_{mn}^{(\bL_i,\bL_{i+1})} = \ip{u_m^{(\bL_i)}}{u_n^{(\bL_{i+1})}}
+\eeq
+%
+and $\Delta\bL=\bL_{i+1}-\bL_i$.
+The expression for the Berry phase then becomes
+%
+\beq
+\phi=-\sum_i \Im\ln\det M^{(\bL_i,\bL_{i+1})}
+    =-\Im\ln\prod_i\det M^{(\bL_i,\bL_{i+1})} \;.
+\eeq
+%
+The discretized approximation to the local Berry curvature is
+obtained by considering a loop around a small plaquette with
+vertices $\bL_i$, computing the Berry phase around this loop as
+above, and dividing by the area of the plaquette.
+
+%==================================================================
+\begin{thebibliography}{0}
+%==================================================================
+
+\bibitem{wiki-tb} URL:
+http://en.wikipedia.org/wiki/Tight\_binding.
+
+\bibitem{harrison-book} W.A. Harrison, \textit{Electronic Structure and
+the Properties of Solids}, Dover, 1980.
+
+\bibitem{haldane} F.D.M. Haldane, Phys. Rev. Lett. {\bf 61}, 2015 (1988).
+
+\bibitem{km} C.L. Kane and E.J. Mele, Phys. Rev. Lett. {\bf 95}, 146802 (2005).
+
+\bibitem{fkm} L. Fu, C.L. Kane, and E.J. Mele, Phys. Rev. Lett. {\bf 98},
+106803 (2007).
+
+\bibitem{resta-rmp}
+R. Resta, Rev. Mod. Phys. {\bf 66}, 899 (1994).
+
+\bibitem{vand-resta} D. Vanderbilt and R. Resta, 
+in \textit{Conceptual foundations of materials
+properties: A standard model for calculation of ground-
+and excited-state properties,} S.G. Louie and M.L. Cohen,
+eds.\ (Elsevier, The Netherlands, 2006), pp. 139-163.
+
+\bibitem{xcn} D. Xiao, M.-C. Chang, and Q. Niu, Rev. Mod. Phys.
+{\bf 82}, 1959 (2010).
+
+\bibitem{resta-jpcm}
+R. Resta, J. Phys.: Condens. Matter {\bf 22}, 123201 (2010).
+
+\bibitem{wiki-berry} URL:
+http://en.wikipedia.org/wiki/Berry\_connection\_and\_curvature.
+
+\bibitem{wiki-tb-me} See ``Table of interatomic matrix elements''
+at http://en.wikipedia.org/wiki/Tight\_binding.
+
+\end{thebibliography}
+
+\end{document}
