@@ -1,0 +1,104 @@
+pythtb.py = pythtb package source
+
+examples/ = folder with examples
+
+doc/talk/ = presentation on python and PythTB
+doc/formalism/ = LaTeX document describing PythTB formalism
+
+website/ = source of website for PythTB written in Sphinx.
+
+ To create website from scratch and generate source tar files, run script "go"
+ To open website in browser run script "see"
+ For quick update to website run "make html"
+ To clean up website and all other files run "clean"
+ To copy files to physsun run "publish"
+
+notes/TODO = incomplete list of things we may want to add in the future.
+
+notes/README = this file
+
+
+Do NOT edit following folders directly:
+
+website/source/examples
+website/source/misc
+
+
++++++++++++++++++++++++++++++++
+How to update version of PythTB
++++++++++++++++++++++++++++++++
+
+1. Update __version__ variable and date in the header of pythtb.py
+
+2. Update version string in setup.py
+
+3. Update website/local/release/release.rst by specifying what is new in the
+package.
+
+4. Add folder in website/local/release/ver_ABC for the old version of the package,
+put in .tar.gz file. of the old version.
+*It is enough to do this for the old version only!*
+You will also have to add that folder to cvs.
+To get old source file use this command:
+wget http://physics.rutgers.edu/pythtb/_downloads/pythtb-X.X.X.tar.gz
+
+5. Update website/source/install.rst with the new version. It is enough to
+change string "1.6.1" with "1.6.2" or similar.
+
+6. Update website/source/conf.py. Version number appears at two places, just
+update the string.
+
+7. There is NO need to update src/CHANGES. We may want to remove that
+file in the future.
+
+8. Update the code on the PyPI server by following these instruction.
+
+Make sure that you link ../private/.pypirc_MOVE_TO_HOME to home folder as ~/.pypirc  !
+David, let me know if you don't have this file.  It contains passwords so I
+don't want to keep it on github.
+
+Here are instructions for testing purposes only:
+
+  rm -rf dist
+  python setup.py sdist
+  twine upload dist/* -r testpypi
+
+If you wish to test the package do this,
+
+  pip install -i https://testpypi.python.org/pypi pythtb==1.x.x
+
+When you are sure that this works you can officially upload it to pypi like this.
+Note that this code below should not be executed lightly! These lines will make
+some changes in the pypi servers and after that it is hard to tweak things.
+Therefore make sure you do all the tests you need to do first with the 
+"testpypi" version!  Once you are happy with how things look like execute
+lines below:
+
+  rm -rf dist
+  python setup.py sdist
+  twine upload dist/* -r pypi
+
+================
+How to test code 
+================
+
+Install tox package by running "pip install tox" in command prompt.
+
+Go into src folder and type "tox".
+
+You will need to have tox installed and tox.ini file may need to point to 
+binaries of python you wish to use in the test.  Note that tox does NOT work
+with anaconda version of python at this point (Dec 2016).
+
+=========================
+Note by David on 11/18/12
+=========================
+If you enounter an error like
+  ------------------------------------------------------
+  ERROR: Error in "xxx" directive: invalid option block.
+  ------------------------------------------------------
+Then (a) leave a blank line between the directive and text block,
+and/or (b) make sure no line in text block starts with a colon
+by rewrapping the text in some way.
+(This seems to be a problem that occurs for my version of Docutils
+but not Sinisa's...)

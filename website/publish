@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# get version name
+version=`grep version source/conf.py | grep = | awk -F\' '{print $2}'`
+filename=pythtb_website_$version.tar
+
+cd build/html
+tar -hcvf $filename *
+
+# copy file based on machine name
+host="`hostname`"
+if [ $host = "coh" ];then
+  scp -d $filename physsun.rutgers.edu:~/tmp
+elif [ $host = "david-desktop" ];then
+  rsync -v --progress $filename physsun2.rutgers.edu:~/pu/pythtb-master/
+elif [ $host = "magnon.physics.rutgers.edu" ];then
+  echo "Not safe to publish from magnon -- do from home instead"
+  exit
+else
+  echo "Host not recognized"
+  exit
+fi 
+
+rm $filename
+
+cd ../..

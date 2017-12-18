@@ -1,0 +1,18 @@
+#!/bin/bash
+
+rm -rf build
+rm -rf source/examples
+rm -rf source/misc
+rm -rf ../src/build
+rm -f ../src/MANIFEST
+
+rm source/simple_fig/band.png
+rm source/simple_fig/pythtb.py
+rm source/simple_fig/pythtb.pyc
+rm source/simple_fig/matplotlibrc
+rm source/sphinxext/*.pyc
+
+rmdir source/_static
+
+make clean
+
