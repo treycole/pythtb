@@ -37,7 +37,10 @@ class tb_model(object):
     :param dim_r: Dimensionality of real space, i.e., specifies how many
       real space lattice vectors there are and how many coordinates are
       needed to specify the orbital coordinates.
-    .. note:: Parameter *dim_r* can be larger than *dim_k*! For example,
+
+    .. note::
+
+      Parameter *dim_r* can be larger than *dim_k*! For example,
       a polymer is a three-dimensional molecule (one needs three
       coordinates to specify orbital positions), but it is periodic
       along only one direction. For a polymer, therefore, we should
@@ -374,12 +377,13 @@ class tb_model(object):
           orbital does not have to be in the home unit cell; its unit cell
           position is determined by parameter *ind_R*.
 
-        :param ind_R: Specifies, in reduced coordinates, the shift of
-          the ket orbital. The number of coordinates must equal the
-          dimensionality in real space (*dim_r* parameter) for consistency,
-          but only the periodic directions of ind_R will be considered. If
-          reciprocal space is zero-dimensional (as in a molecule),
-          this parameter does not need to be specified.
+        :param ind_R: Lattice vector (integer array, in reduced
+          coordinates) pointing to the unit cell where the ket
+          orbital is located.  The number of coordinates must equal
+          the dimensionality in real space (*dim_r* parameter) for
+          consistency, but only the periodic directions of ind_R are
+          used. If reciprocal space is zero-dimensional (as in a
+          molecule), this parameter does not need to be specified.
 
         :param mode: Similar to parameter *mode* in function *set_onsite*. 
           Speficies way in which parameter *hop_amp* is

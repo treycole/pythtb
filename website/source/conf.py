@@ -27,16 +27,16 @@ import sys, os
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.doctest',
-              'sphinx.ext.pngmath',
-#              'sphinx.ext.mathjax',
+#              'sphinx.ext.pngmath',
+              'sphinx.ext.imgmath',
               'sphinx.ext.viewcode',
 #              'matplotlib.sphinxext.mathmpl',
               'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
               'ipython_console_highlighting',
-              'inheritance_diagram',
-              'numpydoc',
-              "googleanalytics"]
+#             'inheritance_diagram',
+              'numpydoc']
+#              'googleanalytics']
 
 # for googleanalytics tracking
 googleanalytics_id = 'UA-18832825-1'

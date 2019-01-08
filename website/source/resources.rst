@@ -27,6 +27,18 @@ NumPy and MatPlotLib Documentation
 *  `NumPy User Guide <http://docs.scipy.org/doc/numpy/user>`_
 *  `Matplotlib <http://matplotlib.sourceforge.net>`_
 
+User-Contributed Extensions
+---------------------------
+
+A website has been set up to maintain links to potentially
+useful PythTB software contributed by users.  This may included
+implementations of additional capabilities, useful function definitions,
+sample scripts, plotting routines, etc.  These are not necessarily
+sanctioned by the developers of PythTB, and should be tested
+carefully before use.
+
+*  `User-Contributed PythTB Resources <http://www.physics.rutgers.edu/~dhv/pythtb-resources>`_
+
 Related packages
 ----------------
 
