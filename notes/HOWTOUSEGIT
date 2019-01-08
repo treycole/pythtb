@@ -47,7 +47,10 @@ to add a file,
 or to submit changes to the feature branch
 
   git commit -m "type message here"
-  git push
+  git push origin feature_DESCRIPTOR
+
+Note that if you change this file again, you need to "git add" it
+again before commiting and pushing.
 
 5. When David is done with working on the feature branch, he should
 merge it into develop.
