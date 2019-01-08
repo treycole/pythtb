@@ -1,0 +1,65 @@
+We will use  gitflow workflow as described here
+
+https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
+
+*************************
+
+Here are steps that Sinisa did once and they don't need to be done
+again.
+
+1. Sinisa created private github repository.
+
+2. Sinisa shared private github repository with David through github
+website.
+
+3. Sinisa created develop branch and pushed it to github using the
+following
+
+  git branch develop
+  git push -u origin develop
+
+Note that "origin" in git language means github repository.
+
+*************************
+
+1. If say David wants to add a feature to pythtb he should first get
+repositoty:
+
+  git clone http://github.com/sinisacoh/pythtb
+
+2. Then David should change to the develop branch.  First you make
+sure to go to the master and then to the develop branch:
+
+  cd pythtb
+  git checkout master
+  git checkout develop
+
+3. Next David should make a feature branch for the addition he wants
+to do to the code
+
+  git checkout -b feature_DESCRIPTOR
+
+4. Now David can do whatever work he wants to do on this branch.  Say,
+to add a file,
+
+  git add FILENAME
+
+or to submit changes to the feature branch
+
+  git commit -m "type message here"
+  git push
+
+5. When David is done with working on the feature branch, he should
+merge it into develop.
+
+  git checkout develop
+  git merge feature_DESCRIPTOR
+
+**************************
+
+When we are ready to have a new version of python, we should merge
+develop branch with the master as well as erase the feature branch.
+
+git checkout master
+git merge develop
+git branch -d feature_DESCRIPTOR
