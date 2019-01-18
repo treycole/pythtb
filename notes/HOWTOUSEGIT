@@ -27,11 +27,13 @@ repositoty:
 
   git clone http://github.com/sinisacoh/pythtb
 
-2. Then David should change to the develop branch.  First you make
-sure to go to the master and then to the develop branch:
+or, if it already in place, download updates
 
-  cd pythtb
-  git checkout master
+  git fetch; git merge    Or 'git pull' to do both at once)
+  git branch -a           List of branches
+
+2. Then David should change to the develop branch:
+
   git checkout develop
 
 3. Next David should make a feature branch for the addition he wants
@@ -52,19 +54,27 @@ or to submit changes to the feature branch
 Note that if you change this file again, you need to "git add" it
 again before commiting and pushing.
 
-5. When David is done with working on the feature branch, he should
-merge it into develop.
+5. When David is done with working on the feature branch, and
+it has been pushed to origin, he should create a pull request
+to have it merged into the 'develop' branch.  This is done by
+logging onto the GitHub website.  See
 
-  git checkout develop
-  git merge feature_DESCRIPTOR
+  https://help.github.com/articles/creating-a-pull-request
 
-**************************
+*** Question: If Sinisa reviews the pull request and agrees it
+    is OK, how does he actually do the merge?  From the GitHub
+    website?  Or from the command line?
 
-When we are ready to have a new version of python, we should merge
-develop branch with the master as well as erase the feature branch.
+6. The feature_DESCRIPTOR branch can now be deleted:
 
-git checkout master
-git merge develop
-git branch -d feature_DESCRIPTOR
+  git branch -d feature_DESCRIPTOR
 
-DUMMY LINE
+*** Question: This works locally.  How to delete the feature_DESCRIPTOR
+*** branch also on the remote at origin?  Do it from the web browser at
+*** GitHub?
+
+7. The 'master' branch should only be updated at the time of a new
+release.  To update it, one of us issues a pull request for 'develop'
+to be merged into 'master'.  When agreed, we do the merge.
+
+*** Question: Again, how do we do the merge?
