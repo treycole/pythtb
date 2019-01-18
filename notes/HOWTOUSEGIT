@@ -79,6 +79,15 @@ it merged into the 'develop' branch.  On the GitHub website.
 
 As long as there are no conflicts, Sinisa does the merge into
 'develop' on the Github website.
+If there are conflicts then they need to be resolved in the 
+terminal.
+
+If Sinisa or David don't like something in the pull request, say
+thay discuss something during pull request via website and they 
+decide that further changes are needed to the branch, then they 
+can simply git "add,commit,push" more changes to the origin via
+terminal.  These additions should get updated in the github's
+pull request on the website.
 
 6. The feature_DESCRIPTOR branch can now be deleted:
 
