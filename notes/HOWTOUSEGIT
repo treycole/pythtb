@@ -20,6 +20,8 @@ following
 
 Note that "origin" in git language means github repository.
 
+4. Sinisa also made master and develop branch protected.
+
 *************************
 
 1. If say David wants to add a feature to pythtb he should first get
@@ -31,6 +33,7 @@ or, if it already in place, download updates
 
   git fetch; git merge    Or 'git pull' to do both at once)
   git branch -a           List of branches
+  git status              Info about current status
 
 2. Then David should change to the develop branch:
 
@@ -46,12 +49,15 @@ to add a file,
 
   git add FILENAME
 
-or to submit changes to the feature branch
+or to submit changes to the feature branch remotely
 
   git commit -m "type message here"
   git push origin feature_DESCRIPTOR
 
-Note that if you change this file again, you need to "git add" it
+If you wish to update only the local repo then you should remove "origin" 
+from the line above.
+
+Note that any time you change any file, you need to "git add" it
 again before commiting and pushing.
 
 5. When David is done with working on the feature branch, and
@@ -65,6 +71,11 @@ logging onto the GitHub website.  See
     is OK, how does he actually do the merge?  From the GitHub
     website?  Or from the command line?
 
++++ Github website that the merge can be done via website if there 
+    are no conflicts.  If there are conflicts then they need to be 
+    resolved in a terminal.  Conflicts happen if different users 
+    edit the same line in the file, or similar.
+
 6. The feature_DESCRIPTOR branch can now be deleted:
 
   git branch -d feature_DESCRIPTOR
@@ -73,8 +84,27 @@ logging onto the GitHub website.  See
 *** branch also on the remote at origin?  Do it from the web browser at
 *** GitHub?
 
-7. The 'master' branch should only be updated at the time of a new
-release.  To update it, one of us issues a pull request for 'develop'
-to be merged into 'master'.  When agreed, we do the merge.
+To delete branch on a remote repository, do this:
 
-*** Question: Again, how do we do the merge?
+  git push origin --delete feature_DESCRIPTOR
+
+or erase branch as a part of pull request.
+
+7. To do the release of a code, follow these instructions.  First, decide
+we want to have a release of a code at some point.  At that point in time,
+do the following to get a new release branch with an appropriate version number
+branched off of develop:
+
+  git checkout develop
+  git checkout -b release/0.1.0
+
+OK, now if needed you can polish the code, make sure documentation is up to 
+date with new version of the code, tiny bugs are fixed, website is updated,
+and so on.  These changes should all go to the release/0.1.0 branch.
+
+Note that in the meantime someone else could be working on the develop branch.
+That is fine, that ship has sailed, and what we release as 0.1.0 will not have
+those changes (unless we really insist).
+
+When we are happy with polishing release/0.1.0 we should first merge it into develop and 
+then in master. 
