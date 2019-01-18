@@ -2,36 +2,36 @@ We will use  gitflow workflow as described here
 
 https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
 
+(Note: Atlassian promotes use of BitBucket, but we don't need it.)
+
 *************************
 
-Here are steps that Sinisa did once and they don't need to be done
-again.
+Here are steps that Sinisa did once and for all at the start:
 
-1. Sinisa created private github repository.
+1. Created private github repository.
 
-2. Sinisa shared private github repository with David through github
-website.
+2. Shared private github repository with David through github website.
 
-3. Sinisa created develop branch and pushed it to github using the
-following
+3. Created develop branch and pushed it to github:
 
   git branch develop
   git push -u origin develop
 
 Note that "origin" in git language means github repository.
 
-4. Sinisa also made master and develop branch protected.
+4. Also made master and develop branch protected.
 
 *************************
 
-1. If say David wants to add a feature to pythtb he should first get
-repositoty:
+1. If David wants to add a feature to pythtb he should first get
+the repository:
 
   git clone http://github.com/sinisacoh/pythtb
 
 or, if it already in place, download updates
 
-  git fetch; git merge    Or 'git pull' to do both at once)
+  git pull --all          'git pull' = 'git fetch' + 'git merge'
+                          Option '--all' updates all branches
   git branch -a           List of branches
   git status              Info about current status
 
@@ -44,67 +44,54 @@ to do to the code
 
   git checkout -b feature_DESCRIPTOR
 
-4. Now David can do whatever work he wants to do on this branch.  Say,
-to add a file,
+This will initially be a copy of 'develop'.
+
+4. Now David can do whatever work he wants to do on this branch.
 
   git add FILENAME
+  ...
+  git add -u             Good for safety; adds all tracked files
+  git status             Check it looks OK
 
-or to submit changes to the feature branch remotely
+To submit changes to the feature branch remotely:
 
   git commit -m "type message here"
   git push origin feature_DESCRIPTOR
 
-If you wish to update only the local repo then you should remove "origin" 
-from the line above.
-
 Note that any time you change any file, you need to "git add" it
-again before commiting and pushing.
+again before committing and pushing.
 
-5. When David is done with working on the feature branch, and
-it has been pushed to origin, he should create a pull request
-to have it merged into the 'develop' branch.  This is done by
-logging onto the GitHub website.  See
+5. When David is done working on the feature branch, and it has
+been pushed to origin, he should create a pull request to have
+it merged into the 'develop' branch.  This is done by logging
+onto the GitHub website.  See
 
   https://help.github.com/articles/creating-a-pull-request
 
-*** Question: If Sinisa reviews the pull request and agrees it
-    is OK, how does he actually do the merge?  From the GitHub
-    website?  Or from the command line?
-
-+++ Github website that the merge can be done via website if there 
-    are no conflicts.  If there are conflicts then they need to be 
-    resolved in a terminal.  Conflicts happen if different users 
-    edit the same line in the file, or similar.
+As long as there are no conflicts, Sinisa does the merge into
+'develop' on the Github website.
 
 6. The feature_DESCRIPTOR branch can now be deleted:
 
-  git branch -d feature_DESCRIPTOR
+  git branch -d feature_DESCRIPTOR                  ! locally
+  git push origin --delete feature_DESCRIPTOR       ! remotely
 
-*** Question: This works locally.  How to delete the feature_DESCRIPTOR
-*** branch also on the remote at origin?  Do it from the web browser at
-*** GitHub?
+7. When we have decided to issue a new release of the code:
 
-To delete branch on a remote repository, do this:
-
-  git push origin --delete feature_DESCRIPTOR
-
-or erase branch as a part of pull request.
-
-7. To do the release of a code, follow these instructions.  First, decide
-we want to have a release of a code at some point.  At that point in time,
-do the following to get a new release branch with an appropriate version number
-branched off of develop:
+Create a release branch off of develop:
 
   git checkout develop
   git checkout -b release/0.1.0
 
-OK, now if needed you can polish the code, make sure documentation is up to 
-date with new version of the code, tiny bugs are fixed, website is updated,
-and so on.  These changes should all go to the release/0.1.0 branch.
+If needed, polish the code, make sure documentation is up to
+date with the new version, make tiny bug fixes, update the website,
+etc.  These changes should all go to the release/0.1.0 branch.
 
-Note that in the meantime someone else could be working on the develop branch.
-That is fine, that ship has sailed, and what we release as 0.1.0 will not have
-those changes (unless we really insist).
+Note that in the meantime someone else could be working on the
+develop branch.  That is fine, that ship has sailed, and what we
+release as 0.1.0 will not have those changes (unless we really
+insist).
 
-When we are happy with polishing release/0.1.0 we should first merge it into develop and 
-then in master. 
+When we are happy with polishing release/0.1.0, we should merge
+it into master, and also into develop (checking for and resolving
+conflicts if develop has been changed).
