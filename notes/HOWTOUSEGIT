@@ -66,3 +66,5 @@ develop branch with the master as well as erase the feature branch.
 git checkout master
 git merge develop
 git branch -d feature_DESCRIPTOR
+
+DUMMY LINE
