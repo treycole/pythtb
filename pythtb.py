@@ -3634,7 +3634,7 @@ def _offdiag_approximation_warning_and_stop():
   operator in the Wannier basis.  This is discussed here in more
   detail:
 
-    http://physics.rutgers.edu/pythtb/usage.html#pythtb.w90
+    http://www.physics.rutgers.edu/pythtb/usage.html#pythtb.w90
 
   If you know what you are doing and wish to continue with the
   calculation despite this approximation, please call the following

@@ -40,7 +40,7 @@ put in .tar.gz file. of the old version.
 *It is enough to do this for the old version only!*
 You will also have to add that folder to cvs.
 To get old source file use this command:
-wget http://physics.rutgers.edu/pythtb/_downloads/pythtb-X.X.X.tar.gz
+wget http://www.physics.rutgers.edu/pythtb/_downloads/pythtb-X.X.X.tar.gz
 
 5. Update website/source/install.rst with the new version. It is enough to
 change string "1.6.1" with "1.6.2" or similar.
