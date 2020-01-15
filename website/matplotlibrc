@@ -144,7 +144,7 @@ text.usetex         : True  # use latex for all text handling. The following fon
                               # matplotlib mailing list
 #text.latex.unicode : False # use "ucs" and "inputenc" LaTeX packages for handling
                             # unicode strings.
-text.latex.preamble : \usepackage{cmbright}, \usepackage{color}
+text.latex.preamble : \usepackage{cmbright} \usepackage{color}
 #text.latex.preamble : 
 			    # IMPROPER USE OF THIS FEATURE WILL LEAD TO LATEX FAILURES
                             # AND IS THEREFORE UNSUPPORTED. PLEASE DO NOT ASK FOR HELP
