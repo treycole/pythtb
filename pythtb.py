@@ -94,14 +94,14 @@ class tb_model(object):
     def __init__(self,dim_k,dim_r,lat=None,orb=None,per=None,nspin=1):
 
         # initialize _dim_k = dimensionality of k-space (integer)
-        if type(dim_k).__name__!='int':
+        if not _is_int(dim_k):
             raise Exception("\n\nArgument dim_k not an integer")
         if dim_k < 0 or dim_k > 4:
             raise Exception("\n\nArgument dim_k out of range. Must be between 0 and 4.")
         self._dim_k=dim_k
 
         # initialize _dim_r = dimensionality of r-space (integer)
-        if type(dim_r).__name__!='int':
+        if not _is_int(dim_r):
             raise Exception("\n\nArgument dim_r not an integer")
         if dim_r < dim_k or dim_r > 4:
             raise Exception("\n\nArgument dim_r out of range. Must be dim_r>=dim_k and dim_r<=4.")
@@ -134,7 +134,7 @@ class tb_model(object):
             self._norb=1
             self._orb=np.zeros((1,dim_r))
             print(" Orbital positions not specified. I will assume a single orbital at the origin.")
-        elif type(orb).__name__=='int':
+        elif _is_int(orb):
             self._norb=orb
             self._orb=np.zeros((orb,dim_r))
             print(" Orbital positions not specified. I will assume ",orb," orbitals at the origin")
@@ -432,7 +432,7 @@ class tb_model(object):
         if self._dim_k!=0 and (ind_R is None):
             raise Exception("\n\nNeed to specify ind_R!")
         # if necessary convert from integer to array
-        if self._dim_k==1 and type(ind_R).__name__=='int':
+        if self._dim_k==1 and _is_int(ind_R):
             tmpR=np.zeros(self._dim_r,dtype=int)
             tmpR[self._per]=ind_R
             ind_R=tmpR
@@ -1158,7 +1158,7 @@ matrix.""")
         """
         if self._dim_k ==0:
             raise Exception("\n\nModel is already finite")
-        if type(num).__name__!='int':
+        if not _is_int(num):
             raise Exception("\n\nArgument num not an integer")
 
         # check value of num
@@ -1568,14 +1568,14 @@ matrix.""")
         """
 
         # if a single integer is given, convert to a list with one element
-        if type(to_remove).__name__=='int':
+        if _is_int(to_remove):
             orb_index=[to_remove]
         else:
             orb_index=copy.deepcopy(to_remove)
 
         # check range of indices
         for i,orb_ind in enumerate(orb_index):
-            if orb_ind < 0 or orb_ind > self._norb-1 or type(orb_ind).__name__!='int':
+            if orb_ind < 0 or orb_ind > self._norb-1 or (not _is_int(orb_ind)):
                 raise Exception("\n\nSpecified wrong orbitals to remove!")
         for i,ind1 in enumerate(orb_index):
             for ind2 in orb_index[i+1:]:
@@ -2316,7 +2316,7 @@ class wf_array(object):
     def __check_key(self,key):
         # do some checks for 1D
         if self._dim_arr==1:
-            if type(key).__name__!='int':
+            if not _is_int(key):
                 raise TypeError("Key should be an integer!")
             if key<(-1)*self._mesh_arr[0] or key>=self._mesh_arr[0]:
                 raise IndexError("Key outside the range!")
@@ -2325,7 +2325,7 @@ class wf_array(object):
             if len(key)!=self._dim_arr:
                 raise TypeError("Wrong dimensionality of key!")
             for i,k in enumerate(key):
-                if type(k).__name__!='int':
+                if not _is_int(k):
                     raise TypeError("Key should be set of integers!")
                 if k<(-1)*self._mesh_arr[i] or k>=self._mesh_arr[i]:
                     raise IndexError("Key outside the range!")
@@ -3621,6 +3621,9 @@ def _red_to_cart(tmp,red):
     for i in range(0,len(cart)):
         cart[i,:]=a1*red[i][0]+a2*red[i][1]+a3*red[i][2]
     return cart
+
+def _is_int(a):
+    return np.issubdtype(type(a), np.integer)
 
 def _offdiag_approximation_warning_and_stop():
     raise Exception("""
