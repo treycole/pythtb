@@ -68,7 +68,7 @@ it merged into the 'develop' branch.  On the GitHub website.
   Click 'New pull request'
 
   In pulldown menus: Set
-    base:      develop
+    base:      develop  <<--- ESSENTIAL PART: use develop here!
     compare:   feature_DESCRIPTOR
   
   Write comments
