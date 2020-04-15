@@ -2247,11 +2247,11 @@ class wf_array(object):
         if self._dim_arr!=self._model._dim_k:
             raise Exception("\n\nIf using solve_on_grid method, dimension of wf_array must equal dim_k of the tight-binding model!")
         # to return gaps at all k-points
-        if self._norb<=1:
+        if self._nsta<=1:
             all_gaps=None # trivial case since there is only one band
         else:
             gap_dim=np.copy(self._mesh_arr)-1
-            gap_dim=np.append(gap_dim,self._norb*self._nspin-1)
+            gap_dim=np.append(gap_dim,self._nsta-1)
             all_gaps=np.zeros(gap_dim,dtype=float)
         #
         if self._dim_arr==1:
@@ -2311,8 +2311,11 @@ class wf_array(object):
         else:
             raise Exception("\n\nWrong dimensionality!")
 
-        return all_gaps.min(axis=tuple(range(self._dim_arr)))
-
+        if all_gaps is not None:
+            return all_gaps.min(axis=tuple(range(self._dim_arr)))
+        else:
+            return None
+        
     def __check_key(self,key):
         # do some checks for 1D
         if self._dim_arr==1:
