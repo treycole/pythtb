@@ -1323,6 +1323,106 @@ matrix.""")
                 
         return red_tb
 
+    def change_nonperiodic_vector(self, np_dir, new_latt_vec=None, to_home=True):
+        r"""
+
+        Returns tight-binding model :class:`pythtb.tb_model` in
+        which one of the nonperiodic lattice vectors is changed.
+        This is especially useful after using *cut_piece* to
+        create slabs, rods, or ribbons.
+
+        By default, the new nonperiodic lattice vector is the
+        same as the original one except that all components in the
+        periodic space are projected out.  This ensures that the
+        Berry phases computed in the periodic space correspond
+        to the usual expectations.  For example, after this
+        change, the Berry phase computed for a ribbon depends
+        only on the location of the Wannier center in the extended
+        direction, not on its location in the transverse direction.
+        Alternatively, the new nonperiodic lattice vector can be
+        set explicitly via the *new_latt_vec* parameter.
+
+        By default all orbitals will be shifted to the new home
+        cell, such that all orbitals will have reduced coordinates
+        between 0 and 1. If you wish to avoid this behavior,
+        set the *to_home* parameter to *False*.
+
+        :param np_dir: Integer specifying which nonperiodic
+          lattice vector to change.
+
+        :param new_latt_vec: Optional parameter. If *None*
+          (default), the new nonperiodic lattice vector is the
+          same as the original one except that all components in
+          the periodic space projected out.  Otherwise, array of
+          integers with size *dim_r* defining the desired new
+          nonperiodic lattice vector.
+
+        :param to_home: Optional parameter. If *True* (default),
+          will shift all orbitals to the home cell.
+
+        :returns:
+          * **nnp_tb** -- Object of type :class:`pythtb.tb_model`
+            representing an equivalent tight-binding model with
+            one redefined nonperiodic lattice vector.
+
+        Example usage::
+
+          # Modify slab model so that nonperiodic third vector is perpendicular to the slab
+          nnp_tb = tb.change_nonperiodic_vector(2)
+          nnp_tb.display
+
+        """
+
+        # Check that selected direction is nonperiodic
+        if self._per.count(np_dir)==1:
+            print("\nnp_dir =",np_dir)
+            raise Exception("Selected direction is not nonperiodic")
+
+        if new_latt_vec is None:
+            # construct new nonperiodic lattice vector
+            per_temp=np.zeros_like(self._lat)
+            for direc in self._per:
+                per_temp[direc]=self._lat[direc]
+            # find projection coefficients onto space of periodic vectors
+            coeffs=np.linalg.lstsq(per_temp,self._lat[np_dir],rcond=None)[0]
+            projec=np.dot(self._lat.T,coeffs)
+            # subtract off to get new nonperiodic vector
+            np_lattice_vec=self._lat[np_dir]-projec
+        else:
+            # new_latt_vec is passed as argument
+            # check shape and convert to numpy array
+            np_lattice_vec=np.array(new_latt_vec)
+            if np_latt_vec.shape!=self._dim_r:
+                raise Exception("\n\nNonperiodic vector has wrong length")
+
+        # define new set of lattice vectors
+        np_lat=copy.deepcopy(self._lat)
+        np_lat[np_dir]=np_lattice_vec
+
+        # convert reduced vector in original lattice to reduced vector in new -cell lattice
+        np_orb=[]
+        for orb in self._orb: # go over all orbitals
+            orb_cart=np.dot(self._lat.T,orb)
+            # convert to reduced coordinates
+            np_orb.append(np.linalg.solve(np_lat,orb_cart))
+
+        # create new tb_model object to be returned
+        nnp_tb=tb_model(self._dim_k,self._dim_r,np_lat,np_orb,per=self._per,nspin=self._nspin)
+
+        # remember if came from w90
+        nnp_tb._assume_position_operator_diagonal=self._assume_position_operator_diagonal
+
+        # copy site energies and hoppings into new model
+        nnp_tb._site_energies=self._site_energies   # no deepcopy needed?
+        nnp_tb._hoppings=self._hoppings             # no deepcopy needed?
+
+        # put orbitals to home cell if asked for
+        if to_home==True:
+            nnp_tb._shift_to_home()
+
+        # return new tb model
+        return nnp_tb
+    
     def make_supercell(self, sc_red_lat, return_sc_vectors=False, to_home=True):
         r"""
 
