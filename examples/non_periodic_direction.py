@@ -15,7 +15,7 @@ lat=[[2.3,-0.2],[1.9,2.4]]
 # define coordinates of orbitals
 orb=[[0.15,0.34],[0.29,0.65]]
 # make two-dimensional model
-bulk_model=tb_model(2,2,lat,orb)
+bulk_model=tb_model(2,2,lat,orb,per=[0,1])
 
 # Add hopping terms.  Note that there are no hoppings
 # along the second periodic lattice vector.  Therefore
@@ -135,7 +135,7 @@ print("")
 
 # now create a new finite model with a different non-periodic vector
 # code chooses automatically a non-periodic vector that is perpendicular to the periodic vector(s)
-finite_model_orthogonalized=finite_model.change_nonperiodic_vector(np_dir=1, new_latt_vec=None, to_home=False)
+finite_model_orthogonalized=finite_model.change_nonperiodic_vector(np_dir=1, new_latt_vec=None)
 # get center of charge for model with these periodicity vectors
 finite_location_orthogonalized,finite_location_orthogonalized_periodicity=get_centers_01(finite_model_orthogonalized,num_wire)
 # make a better choice for the location of the charge center
@@ -151,7 +151,7 @@ print("")
 
 
 # redo everything as above but with an arbitrary choice of a non-periodic vector
-finite_model_arb=finite_model.change_nonperiodic_vector(np_dir=1, new_latt_vec=[-1.3,4.8], to_home=False)
+finite_model_arb=finite_model.change_nonperiodic_vector(np_dir=1, new_latt_vec=[-1.3,4.8])
 finite_location_arb,finite_location_arb_periodicity=get_centers_01(finite_model_arb,num_wire)
 # make a better choice for the location of the charge center
 # this thing is hard-coded
