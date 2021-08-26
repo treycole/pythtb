@@ -1513,30 +1513,51 @@ matrix.""")
             return (sc_tb,sc_vec)
 
     def _shift_to_home(self):
-        """Shifts all orbital positions to the home unit cell. After
-        this function is called all reduced coordiantes of orbitals
-        will be between 0 and 1. It may be useful to call this
-        function after using make_supercell."""
+        """Shifts orbital coordinates (along periodic directions) to the home
+        unit cell. After this function is called reduced coordinates
+        (along periodic directions) of orbitals will be between 0 and
+        1.  
+
+        Previous versions of the code were also shifting orbitals to
+        home along even nonperiodic directions.  In new version of the
+        code we don't allow this anymore, as this feature might be
+        counterintuitive.  Shifting orbitals along nonperiodic
+        directions changes physical nature of the tight-binding model.
+        This behavior might be especially non-intuitive for
+        tight-binding models that came from *cut_piece* function.
+
+        Program stops if any of the directions in the model are non-periodic
+
+        """
         
         # go over all orbitals
         for i in range(self._norb):
-            cur_orb=self._orb[i]
-            # compute orbital in the home cell
-            round_orb=(np.array(cur_orb)+1.0E-6)%1.0
             # find displacement vector needed to bring back to home cell
-            disp_vec=np.array(np.round(cur_orb-round_orb),dtype=int)
-            # check if have at least one non-zero component
-            if True in (disp_vec!=0):
-                # shift orbital
-                self._orb[i]-=np.array(disp_vec,dtype=float)
-                # shift also hoppings
-                if self._dim_k!=0:
-                    for h in range(len(self._hoppings)):
-                        if self._hoppings[h][1]==i:
-                            self._hoppings[h][3]-=disp_vec
-                        if self._hoppings[h][2]==i:
-                            self._hoppings[h][3]+=disp_vec
-
+            disp_vec=np.zeros(self._dim_r,dtype=int)
+            # shift only in periodic directions
+            for k in range(self._dim_r):
+                shift=np.floor(self._orb[i,k]+1.0E-6).astype(int)
+                if k in self._per:
+                    disp_vec[k]=shift
+                else:
+                    if shift!=0:
+                        raise Exception("""\n\nFunction _shift_to_home is trying to shift
+to home some orbital along a nonperiodic direction.
+Program will stop as this behavior is likely unintended.
+Shifting orbitals along nonperiodic directions creates
+physically distincy tight-binding model.
+""")
+                
+            # shift orbitals
+            self._orb[i]-=disp_vec
+            # shift hoppings
+            if self._dim_k!=0:
+                for h in range(len(self._hoppings)):
+                    if self._hoppings[h][1]==i:
+                        self._hoppings[h][3]-=disp_vec
+                    if self._hoppings[h][2]==i:
+                        self._hoppings[h][3]+=disp_vec
+                            
 
     def remove_orb(self,to_remove):
         r"""
