@@ -1392,7 +1392,7 @@ matrix.""")
             # new_latt_vec is passed as argument
             # check shape and convert to numpy array
             np_lattice_vec=np.array(new_latt_vec)
-            if np_latt_vec.shape!=self._dim_r:
+            if np_lattice_vec.shape!=(self._dim_r,):
                 raise Exception("\n\nNonperiodic vector has wrong length")
 
         # define new set of lattice vectors
