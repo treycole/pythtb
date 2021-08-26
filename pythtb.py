@@ -1404,7 +1404,7 @@ matrix.""")
         for orb in self._orb: # go over all orbitals
             orb_cart=np.dot(self._lat.T,orb)
             # convert to reduced coordinates
-            np_orb.append(np.linalg.solve(np_lat,orb_cart))
+            np_orb.append(np.linalg.solve(np_lat.T,orb_cart))
 
         # create new tb_model object to be returned
         nnp_tb=tb_model(self._dim_k,self._dim_r,np_lat,np_orb,per=self._per,nspin=self._nspin)
