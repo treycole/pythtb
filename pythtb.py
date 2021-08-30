@@ -1426,6 +1426,10 @@ matrix.""")
         nnp_tb._lat=np.array(np_lat,dtype=float)
         nnp_tb._orb=np.array(np_orb,dtype=float)
 
+        # put orbitals to home cell if asked for
+        if to_home==True:
+            nnp_tb._shift_to_home()
+        
         # double check that everything went as planned
         #
         # is the new vector perpendicular to all periodic directions?
