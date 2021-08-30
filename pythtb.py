@@ -1354,8 +1354,8 @@ matrix.""")
           is set *True* (which it is by default) then additionally,
           orbitals will be shifted to the home cell.
 
-        :param to_home: Optional parameter, if *True* will
-          shift all orbitals to the home cell. Default value is *True*.
+        :param to_home: Optional parameter, if *True* will shift all orbitals 
+          to the home cell along non-periodic directions. Default value is *True*.
 
         :param to_home_suppress_warning: Optional parameter, if *False* code
           will print a warning message whenever returned object has an orbital with
