@@ -1326,13 +1326,13 @@ matrix.""")
     def change_nonperiodic_vector(self, np_dir, new_latt_vec=None, to_home=True, to_home_suppress_warning=False):
         r"""Returns tight-binding model :class:`pythtb.tb_model` in which one of
         the nonperiodic "lattice" vectors is changed.  Nonperiodic
-        vectors are those elements of *orb* which are not listed as
+        vectors are those elements of *lat* which are not listed as
         periodic with the *per* parameter.  (See more information on
-        *orb* and *per* in :class:`pythtb.tb_model`). Returned object
+        *lat* and *per* in :class:`pythtb.tb_model`). Returned object
         also has modified reduced coordinates of orbitals, consistent
-        with the new choice of *orb*.  Therefore, actual (Cartesian)
+        with the new choice of *lat*.  Therefore, actual (Cartesian)
         coordinates of orbitals in original and returned tb_model are
-        the same.  
+        the same.
 
         This function is especially useful after using *cut_piece* to 
         create slabs, rods, or ribbons.
