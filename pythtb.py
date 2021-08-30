@@ -1323,7 +1323,7 @@ matrix.""")
                 
         return red_tb
 
-    def change_nonperiodic_vector(self, np_dir, new_latt_vec=None):
+    def change_nonperiodic_vector(self, np_dir, new_latt_vec=None, to_home=True, to_home_suppress_warning=False):
         r"""Returns tight-binding model :class:`pythtb.tb_model` in which one of
         the nonperiodic "lattice" vectors is changed.  Nonperiodic
         vectors are those elements of *orb* which are not listed as
@@ -1362,7 +1362,17 @@ matrix.""")
           nonperiodic lattice vector.
 
         :param to_home: Optional parameter. If *True* (default),
-          will shift all orbitals to the home cell.
+          will shift all orbitals to the home cell along non-periodic directions.
+
+        :param to_home_suppress_warning: Optional parameter, if *False* code
+          will print a warning message whenever returned object has an orbital with
+          at least one reduced coordinate smaller than 0 or larger than 1
+          along a non-periodic direction.  If *True* the warning message
+          will not be printed.  Note that setting this parameter to *True*
+          or *False* has no effect on resulting coordinates of the model.
+          The only difference between this parameter set to *True* or *False*
+          is whether a warning message is printed or not.  Default value
+          is *False*.
 
         :returns:
           * **nnp_tb** -- Object of type :class:`pythtb.tb_model`
