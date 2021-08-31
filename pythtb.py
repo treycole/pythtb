@@ -1325,12 +1325,12 @@ matrix.""")
 
     def change_nonperiodic_vector(self, np_dir, new_latt_vec=None, to_home=True, to_home_suppress_warning=False):
         r"""Returns tight-binding model :class:`pythtb.tb_model` in which one of
-        the nonperiodic "lattice" vectors is changed.  Nonperiodic
-        vectors are those elements of *lat* which are not listed as
+        the nonperiodic "lattice vectors" is changed.  Nonperiodic
+        vectors are those elements of *lat* that are not listed as
         periodic with the *per* parameter.  (See more information on
-        *lat* and *per* in :class:`pythtb.tb_model`). Returned object
+        *lat* and *per* in :class:`pythtb.tb_model`). The returned object
         also has modified reduced coordinates of orbitals, consistent
-        with the new choice of *lat*.  Therefore, actual (Cartesian)
+        with the new choice of *lat*.  Therefore, the actual (Cartesian)
         coordinates of orbitals in original and returned tb_model are
         the same.
 
@@ -1356,10 +1356,10 @@ matrix.""")
         :param new_latt_vec: Optional parameter. If *None* (default),
           the new nonperiodic lattice vector is the same as the
           original one except that all components in the periodic
-          space projected out (so that new nonperiodic vector is
-          perpendicular to all periodic vectors).  Otherwise, array of
-          integers with size *dim_r* defining the desired new
-          nonperiodic lattice vector.
+          space have been projected out (so that the new
+          nonperiodic vector is perpendicular to all periodic
+          vectors).  Otherwise, array of integers with size *dim_r*
+          defining the desired new nonperiodic lattice vector.
 
         :param to_home: Optional parameter. If *True* (default),
           will shift all orbitals to the home cell along non-periodic directions.
@@ -1368,11 +1368,9 @@ matrix.""")
           will print a warning message whenever returned object has an orbital with
           at least one reduced coordinate smaller than 0 or larger than 1
           along a non-periodic direction.  If *True* the warning message
-          will not be printed.  Note that setting this parameter to *True*
-          or *False* has no effect on resulting coordinates of the model.
-          The only difference between this parameter set to *True* or *False*
-          is whether a warning message is printed or not.  Default value
-          is *False*.
+          will not be printed.  Note that this parameter has no
+          effect on the model; it only determines whether a warning
+          message is printed or not.  Default value is *False*.
 
         :returns:
           * **nnp_tb** -- Object of type :class:`pythtb.tb_model`
@@ -1427,6 +1425,7 @@ matrix.""")
         nnp_tb._orb=np.array(np_orb,dtype=float)
 
         # put orbitals to home cell if asked for
+        # argument to_home_suppress_warning is passed implicitly
         if to_home==True:
             nnp_tb._shift_to_home()
         
