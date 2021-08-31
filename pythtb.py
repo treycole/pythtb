@@ -1450,7 +1450,7 @@ somehow changed Cartesian coordinates of orbitals.""")
         # return new tb model
         return nnp_tb
     
-    def make_supercell(self, sc_red_lat, return_sc_vectors=False, to_home=True):
+    def make_supercell(self, sc_red_lat, return_sc_vectors=False, to_home=True, to_home_suppress_warning=False):
         r"""
 
         Returns tight-binding model :class:`pythtb.tb_model`
@@ -1481,8 +1481,18 @@ somehow changed Cartesian coordinates of orbitals.""")
           is set *True* (which it is by default) then additionally,
           orbitals will be shifted to the home cell.
 
-        :param to_home: Optional parameter, if *True* will
-          shift all orbitals to the home cell. Default value is *True*.
+        :param to_home: Optional parameter, if *True* will shift all orbitals 
+          to the home cell along non-periodic directions. Default value is *True*.
+
+        :param to_home_suppress_warning: Optional parameter, if *False* code
+          will print a warning message whenever returned object has an orbital with
+          at least one reduced coordinate smaller than 0 or larger than 1
+          along a non-periodic direction.  If *True* the warning message
+          will not be printed.  Note that setting this parameter to *True*
+          or *False* has no effect on resulting coordinates of the model.
+          The only difference between this parameter set to *True* or *False*
+          is whether a warning message is printed or not.  Default value
+          is *False*.
 
         :returns:
           * **sc_tb** -- Object of type :class:`pythtb.tb_model`
@@ -1631,7 +1641,7 @@ somehow changed Cartesian coordinates of orbitals.""")
 
         # put orbitals to home cell if asked for
         if to_home==True:
-            sc_tb._shift_to_home()
+            sc_tb._shift_to_home(to_home_suppress_warning)
 
         # return new tb model and vectors if needed
         if return_sc_vectors==False:
@@ -1639,31 +1649,73 @@ somehow changed Cartesian coordinates of orbitals.""")
         else:
             return (sc_tb,sc_vec)
 
-    def _shift_to_home(self):
-        """Shifts all orbital positions to the home unit cell. After
-        this function is called all reduced coordiantes of orbitals
-        will be between 0 and 1. It may be useful to call this
-        function after using make_supercell."""
+    def _shift_to_home(self, to_home_suppress_warning=False):
+        """Shifts orbital coordinates (along periodic directions) to the home
+        unit cell. After this function is called reduced coordinates
+        (along periodic directions) of orbitals will be between 0 and
+        1.  
+
+        Version of pythtb 1.7.2 (and earlier) was shifting orbitals to
+        home along even nonperiodic directions.  In the later versions
+        of the code (this present version, and future versions) we
+        don't allow this anymore, as this feature might produce
+        counterintuitive results.  Shifting orbitals along nonperiodic
+        directions changes physical nature of the tight-binding model.
+        This behavior might be especially non-intuitive for
+        tight-binding models that came from the *cut_piece* function.
+
+        :param to_home_suppress_warning: Optional parameter, if *False* code
+          will print a warning message whenever there is an orbital with
+          at least one reduced coordinate smaller than 0 or larger than 1
+          along a non-periodic direction.  If *True* the warning message 
+          will not be printed.  Note that setting this parameter to *True*
+          or *False* has no effect on resulting coordinates of the model.
+          The only difference between this parameter set to *True* or *False*
+          is whether a warning message is printed or not.  Default value 
+          is *False*.        
+
+        """
         
         # go over all orbitals
         for i in range(self._norb):
-            cur_orb=self._orb[i]
-            # compute orbital in the home cell
-            round_orb=(np.array(cur_orb)+1.0E-6)%1.0
             # find displacement vector needed to bring back to home cell
-            disp_vec=np.array(np.round(cur_orb-round_orb),dtype=int)
-            # check if have at least one non-zero component
-            if True in (disp_vec!=0):
-                # shift orbital
-                self._orb[i]-=np.array(disp_vec,dtype=float)
-                # shift also hoppings
-                if self._dim_k!=0:
-                    for h in range(len(self._hoppings)):
-                        if self._hoppings[h][1]==i:
-                            self._hoppings[h][3]-=disp_vec
-                        if self._hoppings[h][2]==i:
-                            self._hoppings[h][3]+=disp_vec
-
+            disp_vec=np.zeros(self._dim_r,dtype=int)
+            # shift only in periodic directions
+            for k in range(self._dim_r):
+                shift=np.floor(self._orb[i,k]+1.0E-6).astype(int)
+                if k in self._per:
+                    disp_vec[k]=shift
+                else: # check for shift in non-periodic directions
+                    if shift!=0:
+                        if to_home_suppress_warning==False:
+                            print(\
+"""\n\n
+WARNING: orbital number """+str(i)+""" will not be shifted "to home" along a 
+non-periodic direction """+str(k)+""".  While old versions of PythTb (1.7.2 and older) 
+allowed this behavior, and orbitals were shifted even along non-periodic
+directions, in the new version of PythTb (current one and newer) we don't shift
+orbitals along non-periodic directions anymore, as this changes the physical
+nature of the tight-binding model.  Therefore, in your case, coordinates of object
+returned by this function in old (1.7.2 and before) and new version of PythTb
+are not the same!
+*
+To prevent code from printing this warning message, please set the 
+to_home_suppress_warning parameter to True.
+*
+In the future versions of PythTb this warning message will be removed and PythTb
+will no longer shift orbitals "to home" along non-periodic directions.
+\n
+""")        
+            # shift orbitals
+            self._orb[i]-=disp_vec
+            # shift hoppings
+            if self._dim_k!=0:
+                for h in range(len(self._hoppings)):
+                    if self._hoppings[h][1]==i:
+                        self._hoppings[h][3]-=disp_vec
+                    if self._hoppings[h][2]==i:
+                        self._hoppings[h][3]+=disp_vec
+                            
 
     def remove_orb(self,to_remove):
         r"""
