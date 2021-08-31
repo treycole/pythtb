@@ -1424,10 +1424,6 @@ matrix.""")
         nnp_tb._lat=np.array(np_lat,dtype=float)
         nnp_tb._orb=np.array(np_orb,dtype=float)
 
-        # put orbitals to home cell if asked for
-        if to_home==True:
-            nnp_tb._shift_to_home(to_home_suppress_warning)
-        
         # double check that everything went as planned
         #
         # is the new vector perpendicular to all periodic directions?
@@ -1446,6 +1442,10 @@ somehow changed Cartesian coordinates of orbitals.""")
         # check that volume of the cell is not zero
         if np.abs(np.linalg.det(nnp_tb._lat))<1.0E-6:
             raise Exception("\n\nLattice with new choice of nonperiodic vector has zero volume?!")
+
+        # put orbitals to home cell if asked for
+        if to_home==True:
+            nnp_tb._shift_to_home(to_home_suppress_warning)
         
         # return new tb model
         return nnp_tb
