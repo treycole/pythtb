@@ -61,7 +61,12 @@ To submit changes to the feature branch remotely:
 Note that any time you change any file, you need to "git add" it
 again before committing and pushing.
 
-5. When David is done working on the feature branch, and it has
+5. If Sinisa did some work on the same branch, and then did
+add/commit/push_origin David can add those changes by doing
+
+  git pull origin feature_DESCRIPTOR
+
+6. When David is done working on the feature branch, and it has
 been pushed to origin, he should create a pull request to have
 it merged into the 'develop' branch.  On the GitHub website.
 
@@ -89,12 +94,12 @@ can simply git "add,commit,push" more changes to the origin via
 terminal.  These additions should get updated in the github's
 pull request on the website.
 
-6. The feature_DESCRIPTOR branch can now be deleted:
+7. The feature_DESCRIPTOR branch can now be deleted:
 
   git branch -d feature_DESCRIPTOR                  ! locally
   git push origin --delete feature_DESCRIPTOR       ! remotely
 
-7. When we have decided to issue a new release of the code:
+8. When we have decided to issue a new release of the code:
 
 Create a release branch off of develop:
 
