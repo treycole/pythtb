@@ -1426,7 +1426,7 @@ matrix.""")
 
         # put orbitals to home cell if asked for
         if to_home==True:
-            nnp_tb._shift_to_home()
+            nnp_tb._shift_to_home(to_home_suppress_warning)
         
         # double check that everything went as planned
         #
