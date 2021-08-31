@@ -1425,7 +1425,6 @@ matrix.""")
         nnp_tb._orb=np.array(np_orb,dtype=float)
 
         # put orbitals to home cell if asked for
-        # argument to_home_suppress_warning is passed implicitly
         if to_home==True:
             nnp_tb._shift_to_home()
         
