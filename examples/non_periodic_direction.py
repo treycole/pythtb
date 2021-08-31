@@ -1,4 +1,4 @@
-#!/usr/bin/env pythonOA
+#!/usr/bin/env python
 
 # demonstration of change_nonperiodic_vector function
 
