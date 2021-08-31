@@ -1323,6 +1323,133 @@ matrix.""")
                 
         return red_tb
 
+    def change_nonperiodic_vector(self, np_dir, new_latt_vec=None, to_home=True, to_home_suppress_warning=False):
+        r"""Returns tight-binding model :class:`pythtb.tb_model` in which one of
+        the nonperiodic "lattice vectors" is changed.  Nonperiodic
+        vectors are those elements of *lat* that are not listed as
+        periodic with the *per* parameter.  (See more information on
+        *lat* and *per* in :class:`pythtb.tb_model`). The returned object
+        also has modified reduced coordinates of orbitals, consistent
+        with the new choice of *lat*.  Therefore, the actual (Cartesian)
+        coordinates of orbitals in original and returned tb_model are
+        the same.
+
+        This function is especially useful after using *cut_piece* to 
+        create slabs, rods, or ribbons.
+
+        By default, the new nonperiodic vector is constructed
+        from the original by removing all components in the periodic 
+        space.  This ensures that the Berry phases computed in the 
+        periodic space correspond to the usual expectations.  For 
+        example, after this change, the Berry phase computed for a 
+        ribbon depends only on the location of the Wannier center 
+        in the extended direction, not on its location in the 
+        transverse direction. Alternatively, the new nonperiodic 
+        vector can be set explicitly via the *new_latt_vec* parameter.
+
+        See example :ref:`non_periodic_direction-example` for more 
+        detail.
+
+        :param np_dir: Integer specifying which nonperiodic
+          lattice vector to change.
+
+        :param new_latt_vec: Optional parameter. If *None* (default),
+          the new nonperiodic lattice vector is the same as the
+          original one except that all components in the periodic
+          space have been projected out (so that the new
+          nonperiodic vector is perpendicular to all periodic
+          vectors).  Otherwise, array of integers with size *dim_r*
+          defining the desired new nonperiodic lattice vector.
+
+        :param to_home: Optional parameter. If *True* (default),
+          will shift all orbitals to the home cell along non-periodic directions.
+
+        :param to_home_suppress_warning: Optional parameter, if *False* code
+          will print a warning message whenever returned object has an orbital with
+          at least one reduced coordinate smaller than 0 or larger than 1
+          along a non-periodic direction.  If *True* the warning message
+          will not be printed.  Note that this parameter has no
+          effect on the model; it only determines whether a warning
+          message is printed or not.  Default value is *False*.
+
+        :returns:
+          * **nnp_tb** -- Object of type :class:`pythtb.tb_model`
+            representing an equivalent tight-binding model with
+            one redefined nonperiodic lattice vector.
+
+        Example usage::
+
+          # Modify slab model so that nonperiodic third vector is perpendicular to the slab
+          nnp_tb = tb.change_nonperiodic_vector(2)
+
+        """
+
+        # Check that selected direction is nonperiodic
+        if self._per.count(np_dir)==1:
+            print("\nnp_dir =",np_dir)
+            raise Exception("Selected direction is not nonperiodic")
+
+        if new_latt_vec is None:
+            # construct new nonperiodic lattice vector
+            per_temp=np.zeros_like(self._lat)
+            for direc in self._per:
+                per_temp[direc]=self._lat[direc]
+            # find projection coefficients onto space of periodic vectors
+            coeffs=np.linalg.lstsq(per_temp.T,self._lat[np_dir],rcond=None)[0]
+            projec=np.dot(self._lat.T,coeffs)
+            # subtract off to get new nonperiodic vector
+            np_lattice_vec=self._lat[np_dir]-projec
+        else:
+            # new_latt_vec is passed as argument
+            # check shape and convert to numpy array
+            np_lattice_vec=np.array(new_latt_vec)
+            if np_lattice_vec.shape!=(self._dim_r,):
+                raise Exception("\n\nNonperiodic vector has wrong length")
+
+        # define new set of lattice vectors
+        np_lat=copy.deepcopy(self._lat)
+        np_lat[np_dir]=np_lattice_vec
+
+        # convert reduced vector in original lattice to reduced vector in new cell lattice
+        np_orb=[]
+        for orb in self._orb: # go over all orbitals
+            orb_cart=np.dot(self._lat.T,orb)
+            # convert to reduced coordinates
+            np_orb.append(np.linalg.solve(np_lat.T,orb_cart))
+
+        # create new tb_model object to be returned
+        nnp_tb=copy.deepcopy(self)
+
+        # update lattice vectors and orbitals
+        nnp_tb._lat=np.array(np_lat,dtype=float)
+        nnp_tb._orb=np.array(np_orb,dtype=float)
+
+        # put orbitals to home cell if asked for
+        if to_home==True:
+            nnp_tb._shift_to_home(to_home_suppress_warning)
+        
+        # double check that everything went as planned
+        #
+        # is the new vector perpendicular to all periodic directions?
+        if new_latt_vec is None:
+            for i in nnp_tb._per:
+                if np.abs(np.dot(nnp_tb._lat[i],nnp_tb._lat[np_dir]))>1.0E-6:
+                    raise Exception("""\n\nThis shouldn't happen.  New nonperiodic vector 
+is not perpendicular to periodic vectors!?""")
+        # are cartesian coordinates of orbitals the same in two cases?
+        for i in range(self._orb.shape[0]):
+            cart_old=np.dot(self._lat.T,self._orb[i])
+            cart_new=np.dot(nnp_tb._lat.T,nnp_tb._orb[i])
+            if np.max(np.abs(cart_old-cart_new))>1.0E-6:
+                raise Exception("""\n\nThis shouldn't happen. New choice of nonperiodic vector
+somehow changed Cartesian coordinates of orbitals.""")
+        # check that volume of the cell is not zero
+        if np.abs(np.linalg.det(nnp_tb._lat))<1.0E-6:
+            raise Exception("\n\nLattice with new choice of nonperiodic vector has zero volume?!")
+        
+        # return new tb model
+        return nnp_tb
+    
     def make_supercell(self, sc_red_lat, return_sc_vectors=False, to_home=True, to_home_suppress_warning=False):
         r"""
 
