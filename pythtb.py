@@ -110,7 +110,7 @@ class tb_model(object):
         # initialize _lat = lattice vectors, array of dim_r*dim_r
         #   format is _lat(lat_vec_index,cartesian_index)
         # special option: 'unit' implies unit matrix, also default value
-        if lat is 'unit' or lat is None:
+        if (type(lat) is str and lat == 'unit') or lat is None:
             self._lat=np.identity(dim_r,float)
             print(" Lattice vectors not specified! I will use identity matrix.")
         elif type(lat).__name__ not in ['list','ndarray']:
@@ -130,7 +130,7 @@ class tb_model(object):
         #   and       _orb = orbital locations, in reduced coordinates
         #   format is _orb(orb_index,lat_vec_index)
         # special option: 'bravais' implies one atom at origin
-        if orb is 'bravais' or orb is None:
+        if (type(orb) is str and orb == 'bravais') or orb is None:
             self._norb=1
             self._orb=np.zeros((1,dim_r))
             print(" Orbital positions not specified. I will assume a single orbital at the origin.")
@@ -2367,7 +2367,7 @@ class wf_array(object):
       # Store it manually into a specified location in the array
       wf[3, 4] = evec
       # To access the eigenvectors from the same position
-      print wf[3, 4]
+      print(wf[3,4])
 
     """
     def __init__(self,model,mesh_arr):
@@ -3681,7 +3681,7 @@ class w90(object):
         Example usage::
 
           # prints on screen all shells
-          print silicon.shells()
+          print(silicon.shells())
 
         """    
 

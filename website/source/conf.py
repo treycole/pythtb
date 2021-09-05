@@ -27,24 +27,12 @@ import sys, os
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.doctest',
-#              'sphinx.ext.pngmath',
               'sphinx.ext.imgmath',
               'sphinx.ext.viewcode',
-#              'matplotlib.sphinxext.mathmpl',
-#              'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
-              'ipython_console_highlighting',
-#             'inheritance_diagram',
-#              'numpydoc']
-#              'googleanalytics'
 ]
 
-# for googleanalytics tracking
-googleanalytics_id = 'UA-18832825-1'
-googleanalytics_enabled = True
-
 #for plotting in matplotlib http://matplotlib.sourceforge.net/sampledoc/extensions.html
-sys.path.append(os.path.abspath('sphinxext'))
 
 # for matplotlib plots
 plot_formats=[('png',140),('pdf',140)]
