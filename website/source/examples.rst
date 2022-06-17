@@ -250,10 +250,12 @@ extensive in 2D, so that k-space is only 2D.
 BN ribbon with change of nonperiodic vector
 -------------------------------------------
 
-A boron nitride ribbon calculation is used to illustrate a case
-where it is appropriate to change a nonperiodic lattice vector
-to be normal to a periodic one, showing that the Berry phase
-along the ribbon is the expected one only after such a change.
+This boron nitride ribbon calculation illustrates a case where
+it is a good idea to change a nonperiodic lattice vector to be
+normal to the periodic direction(s).  While the model is
+physically the same before and after the change, as shown by the
+identical band structures, the Berry phase is consistent with
+the polarization in the extended direction only after the change.
 
 .. plot :: examples/bn_ribbon_berry.py
    :include-source:
