@@ -1347,7 +1347,7 @@ matrix.""")
         transverse direction. Alternatively, the new nonperiodic 
         vector can be set explicitly via the *new_latt_vec* parameter.
 
-        See example :ref:`non_periodic_direction-example` for more 
+        See example :ref:`bn_ribbon_berry` for more 
         detail.
 
         :param np_dir: Integer specifying which nonperiodic
