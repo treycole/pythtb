@@ -1676,6 +1676,8 @@ somehow changed Cartesian coordinates of orbitals.""")
 
         """
         
+        # create list of emty lists (one for each real-space direction)
+        warning_list=[[]]*self._dim_r
         # go over all orbitals
         for i in range(self._norb):
             # find displacement vector needed to bring back to home cell
@@ -1687,25 +1689,34 @@ somehow changed Cartesian coordinates of orbitals.""")
                     disp_vec[k]=shift
                 else: # check for shift in non-periodic directions
                     if shift!=0:
-                        if to_home_suppress_warning==False:
-                            print(\
-"""\n\n
-WARNING: orbital number """+str(i)+""" will not be shifted "to home" along a 
-non-periodic direction """+str(k)+""".  While old versions of PythTb (1.7.2 and older) 
-allowed this behavior, and orbitals were shifted even along non-periodic
-directions, in the new version of PythTb (current one and newer) we don't shift
-orbitals along non-periodic directions anymore, as this changes the physical
-nature of the tight-binding model.  Therefore, in your case, coordinates of object
-returned by this function in old (1.7.2 and before) and new version of PythTb
-are not the same!
-*
-To prevent code from printing this warning message, please set the 
-to_home_suppress_warning parameter to True.
-*
-In the future versions of PythTb this warning message will be removed and PythTb
-will no longer shift orbitals "to home" along non-periodic directions.
-\n
-""")        
+                        warning_list[k]=warning_list[k]+[i]
+
+        # print warning message if needed
+        if to_home_suppress_warning==False:
+            warn_str=""
+            for k in range(self._dim_r):
+                orbs=warning_list[k]
+                if orbs != []:
+                    orb_str=', '.join(str(e) for e in orbs)
+                    warn_str+="  * Direction %1d : Orbitals "%k+orb_str+"\n"
+            if warn_str != "":
+                print('  '+69*'-'+'\n'+"""\
+  WARNING from '_shift_to_home' (called by 'change_nonperiodic_vector'
+  or 'make_supercell'): Orbitals are not "shifted to home" along
+  non-periodic directions.  Older versions of PythTb (1.7.2 and older)
+  allowed this, but it changes the physical nature of the tight-binding
+  model.  PythTB 1.7.3 and newer versions of PythTb no longer shift
+  orbitals along non-periodic directions.
+  *
+  In the present case, the following orbitals would have been assigned
+  different coordinates in PythTb 1.7.2 and older:
+  *\n"""+warn_str+"""  *
+  To prevent printing this warning, call 'change_nonperiodic_vector'
+  or 'make_supercell' with 'to_home_suppress_warning=True'.
+  *
+  This warning message will be removed in future versions of PythTb.
+"""+'  '+69*'-'+'\n')
+
             # shift orbitals
             self._orb[i]-=disp_vec
             # shift hoppings
