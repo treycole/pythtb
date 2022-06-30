@@ -110,3 +110,13 @@ print('\n  Surface sums: Top, Bottom = %8.4f , %8.4f\n'%(sum_top,sum_bot))
 # S. Ren, I. Souza, and D. Vanderbilt, "Quadrupole moments, edge
 # polarizations, and corner charges in the Wannier representation,"
 # Phys. Rev. B 103, 035147 (2021).
+
+# Make bar chart
+fig = plt.figure()
+plt.bar(range(nl),px_mean)
+plt.axhline(0.,linewidth=0.8,color='k')
+plt.xticks(range(nl))
+plt.xlabel("Layer index of hybrid Wannier band")
+plt.ylabel("Contribution to P_x")
+fig.tight_layout()
+fig.savefig("cubic_slab.pdf")
