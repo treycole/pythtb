@@ -117,6 +117,21 @@ TB approach, see the Wikipedia article~\cite{wiki-tb},
 the text by Harrison~\cite{harrison-book},
 or almost any standard solid-state physics text.
 
+An especially useful reference is the text \textit{Berry Phases
+in Electronic Structure Theory} by David Vanderbilt, published
+in 2018 by Cambridge University Press\cite{vanderbilt-book}.
+In addition to introducing the mathematics of Berry phases and
+curvatures and discussing their role in the physics of crystalline
+solids, the book provides, in Sec.~2 of Chapter 2, an expanded
+version of the present introduction to the tight-binding approximation.
+Moreover, throughout the book, sample \PythTB\ programs are used to
+illustrate the principles under discussion, and many of the
+exercises use \PythTB\ to explore the
+material being introduced. Appendix D is a compendium of the
+\PythTB\ programs used elsewhere in the book; these complement
+the ones provided with the \PythTB\ package, and can be found online at
+http://www.physics.rutgers.edu/$\sim$dhv/pythtb-book-examples/.
+
 With the strong development of interest in topological insulators
 after about 2005, TB models have again played a central role as
 model systems.  Examples include the models of Haldane~\cite{haldane},
@@ -153,6 +168,7 @@ chemical interactions. So for example, the Slater-Koster
 forms~\cite{wiki-tb-me} for interactions between $s$, $p$ and $d$
 orbitals are not currently coded, although the addition of such
 features could be considered for a future release.
+
 
 %==================================================================
 \section{Basic definitions}
@@ -647,7 +663,7 @@ gauge-invariant.
 The Bloch solutions $\psi_{n,\k+\G}(\r)$ and $\psi_{n,\k}(\r)$
 represent the same physical state, since they obey the same
 Schr\"odinger equation and the same boundary conditions
-$\psi_{n,\k}(\r+\R)=e^{i\k\cdot\r}\,\psi_{n,\k}(\r)$,
+$\psi_{n,\k}(\r+\R)=e^{i\k\cdot\R}\,\psi_{n,\k}(\r)$,
 as follows from \equ{ide}.  It follows that $\psi_{n,\k+\G}(\r)$
 and $\psi_{n,\k}(\r)$ can differ only by a phase.  By convention,
 we normally take them to be exactly equal,
@@ -730,6 +746,12 @@ http://en.wikipedia.org/wiki/Tight\_binding.
 
 \bibitem{harrison-book} W.A. Harrison, \textit{Electronic Structure and
 the Properties of Solids}, Dover, 1980.
+
+\bibitem{vanderbilt-book}
+D. Vanderbilt,
+\textit{Berry Phases in Electronic Structure Theory: Electric
+Polarization, Orbital Magnetization, and Topological Insulators},
+Cambridge University Press (2018).
 
 \bibitem{haldane} F.D.M. Haldane, Phys. Rev. Lett. {\bf 61}, 2015 (1988).
 
