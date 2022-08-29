@@ -2456,7 +2456,7 @@ class wf_array(object):
             raise Exception("\n\nIf using solve_on_grid method, dimension of wf_array must equal dim_k of the tight-binding model!")
 
         # check number of states
-        if self._nsta_arr!=model._nsta:
+        if self._nsta_arr!=self._model._nsta:
             raise Exception("\n\nWhen initializing this object you specified nsta_arr to be "+str(self._nsta_arr)+" but this does not match the total number of bands specified in the model "+str(model._nsta)+".  If you wish to use solve_on_grid method do not specify nsta_arr parameter when initializing this object.")
         
         # store start_k
