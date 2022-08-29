@@ -2299,8 +2299,8 @@ class wf_array(object):
     of Bloch bands, a set of hybrid Wannier functions for a
     ribbon or slab, or any other set of wavefunctions that
     are expressed in terms of the underlying basis orbitals.
-    It provides methods that can used to calculate Berry phases,
-    Berry curvatures, 1st Chern numbers, etc.
+    It provides methods that can be used to calculate Berry 
+    phases, Berry curvatures, 1st Chern numbers, etc.
 
     *Regular k-space grid*:
     If the grid is a regular k-mesh (no parametric dimensions),
@@ -2371,7 +2371,7 @@ class wf_array(object):
     :param mesh_arr: Array giving a dimension of the grid of points in
       each reciprocal-space or parametric direction.
 
-    :param nsta: Optional parameter specifying the number of states
+    :param nsta_arr: Optional parameter specifying the number of states
       that will be packed in the array at each k-point.  Defaults
       to all states (i.e., norb*nspin).
 
@@ -2392,19 +2392,15 @@ class wf_array(object):
       print(wf[3,4])
 
     """
-    def __init__(self,model,mesh_arr,nsta=None):
-        ##SC
-        ##SC is code for a comment to Sinisa that should be removed later
-        ##SC Note new optional parameter that defaults to all bands
-        ##SC
+    def __init__(self,model,mesh_arr,nsta_arr=None):
         # number of electronic states for each k-point
-        if nsta is None:
-            self._nsta=model._nsta  # this = norb*nspin = no. of bands
+        if nsta_arr is None:
+            self._nsta_arr=model._nsta  # this = norb*nspin = no. of bands
             # note: 'None' means to use the default, which is all bands!
         else:
-            if not _is_int(nsta):
-                raise Exception("\n\nArgument nsta not an integer")
-            self._nsta=nsta         # set by optional argument
+            if not _is_int(nsta_arr):
+                raise Exception("\n\nArgument nsta_arr not an integer")
+            self._nsta_arr=nsta_arr         # set by optional argument
         # number of spin components
         self._nspin=model._nspin
         # number of orbitals
@@ -2421,16 +2417,13 @@ class wf_array(object):
             raise Exception("\n\nDimension of wf_array object in each direction must be 2 or larger.")
         # generate temporary array used later to generate object ._wfs
         wfs_dim=np.copy(self._mesh_arr)
-        wfs_dim=np.append(wfs_dim,self._nsta)
+        wfs_dim=np.append(wfs_dim,self._nsta_arr)
         wfs_dim=np.append(wfs_dim,self._norb)
         if self._nspin==2:
             wfs_dim=np.append(wfs_dim,self._nspin)            
         # store wavefunctions in the form
         #   _wfs[kx_index,ky_index, ... ,state,orb,spin]
         self._wfs=np.zeros(wfs_dim,dtype=complex)
-
-        # prepare to store start_k
-        self._start_k=None
 
     def solve_on_grid(self,start_k):
         r"""
@@ -2462,15 +2455,19 @@ class wf_array(object):
         if self._dim_arr!=self._model._dim_k:
             raise Exception("\n\nIf using solve_on_grid method, dimension of wf_array must equal dim_k of the tight-binding model!")
 
+        # check number of states
+        if self._nsta_arr!=model._nsta:
+            raise Exception("\n\nWhen initializing this object you specified nsta_arr to be "+str(self._nsta_arr)+" but this does not match the total number of bands specified in the model "+str(model._nsta)+".  If you wish to use solve_on_grid method do not specify nsta_arr parameter when initializing this object.")
+        
         # store start_k
         self._start_k=start_k
 
         # to return gaps at all k-points
-        if self._nsta<=1:
+        if self._nsta_arr<=1:
             all_gaps=None # trivial case since there is only one band
         else:
             gap_dim=np.copy(self._mesh_arr)-1
-            gap_dim=np.append(gap_dim,self._nsta-1)
+            gap_dim=np.append(gap_dim,self._nsta_arr-1)
             all_gaps=np.zeros(gap_dim,dtype=float)
         #
         if self._dim_arr==1:
@@ -2535,13 +2532,13 @@ class wf_array(object):
         else:
             return None
         
-    def choose_states(self,occ):
+    def choose_states(self,subset):
         r"""
 
         Create a new wf_array object containing a subset of the
         states in the original one.
 
-        :param occ: List of integers specifying states to keep
+        :param subset: List of integers specifying states to keep
 
         :returns:
           * **wf_new** -- returns a model identical in all
@@ -2549,46 +2546,27 @@ class wf_array(object):
 
         Example usage::
 
-          # Make new wf_array object containing only the first n_occ
-          # (occupied)states
-          wf_new=wf.choose_states(n_occ)
+          # Make new wf_array object containing only two states
+          wf_new=wf.choose_states([3,5])
 
         """
 
         # make a full copy of the wf_array
         wf_new=copy.deepcopy(self)
 
-        # reduce size
-        nocc=len(occ)
-        index_of_nsta=self._dim_arr+1
-        wf_new._wfs_dim[index_of_nsta]=nocc
+        if type(subset).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument subset is not a list.")
+        
+        wf_new._nsta_arr=len(subset)
 
-        # 1D case
         if self._dim_arr==1:
-            for i in range(self._mesh_arr[0]):
-                for n_new,n_old in enumerate(occ):
-                    wf_new._wfs[i,n_new]=self._wfs[i,n_old]
-        # 2D case
-        elif self._dim_arr==2:
-            for i in range(self._mesh_arr[0]):
-                for j in range(self._mesh_arr[1]):
-                    for n_new,n_old in enumerate(occ):
-                        wf_new._wfs[i,j,n_new]=self._wfs[i,j,n_old]
-        # 3D case
-        elif self._dim_arr==3:
-            for i in range(self._mesh_arr[0]):
-                for j in range(self._mesh_arr[1]):
-                   for k in range(self._mesh_arr[2]):
-                       for n_new,n_old in enumerate(occ):
-                           wf_new._wfs[i,j,k,n_new]=self._wfs[i,j,k,n_old]
-        # 4D case
-        elif self._dim_arr==3:
-            for i in range(self._mesh_arr[0]):
-                for j in range(self._mesh_arr[1]):
-                   for k in range(self._mesh_arr[2]):
-                       for l in range(self._mesh_arr[3]):
-                           for n_new,n_old in enumerate(occ):
-                               wf_new._wfs[i,j,k,l,n_new]=self._wfs[i,j,k,l,n_old]
+            wf_new._wfs=wf_new._wfs[:,subset]
+        if self._dim_arr==2:
+            wf_new._wfs=wf_new._wfs[:,:,subset]
+        if self._dim_arr==3:
+            wf_new._wfs=wf_new._wfs[:,:,:,subset]
+        if self._dim_arr==4:
+            wf_new._wfs=wf_new._wfs[:,:,:,:,subset]
         else:
             raise Exception("\n\n_dim_array too large.")
 
@@ -2840,19 +2818,13 @@ class wf_array(object):
 
         """
 
-        ##SC Note that 'occ' is now an optional parameter
-        ##SC For some uses, as for hybrid WFs, it is natural to let
-        ##SC it default to all bands.
-
         # special case requesting all states in the array
         if occ is None or occ=='All':
-            occ=range(self._nsta)
+            occ=range(self._nsta_arr)
 
-        ##SC Note that  range(self._nsta)  has a different meaning
-        ##SC in python2 vs. python3 (the first returns a list of
-        ##SC integers and the second returns an iterator, I guess),
-        ##SC but I think the code should still work OK in either case.
-
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is not a list.")
+        
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
@@ -2952,16 +2924,6 @@ class wf_array(object):
                     raise Exception("\n\nWrong dimensionality!")
         return ret
 
-    ##SC Regarding the following three functions:
-    ##SC I thought of making occ an optional parameter, consistent
-    ##SC with the current berry_phase and berry_flux methods,
-    ##SC but this would require either reversing the order of the
-    ##SC arguments or making 'dir' optional as well, neither of
-    ##SC which is very nice.  So now the user has to specify occ='All'
-    ##SC if this is what is wanted.  Anyway, I'm guessing these
-    ##SC routines are rarely used. I don't think any of them
-    ##SC appear in the example programs, for example.
-
     def position_matrix(self, key, occ, dir):
         """Similar to :func:`pythtb.tb_model.position_matrix`.  Only
         difference is that, in addition to specifying *dir*, one also
@@ -2970,8 +2932,11 @@ class wf_array(object):
 
         # Check for special case of parameter occ
         if occ=='All':
-            occ=range(self._nsta)
+            occ=range(self._nsta_arr)
 
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is not a list.")
+            
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
@@ -2987,8 +2952,11 @@ class wf_array(object):
 
         # Check for special case of parameter occ
         if occ=='All':
-            occ=range(self._nsta)
+            occ=range(self._nsta_arr)
 
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is not a list.")
+            
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
@@ -2996,22 +2964,27 @@ class wf_array(object):
         evec=self._wfs[tuple(key)][occ]
         return self._model.position_expectation(evec,dir)
 
-    def position_hwf(self, key, occ, dir, hwf_evec=False, basis="bloch"):
-        """Similar to :func:`pythtb.tb_model.position_hwf`.  Only
+    def position_hwf(self, key, occ, dir, hwf_evec=False):
+        """Similar to :func:`pythtb.tb_model.position_hwf`. Only
         difference is that, in addition to specifying *dir*, one also
         has to specify *key* (k-point of interest) and *occ* (list of
-        states to be included, which can optionally be 'All')."""
+        states to be included, which can optionally be 'All'). 
+        Returned functions are always specified in basis of the
+        states stored in the *wf_array* object."""
 
         # Check for special case of parameter occ
         if occ=='All':
-            occ=range(self._nsta)
+            occ=range(self._nsta_arr)
 
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is not a list.")
+            
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
         #
         evec=self._wfs[tuple(key)][occ]
-        return self._model.position_hwf(evec,dir,hwf_evec,basis)
+        return self._model.position_hwf(evec,dir,hwf_evec,basis="bloch")
 
 
     def berry_flux(self,occ=None,dirs=None,individual_phases=False):
@@ -3057,14 +3030,13 @@ class wf_array(object):
 
         """
 
-        ##SC Note that 'occ' is now an optional parameter
-        ##SC For some uses, as for hybrid WFs, it is natural to let
-        ##SC it default to all bands.
-
         # special case requesting all states in the array
         if occ is None or occ=='All':
-            occ=range(self._nsta)
+            occ=range(self._nsta_arr)
 
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is not a list.")
+            
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
