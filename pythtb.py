@@ -2457,7 +2457,7 @@ class wf_array(object):
 
         # check number of states
         if self._nsta_arr!=self._model._nsta:
-            raise Exception("\n\nWhen initializing this object you specified nsta_arr to be "+str(self._nsta_arr)+" but this does not match the total number of bands specified in the model "+str(model._nsta)+".  If you wish to use solve_on_grid method do not specify nsta_arr parameter when initializing this object.")
+            raise Exception("\n\nWhen initializing this object you specified nsta_arr to be "+str(self._nsta_arr)+" but this does not match the total number of bands specified in the model "+str(self._model._nsta)+".  If you wish to use solve_on_grid method do not specify nsta_arr parameter when initializing this object.")
         
         # store start_k
         self._start_k=start_k
