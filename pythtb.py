@@ -2561,11 +2561,11 @@ class wf_array(object):
 
         if self._dim_arr==1:
             wf_new._wfs=wf_new._wfs[:,subset]
-        if self._dim_arr==2:
+        elif self._dim_arr==2:
             wf_new._wfs=wf_new._wfs[:,:,subset]
-        if self._dim_arr==3:
+        elif self._dim_arr==3:
             wf_new._wfs=wf_new._wfs[:,:,:,subset]
-        if self._dim_arr==4:
+        elif self._dim_arr==4:
             wf_new._wfs=wf_new._wfs[:,:,:,:,subset]
         else:
             raise Exception("\n\n_dim_array too large.")
