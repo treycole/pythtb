@@ -2820,7 +2820,7 @@ class wf_array(object):
 
         # special case requesting all states in the array
         if occ is None or occ=='All':
-            occ=range(self._nsta_arr)
+            occ=list(range(self._nsta_arr))
 
         if type(occ).__name__ not in ['list','ndarray']:
             raise Exception("\n\nArgument occ is not a list.")
@@ -2932,7 +2932,7 @@ class wf_array(object):
 
         # Check for special case of parameter occ
         if occ=='All':
-            occ=range(self._nsta_arr)
+            occ=list(range(self._nsta_arr))
 
         if type(occ).__name__ not in ['list','ndarray']:
             raise Exception("\n\nArgument occ is not a list.")
@@ -2952,7 +2952,7 @@ class wf_array(object):
 
         # Check for special case of parameter occ
         if occ=='All':
-            occ=range(self._nsta_arr)
+            occ=list(range(self._nsta_arr))
 
         if type(occ).__name__ not in ['list','ndarray']:
             raise Exception("\n\nArgument occ is not a list.")
@@ -2974,7 +2974,7 @@ class wf_array(object):
 
         # Check for special case of parameter occ
         if occ=='All':
-            occ=range(self._nsta_arr)
+            occ=list(range(self._nsta_arr))
 
         if type(occ).__name__ not in ['list','ndarray']:
             raise Exception("\n\nArgument occ is not a list.")
@@ -3032,7 +3032,7 @@ class wf_array(object):
 
         # special case requesting all states in the array
         if occ is None or occ=='All':
-            occ=range(self._nsta_arr)
+            occ=list(range(self._nsta_arr))
 
         if type(occ).__name__ not in ['list','ndarray']:
             raise Exception("\n\nArgument occ is not a list.")
