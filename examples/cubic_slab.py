@@ -64,14 +64,14 @@ bloch_arr=wf_array(slab_model,[nk,nk])
 bloch_arr.solve_on_grid([0.0, 0.0])
 #
 # initalize wf_array to hold HWFs, and Numpy array for HWFCs
-hwf_arr=wf_array(slab_model,[nk,nk],nsta=nl)
+hwf_arr=bloch_arr.empty_like(nsta_arr=nl)
 hwfc=np.zeros([nk,nk,nl])
 
 # loop over k points and fill arrays with HW centers and vectors
 for ix in range(nk):
   for iy in range(nk):
-    (val,vec)=bloch_arr.position_hwf([ix,iy],occ=range(nl),dir=2,
-        hwf_evec=True,basis="orbital")
+    (val,vec)=bloch_arr.position_hwf([ix,iy],subset=list(range(nl)),
+        dir=2,hwf_evec=True,basis="orbital")
     hwfc[ix,iy]=val
     hwf_arr[ix,iy]=vec
 # impose periodic boundary conditions

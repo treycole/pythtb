@@ -1115,6 +1115,37 @@ matrix.""")
             # do the same as solve_all
             return self.solve_all(eig_vectors=eig_vectors)
 
+    def solve_on_one_point(self,kpt,mesh_indices):
+        r"""
+
+        Solve a tight-binding model on a single k-point and store the eigenvectors
+        in the *wf_array* object in the location specified by *mesh_indices*.
+
+        :param kpt: List specifying desired k-point
+
+        :param mesh_indices: List specifying associated set of mesh indices
+
+        :returns:
+          None
+
+        Example usage::
+
+          # Solve eigenvectors on a sphere of radius kappa surrounding
+          # point k_0 in 3d k-space and pack into a predefined 2d wf_array
+          for i in range[n+1]:
+            for j in range[m+1]:
+              theta=np.pi*i/n
+              phi=2*np.pi*j/m
+              kx=k_0[0]+kappa*np.sin(theta)*np.cos(phi)
+              ky=k_0[1]+kappa*np.sin(theta)*np.sin(phi)
+              kz=k_0[2]+kappa*np.cos(theta)
+              wf.solve_on_one_point([kx,ky,kz],[i,j])
+
+        """
+
+        (eval,evec)=self._model.solve_one(kpt,eig_vectors=True)
+        self._wfs[tuple(mesh_indices)]=evec
+
     def cut_piece(self,num,fin_dir,glue_edgs=False):
         r"""
         Constructs a (d-1)-dimensional tight-binding model out of a
@@ -2165,12 +2196,14 @@ will no longer shift orbitals "to home" along non-periodic directions.
         r""" 
 
         Returns eigenvalues and optionally eigenvectors of the
-        position operator matrix :math:`X` in either Bloch or orbital
-        basis.  These eigenvectors can be interpreted as linear
-        combinations of Bloch states *evec* that have minimal extent (or
-        spread :math:`\Omega` in the sense of maximally localized
-        Wannier functions) along direction *dir*. The eigenvalues are
-        average positions of these localized states. 
+        position operator matrix :math:`X` in basis of the orbitals
+        or, optionally, of the input wave functions (typically Bloch
+        functions).  The returned eigenvectors can be interpreted as
+        linear combinations of the input states *evec* that have
+        minimal extent (or spread :math:`\Omega` in the sense of
+        maximally localized Wannier functions) along direction
+        *dir*. The eigenvalues are average positions of these
+        localized states.
 
         Note that these eigenvectors are not maximally localized
         Wannier functions in the usual sense because they are
@@ -2199,15 +2232,14 @@ will no longer shift orbitals "to home" along non-periodic directions.
           this function will return not only eigenvalues but also 
           eigenvectors of :math:`X`. Default value is *False*.
 
-        :param basis: Optional parameter. If basis="bloch" then hybrid
-          Wannier function *hwf_evec* is written in the Bloch basis.  I.e. 
-          hwf[i,j] correspond to the weight of j-th Bloch state from *evec*
-          in the i-th hybrid Wannier function.  If basis="orbital" and nspin=1 then
-          hwf[i,orb] correspond to the weight of orb-th orbital in the i-th 
-          hybrid Wannier function.  If basis="orbital" and nspin=2 then
-          hwf[i,orb,spin] correspond to the weight of orb-th orbital, spin-th
-          spin component in the i-th hybrid Wannier function.  Default value
-          is "orbital".
+        :param basis: Optional parameter. If basis="wavefunction", the hybrid
+          Wannier function *hwf_evec* is returned in the basis of the input
+          wave functions.  That is, the elements of hwf[i,j] give the amplitudes
+          of the i-th hybrid Wannier function on the j-th input state.
+          Note that option basis="Bloch" is a synonym for basis="wavefunction".
+          If basis="orbital", the elements of hwf[i,orb] (or hwf[i,orb,spin]
+          if nspin=2) give the amplitudes of the i-th hybrid Wannier function on
+          the specified basis function.  Default is basis="orbital".
 
         :returns:
           * **hwfc** -- Eigenvalues of the position operator matrix :math:`X`
@@ -2257,7 +2289,7 @@ will no longer shift orbitals "to home" along non-periodic directions.
             # sort evectors, eigenvalues and convert to real numbers
             (hwfc,hwf)=_nicefy_eig(hwfc,hwf)
             # convert to right basis
-            if basis.lower().strip()=="bloch":
+            if basis.lower().strip() in ["wavefunction","bloch"]:
                 return (hwfc,hwf)
             elif basis.lower().strip()=="orbital":
                 if self._nspin==1:
@@ -2277,7 +2309,7 @@ will no longer shift orbitals "to home" along non-periodic directions.
                     hwf=ret_hwf.reshape([hwf.shape[0],self._norb,2])
                 return (hwfc,hwf)
             else:
-                raise Exception("\n\nBasis must be either bloch or orbital!")
+                raise Exception("\n\nBasis must be either 'wavefunction', 'bloch', or 'orbital'")
 
 
 # keeping old name for backwards compatibility
@@ -2368,11 +2400,11 @@ class wf_array(object):
     :param model: Object of type :class:`pythtb.tb_model` representing
       tight-binding model associated with this array of eigenvectors.
 
-    :param mesh_arr: Array giving a dimension of the grid of points in
-      each reciprocal-space or parametric direction.
+    :param mesh_arr: List of dimensions of the mesh of the *wf_array*,
+      in order of reciprocal-space and/or parametric directions.
 
     :param nsta_arr: Optional parameter specifying the number of states
-      that will be packed in the array at each k-point.  Defaults
+      packed into the *wf_array* at each point on the mesh.  Defaults
       to all states (i.e., norb*nspin).
 
     Example usage::
@@ -2453,11 +2485,17 @@ class wf_array(object):
         """
         # check dimensionality
         if self._dim_arr!=self._model._dim_k:
-            raise Exception("\n\nIf using solve_on_grid method, dimension of wf_array must equal dim_k of the tight-binding model!")
+            raise Exception(\
+                "\n\nIf using solve_on_grid method, dimension of wf_array must equal"\
+                "\ndim_k of the tight-binding model!")
 
         # check number of states
         if self._nsta_arr!=self._model._nsta:
-            raise Exception("\n\nWhen initializing this object you specified nsta_arr to be "+str(self._nsta_arr)+" but this does not match the total number of bands specified in the model "+str(self._model._nsta)+".  If you wish to use solve_on_grid method do not specify nsta_arr parameter when initializing this object.")
+            raise Exception(\
+                "\n\nWhen initializing this object, you specified nsta_arr to be "+str(self._nsta_arr)+", but"\
+                "\nthis does not match the total number of bands specified in the model,"\
+                "\nwhich was "+str(self._model._nsta)+".  If you wish to use the solve_on_grid method, do"\
+                "\nnot specify the nsta_arr parameter when initializing this object.\n\n")
         
         # store start_k
         self._start_k=start_k
@@ -2535,18 +2573,18 @@ class wf_array(object):
     def choose_states(self,subset):
         r"""
 
-        Create a new wf_array object containing a subset of the
+        Create a new *wf_array* object containing a subset of the
         states in the original one.
 
         :param subset: List of integers specifying states to keep
 
         :returns:
-          * **wf_new** -- returns a model identical in all
+          * **wf_new** -- returns a *wf_array* that is identical in all
               respects except that a subset of states have been kept.
 
         Example usage::
 
-          # Make new wf_array object containing only two states
+          # Make new *wf_array* object containing only two states
           wf_new=wf.choose_states([3,5])
 
         """
@@ -2555,7 +2593,8 @@ class wf_array(object):
         wf_new=copy.deepcopy(self)
 
         if type(subset).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument subset is not a list.")
+            raise Exception("\n\nArgument subset is type",type(subset),
+             ". Must be list or ndarray.")
         
         wf_new._nsta_arr=len(subset)
 
@@ -2569,6 +2608,41 @@ class wf_array(object):
             wf_new._wfs=wf_new._wfs[:,:,:,:,subset]
         else:
             raise Exception("\n\n_dim_array too large.")
+
+        return(wf_new)
+
+    def empty_like(self,nsta_arr=None):
+        r"""
+
+        Create a new empty *wf_array* object based on the original,
+        optionally modifying the number of states carried in the array.
+
+        :param nsta_arr: Optional parameter specifying the number
+              of states (or bands) to be carried in the array.
+              Defaults to the same as the original *wf_array* object.
+
+        :returns:
+          * **wf_new** -- returns a similar wf_array except that array
+              elements are unitialized and the number of states may have
+              changed.
+
+        Example usage::
+
+          # Make new empty wf_array object containing 6 bands per k-point
+          wf_new=wf.empty_like(nsta_arr=6)
+
+        """
+
+        # make a full copy of the wf_array
+        wf_new=copy.deepcopy(self)
+
+        if nsta_arr == None:
+            wf_new._wfs=np.empty_like(wf_new._wfs)
+        else:
+            wf_shape=list(wf_new._wfs.shape)
+            # modify numer of states (after k indices & before orb and spin)
+            wf_shape[self._dim_arr]=nsta_arr
+            wf_new._wfs=np.empty_like(wf_new._wfs,shape=wf_shape)
 
         return(wf_new)
 
@@ -2722,7 +2796,7 @@ class wf_array(object):
             raise Exception("\n\nWrong value of mesh_dir.")
 
 
-    def berry_phase(self,occ=None,dir=None,contin=True,berry_evals=False):
+    def berry_phase(self,occ="All",dir=None,contin=True,berry_evals=False):
         r"""
 
         Computes the Berry phase along a given array direction
@@ -2765,8 +2839,7 @@ class wf_array(object):
 
         :param occ: Optional array of indices of states to be included
           in the subsequent calculations, typically the indices of
-          bands considered occupied.  If not specified or specified as
-          'All', all bands are included.
+          bands considered occupied.  Default is all bands.
 
         :param dir: Index of wf_array direction along which Berry phase is
           computed. This parameters needs not be specified for
@@ -2819,7 +2892,7 @@ class wf_array(object):
         """
 
         # special case requesting all states in the array
-        if occ is None or occ=='All':
+        if occ=="All":
             occ=list(range(self._nsta_arr))
 
         if type(occ).__name__ not in ['list','ndarray']:
@@ -2931,7 +3004,7 @@ class wf_array(object):
         states to be included, which can optionally be 'All')."""
 
         # Check for special case of parameter occ
-        if occ=='All':
+        if occ=="All":
             occ=list(range(self._nsta_arr))
 
         if type(occ).__name__ not in ['list','ndarray']:
@@ -2951,7 +3024,7 @@ class wf_array(object):
         states to be included, which can optionally be 'All')."""
 
         # Check for special case of parameter occ
-        if occ=='All':
+        if occ=="All":
             occ=list(range(self._nsta_arr))
 
         if type(occ).__name__ not in ['list','ndarray']:
@@ -2964,30 +3037,28 @@ class wf_array(object):
         evec=self._wfs[tuple(key)][occ]
         return self._model.position_expectation(evec,dir)
 
-    def position_hwf(self, key, occ, dir, hwf_evec=False):
+    def position_hwf(self, key, subset, dir, hwf_evec=False, basis="orbital"):
         """Similar to :func:`pythtb.tb_model.position_hwf`. Only
         difference is that, in addition to specifying *dir*, one also
-        has to specify *key* (k-point of interest) and *occ* (list of
-        states to be included, which can optionally be 'All'). 
-        Returned functions are always specified in basis of the
-        states stored in the *wf_array* object."""
+        has to specify *key* (k-point of interest) and *subset* (list of
+        states to be included, which can optionally be 'All'). """
 
-        # Check for special case of parameter occ
-        if occ=='All':
-            occ=list(range(self._nsta_arr))
+        # Check for special case of parameter subset
+        if subset=="All":
+            subset=list(range(self._nsta_arr))
 
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is not a list.")
+        if type(subset).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument subset is type",type(subset),
+             ". Must be list or ndarray.")
             
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
-        #
-        evec=self._wfs[tuple(key)][occ]
-        return self._model.position_hwf(evec,dir,hwf_evec,basis="bloch")
 
+        evec=self._wfs[tuple(key)][subset]
+        return self._model.position_hwf(evec,dir,hwf_evec,basis)
 
-    def berry_flux(self,occ=None,dirs=None,individual_phases=False):
+    def berry_flux(self,occ="All",dirs=None,individual_phases=False):
         r"""
 
         In the case of a 2-dimensional *wf_array* array calculates the
@@ -3031,7 +3102,7 @@ class wf_array(object):
         """
 
         # special case requesting all states in the array
-        if occ is None or occ=='All':
+        if occ=="All":
             occ=list(range(self._nsta_arr))
 
         if type(occ).__name__ not in ['list','ndarray']:
