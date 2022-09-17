@@ -70,7 +70,7 @@ hwfc=np.zeros([nk,nk,nl])
 # loop over k points and fill arrays with HW centers and vectors
 for ix in range(nk):
   for iy in range(nk):
-    (val,vec)=bloch_arr.position_hwf([ix,iy],subset=list(range(nl)),
+    (val,vec)=bloch_arr.position_hwf([ix,iy],occ=list(range(nl)),
         dir=2,hwf_evec=True,basis="orbital")
     hwfc[ix,iy]=val
     hwf_arr[ix,iy]=vec

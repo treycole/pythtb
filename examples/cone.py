@@ -47,10 +47,8 @@ for i in range(circ_step):
     ang=2.0*np.pi*float(i)/float(circ_step-1)
     kpt=np.array([np.cos(ang)*circ_radius,np.sin(ang)*circ_radius])
     kpt+=circ_center
-    # find eigenvectors at this k-point
-    (eval,evec)=my_model.solve_one(kpt,eig_vectors=True)
-    # store eigenvector into wf_array object
-    w_circ[i]=evec
+    # find and store eigenvectors for this k-point
+    w_circ.solve_on_one_point(kpt,i)
 # make sure that first and last points are the same
 w_circ[-1]=w_circ[0]
 

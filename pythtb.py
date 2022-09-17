@@ -1115,37 +1115,6 @@ matrix.""")
             # do the same as solve_all
             return self.solve_all(eig_vectors=eig_vectors)
 
-    def solve_on_one_point(self,kpt,mesh_indices):
-        r"""
-
-        Solve a tight-binding model on a single k-point and store the eigenvectors
-        in the *wf_array* object in the location specified by *mesh_indices*.
-
-        :param kpt: List specifying desired k-point
-
-        :param mesh_indices: List specifying associated set of mesh indices
-
-        :returns:
-          None
-
-        Example usage::
-
-          # Solve eigenvectors on a sphere of radius kappa surrounding
-          # point k_0 in 3d k-space and pack into a predefined 2d wf_array
-          for i in range[n+1]:
-            for j in range[m+1]:
-              theta=np.pi*i/n
-              phi=2*np.pi*j/m
-              kx=k_0[0]+kappa*np.sin(theta)*np.cos(phi)
-              ky=k_0[1]+kappa*np.sin(theta)*np.sin(phi)
-              kz=k_0[2]+kappa*np.cos(theta)
-              wf.solve_on_one_point([kx,ky,kz],[i,j])
-
-        """
-
-        (eval,evec)=self._model.solve_one(kpt,eig_vectors=True)
-        self._wfs[tuple(mesh_indices)]=evec
-
     def cut_piece(self,num,fin_dir,glue_edgs=False):
         r"""
         Constructs a (d-1)-dimensional tight-binding model out of a
@@ -2192,7 +2161,7 @@ will no longer shift orbitals "to home" along non-periodic directions.
         pos_exp=self.position_matrix(evec,dir).diagonal()
         return np.array(np.real(pos_exp),dtype=float)
 
-    def position_hwf(self,evec,dir,hwf_evec=False,basis="orbital"):
+    def position_hwf(self,evec,dir,hwf_evec=False,basis="wavefunction"):
         r""" 
 
         Returns eigenvalues and optionally eigenvectors of the
@@ -2236,10 +2205,10 @@ will no longer shift orbitals "to home" along non-periodic directions.
           Wannier function *hwf_evec* is returned in the basis of the input
           wave functions.  That is, the elements of hwf[i,j] give the amplitudes
           of the i-th hybrid Wannier function on the j-th input state.
-          Note that option basis="Bloch" is a synonym for basis="wavefunction".
+          Note that option basis="bloch" is a synonym for basis="wavefunction".
           If basis="orbital", the elements of hwf[i,orb] (or hwf[i,orb,spin]
           if nspin=2) give the amplitudes of the i-th hybrid Wannier function on
-          the specified basis function.  Default is basis="orbital".
+          the specified basis function.  Default is basis="wavefunction".
 
         :returns:
           * **hwfc** -- Eigenvalues of the position operator matrix :math:`X`
@@ -2570,6 +2539,40 @@ class wf_array(object):
         else:
             return None
         
+    def solve_on_one_point(self,kpt,mesh_indices):
+        r"""
+
+        Solve a tight-binding model on a single k-point and store the eigenvectors
+        in the *wf_array* object in the location specified by *mesh_indices*.
+
+        :param kpt: List specifying desired k-point
+
+        :param mesh_indices: List specifying associated set of mesh indices
+
+        :returns:
+          None
+
+        Example usage::
+
+          # Solve eigenvectors on a sphere of radius kappa surrounding
+          # point k_0 in 3d k-space and pack into a predefined 2d wf_array
+          for i in range[n+1]:
+            for j in range[m+1]:
+              theta=np.pi*i/n
+              phi=2*np.pi*j/m
+              kx=k_0[0]+kappa*np.sin(theta)*np.cos(phi)
+              ky=k_0[1]+kappa*np.sin(theta)*np.sin(phi)
+              kz=k_0[2]+kappa*np.cos(theta)
+              wf.solve_on_one_point([kx,ky,kz],[i,j])
+
+        """
+
+        (eval,evec)=self._model.solve_one(kpt,eig_vectors=True)
+        if _is_int(mesh_indices):
+          self._wfs[(mesh_indices,)]=evec
+        else:
+          self._wfs[tuple(mesh_indices)]=evec
+
     def choose_states(self,subset):
         r"""
 
@@ -2804,10 +2807,10 @@ class wf_array(object):
         occupied Bloch states, in which case *occ* should range
         over all occupied bands.  In this context, the occupied
         and unoccupied bands should be well separated in energy;
-        it is the responsibility of the user to check that
-        this is satisfied.  If *occ* is not specified or is
-        specified as 'All', all states are selected. By default,
-        the function returns the Berry phase traced over the
+        it is the responsibility of the user to check that this
+        is satisfied.  If *occ* is not specified or is specified
+        as 'All', all states are selected. By default, the
+        function returns the Berry phase traced over the
         specified set of bands, but optionally the individual
         phases of the eigenvalues of the global unitary rotation
         matrix (corresponding to "maximally localized Wannier
@@ -2892,7 +2895,8 @@ class wf_array(object):
         """
 
         # special case requesting all states in the array
-        if occ=="All":
+        if occ=="All" or occ is None:
+            # note that 'None' means 'not specified', not 'no states'
             occ=list(range(self._nsta_arr))
 
         if type(occ).__name__ not in ['list','ndarray']:
@@ -3037,25 +3041,25 @@ class wf_array(object):
         evec=self._wfs[tuple(key)][occ]
         return self._model.position_expectation(evec,dir)
 
-    def position_hwf(self, key, subset, dir, hwf_evec=False, basis="orbital"):
-        """Similar to :func:`pythtb.tb_model.position_hwf`. Only
-        difference is that, in addition to specifying *dir*, one also
-        has to specify *key* (k-point of interest) and *subset* (list of
-        states to be included, which can optionally be 'All'). """
+    def position_hwf(self, key, occ, dir, hwf_evec=False, basis="wavefunction"):
+        """Similar to :func:`pythtb.tb_model.position_hwf`, except that
+        in addition to specifying *dir*, one also has to specify
+        *key*, the k-point of interest, and *occ*, a list of states to
+        be included (typically the occupied states)."""
 
-        # Check for special case of parameter subset
-        if subset=="All":
-            subset=list(range(self._nsta_arr))
+        # Check for special case of parameter occ
+        if occ=="All":
+            occ=list(range(self._nsta_arr))
 
-        if type(subset).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument subset is type",type(subset),
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is type",type(occ),
              ". Must be list or ndarray.")
             
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
 
-        evec=self._wfs[tuple(key)][subset]
+        evec=self._wfs[tuple(key)][occ]
         return self._model.position_hwf(evec,dir,hwf_evec,basis)
 
     def berry_flux(self,occ="All",dirs=None,individual_phases=False):
@@ -3102,7 +3106,8 @@ class wf_array(object):
         """
 
         # special case requesting all states in the array
-        if occ=="All":
+        if occ=="All" or occ is None:
+            # note that 'None' means 'not specified', not 'no states'
             occ=list(range(self._nsta_arr))
 
         if type(occ).__name__ not in ['list','ndarray']:
