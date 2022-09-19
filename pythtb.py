@@ -2646,7 +2646,7 @@ class wf_array(object):
         # make a full copy of the wf_array
         wf_new=copy.deepcopy(self)
 
-        if nsta_arr == None:
+        if nsta_arr is None:
             wf_new._wfs=np.empty_like(wf_new._wfs)
         else:
             wf_shape=list(wf_new._wfs.shape)
