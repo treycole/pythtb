@@ -110,7 +110,7 @@ class tb_model(object):
         # initialize _lat = lattice vectors, array of dim_r*dim_r
         #   format is _lat(lat_vec_index,cartesian_index)
         # special option: 'unit' implies unit matrix, also default value
-        if (type(lat) is str and lat == 'unit') or lat is None
+        if (type(lat) is str and lat == 'unit') or lat is None:
             self._lat=np.identity(dim_r,float)
             print(" Lattice vectors not specified! I will use identity matrix.")
         else:
