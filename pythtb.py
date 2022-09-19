@@ -2375,7 +2375,7 @@ class wf_array(object):
     (e.g., premultiplied by a position, velocity, or Hamiltonian
     operator); or for hybrid Wannier functions (i.e., eigenstates
     of a position operator in a nonperiodic direction).  For an
-    example of this kind, see :ref:`cubic_slab`.
+    example of this kind, see :ref:`cubic_slab_hwf`.
 
     :param model: Object of type :class:`pythtb.tb_model` representing
       tight-binding model associated with this array of eigenvectors.
