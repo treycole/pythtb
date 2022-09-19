@@ -150,7 +150,7 @@ class tb_model(object):
 
         # choose which self._dim_k out of self._dim_r dimensions are
         # to be considered periodic.        
-        if per==None:
+        if per is None:
             # by default first _dim_k dimensions are periodic
             self._per=list(range(self._dim_k))
         else:
@@ -248,7 +248,7 @@ class tb_model(object):
           tb.set_onsite([2.0, 3.0, 4.0], mode="reset")
 
         """
-        if ind_i==None:
+        if ind_i is None:
             if (len(onsite_en)!=self._norb):
                 raise Exception("\n\nWrong number of site energies")
         # make sure ind_i is not out of scope
@@ -642,7 +642,7 @@ matrix.""")
             if len(hopping)==4:
                 pos_j+=np.dot(hopping[3],self._lat)
             dist=np.linalg.norm(pos_j-pos_i)
-            print (_nice_float(dist,7,4))
+            print(_nice_float(dist,7,4))
 
         print()
 
@@ -739,7 +739,7 @@ matrix.""")
             raise Exception("\n\nWrong value of ph_color parameter!")
 
         # check if dir_second had to be specified
-        if dir_second==None and self._dim_r>1:
+        if dir_second is None and self._dim_r>1:
             raise Exception("\n\nNeed to specify index of second coordinate for projection!")
 
         # start a new figure
@@ -751,7 +751,7 @@ matrix.""")
         def proj(v):
             "Project vector onto drawing plane"
             coord_x=v[dir_first]
-            if dir_second==None:
+            if dir_second is None:
                 coord_y=0.0
             else:
                 coord_y=v[dir_second]
@@ -1626,10 +1626,10 @@ somehow changed Cartesian coordinates of orbitals.""")
                 pair_ind=None
                 for p,pair_sc_vec in enumerate(sc_vec):
                     if False not in (pair_sc_vec==orig_part):
-                        if pair_ind!=None:
+                        if pair_ind is not None:
                             raise Exception("\n\nFound duplicate super cell vector!")
                         pair_ind=p
-                if pair_ind==None:
+                if pair_ind is None:
                     raise Exception("\n\nDid not find super cell vector!")
                         
                 # index of "from" and "to" hopping indices
@@ -2172,16 +2172,18 @@ somehow changed Cartesian coordinates of orbitals.""")
         pos_exp=self.position_matrix(evec,dir).diagonal()
         return np.array(np.real(pos_exp),dtype=float)
 
-    def position_hwf(self,evec,dir,hwf_evec=False,basis="orbital"):
+    def position_hwf(self,evec,dir,hwf_evec=False,basis="wavefunction"):
         r""" 
 
         Returns eigenvalues and optionally eigenvectors of the
-        position operator matrix :math:`X` in either Bloch or orbital
-        basis.  These eigenvectors can be interpreted as linear
-        combinations of Bloch states *evec* that have minimal extent (or
-        spread :math:`\Omega` in the sense of maximally localized
-        Wannier functions) along direction *dir*. The eigenvalues are
-        average positions of these localized states. 
+        position operator matrix :math:`X` in basis of the orbitals
+        or, optionally, of the input wave functions (typically Bloch
+        functions).  The returned eigenvectors can be interpreted as
+        linear combinations of the input states *evec* that have
+        minimal extent (or spread :math:`\Omega` in the sense of
+        maximally localized Wannier functions) along direction
+        *dir*. The eigenvalues are average positions of these
+        localized states.
 
         Note that these eigenvectors are not maximally localized
         Wannier functions in the usual sense because they are
@@ -2210,15 +2212,14 @@ somehow changed Cartesian coordinates of orbitals.""")
           this function will return not only eigenvalues but also 
           eigenvectors of :math:`X`. Default value is *False*.
 
-        :param basis: Optional parameter. If basis="bloch" then hybrid
-          Wannier function *hwf_evec* is written in the Bloch basis.  I.e. 
-          hwf[i,j] correspond to the weight of j-th Bloch state from *evec*
-          in the i-th hybrid Wannier function.  If basis="orbital" and nspin=1 then
-          hwf[i,orb] correspond to the weight of orb-th orbital in the i-th 
-          hybrid Wannier function.  If basis="orbital" and nspin=2 then
-          hwf[i,orb,spin] correspond to the weight of orb-th orbital, spin-th
-          spin component in the i-th hybrid Wannier function.  Default value
-          is "orbital".
+        :param basis: Optional parameter. If basis="wavefunction", the hybrid
+          Wannier function *hwf_evec* is returned in the basis of the input
+          wave functions.  That is, the elements of hwf[i,j] give the amplitudes
+          of the i-th hybrid Wannier function on the j-th input state.
+          Note that option basis="bloch" is a synonym for basis="wavefunction".
+          If basis="orbital", the elements of hwf[i,orb] (or hwf[i,orb,spin]
+          if nspin=2) give the amplitudes of the i-th hybrid Wannier function on
+          the specified basis function.  Default is basis="wavefunction".
 
         :returns:
           * **hwfc** -- Eigenvalues of the position operator matrix :math:`X`
@@ -2268,7 +2269,7 @@ somehow changed Cartesian coordinates of orbitals.""")
             # sort evectors, eigenvalues and convert to real numbers
             (hwfc,hwf)=_nicefy_eig(hwfc,hwf)
             # convert to right basis
-            if basis.lower().strip()=="bloch":
+            if basis.lower().strip() in ["wavefunction","bloch"]:
                 return (hwfc,hwf)
             elif basis.lower().strip()=="orbital":
                 if self._nspin==1:
@@ -2288,7 +2289,7 @@ somehow changed Cartesian coordinates of orbitals.""")
                     hwf=ret_hwf.reshape([hwf.shape[0],self._norb,2])
                 return (hwfc,hwf)
             else:
-                raise Exception("\n\nBasis must be either bloch or orbital!")
+                raise Exception("\n\nBasis must be either 'wavefunction', 'bloch', or 'orbital'")
 
 
 # keeping old name for backwards compatibility
@@ -2297,15 +2298,21 @@ tb_model.set_sites=tb_model.set_onsite
 tb_model.add_hop=tb_model.set_hop
 tbmodel=tb_model
 
+#=======================================================================
 class wf_array(object):
+#=======================================================================
     r"""
 
-    This class is used to solve a tight-binding model
+    This class is used to store and manipulate an array of
+    wavefunctions of a tight-binding model
     :class:`pythtb.tb_model` on a regular or non-regular grid
-    of points in reciprocal space and/or parameter space, and
-    perform on it various calculations. For example it can be
-    used to calculate the Berry phase, Berry curvature, 1st Chern
-    number, etc.
+    These are typically the Bloch energy eigenstates of the
+    model, but this class can also be used to store a subset
+    of Bloch bands, a set of hybrid Wannier functions for a
+    ribbon or slab, or any other set of wavefunctions that
+    are expressed in terms of the underlying basis orbitals.
+    It provides methods that can be used to calculate Berry 
+    phases, Berry curvatures, 1st Chern numbers, etc.
 
     *Regular k-space grid*:
     If the grid is a regular k-mesh (no parametric dimensions),
@@ -2331,9 +2338,10 @@ class wf_array(object):
 
       wf[2,3]=evec
 
-    The eigenvectors (wavefunctions) *evec* in the example above
-    are expected to be in the format *evec[band,orbital]*
-    (or *evec[band,orbital,spin]* for the spinfull calculation).
+    The wavefunctions (here the eigenvectors) *evec* above
+    are expected to be in the format *evec[state,orbital]*
+    (or *evec[state,orbital,spin]* for the spinfull calculation),
+    where *state* typically runs over all bands.
     This is the same format as returned by
     :func:`pythtb.tb_model.solve_one` or
     :func:`pythtb.tb_model.solve_all` (in the latter case one
@@ -2358,11 +2366,26 @@ class wf_array(object):
     (see also discussion after equation 4.1 in :download:`notes on
     tight-binding formalism <misc/pythtb-formalism.pdf>`).
 
+    The wavevectors stored in *wf_array* are typically Hamiltonian
+    eigenstates (e.g., Bloch functions for k-space arrays),
+    with the *state* index running over all bands.  However, a
+    *wf_array* object can also be used for other purposes, such
+    as to store only a restricted set of Bloch states (e.g.,
+    just the occupied ones); a set of modified Bloch states
+    (e.g., premultiplied by a position, velocity, or Hamiltonian
+    operator); or for hybrid Wannier functions (i.e., eigenstates
+    of a position operator in a nonperiodic direction).  For an
+    example of this kind, see :ref:`cubic_slab`.
+
     :param model: Object of type :class:`pythtb.tb_model` representing
       tight-binding model associated with this array of eigenvectors.
 
-    :param mesh_arr: Array giving a dimension of the grid of points in
-      each reciprocal-space or parametric direction.
+    :param mesh_arr: List of dimensions of the mesh of the *wf_array*,
+      in order of reciprocal-space and/or parametric directions.
+
+    :param nsta_arr: Optional parameter specifying the number of states
+      packed into the *wf_array* at each point on the mesh.  Defaults
+      to all states (i.e., norb*nspin).
 
     Example usage::
 
@@ -2376,14 +2399,20 @@ class wf_array(object):
       # Compute set of eigenvectors at one k-point
       (eval, evec) = tb.solve_one([kx, ky], eig_vectors = True)
       # Store it manually into a specified location in the array
-      wf[3, 4] = evec
+      wf[3,4] = evec
       # To access the eigenvectors from the same position
       print(wf[3,4])
 
     """
-    def __init__(self,model,mesh_arr):
+    def __init__(self,model,mesh_arr,nsta_arr=None):
         # number of electronic states for each k-point
-        self._nsta=model._nsta
+        if nsta_arr is None:
+            self._nsta_arr=model._nsta  # this = norb*nspin = no. of bands
+            # note: 'None' means to use the default, which is all bands!
+        else:
+            if not _is_int(nsta_arr):
+                raise Exception("\n\nArgument nsta_arr not an integer")
+            self._nsta_arr=nsta_arr         # set by optional argument
         # number of spin components
         self._nspin=model._nspin
         # number of orbitals
@@ -2400,11 +2429,12 @@ class wf_array(object):
             raise Exception("\n\nDimension of wf_array object in each direction must be 2 or larger.")
         # generate temporary array used later to generate object ._wfs
         wfs_dim=np.copy(self._mesh_arr)
-        wfs_dim=np.append(wfs_dim,self._nsta)
+        wfs_dim=np.append(wfs_dim,self._nsta_arr)
         wfs_dim=np.append(wfs_dim,self._norb)
         if self._nspin==2:
             wfs_dim=np.append(wfs_dim,self._nspin)            
-        # store wavefunctions here in the form _wfs[kx_index,ky_index, ... ,band,orb,spin]
+        # store wavefunctions in the form
+        #   _wfs[kx_index,ky_index, ... ,state,orb,spin]
         self._wfs=np.zeros(wfs_dim,dtype=complex)
 
     def solve_on_grid(self,start_k):
@@ -2435,13 +2465,27 @@ class wf_array(object):
         """
         # check dimensionality
         if self._dim_arr!=self._model._dim_k:
-            raise Exception("\n\nIf using solve_on_grid method, dimension of wf_array must equal dim_k of the tight-binding model!")
+            raise Exception(\
+                "\n\nIf using solve_on_grid method, dimension of wf_array must equal"\
+                "\ndim_k of the tight-binding model!")
+
+        # check number of states
+        if self._nsta_arr!=self._model._nsta:
+            raise Exception(\
+                "\n\nWhen initializing this object, you specified nsta_arr to be "+str(self._nsta_arr)+", but"\
+                "\nthis does not match the total number of bands specified in the model,"\
+                "\nwhich was "+str(self._model._nsta)+".  If you wish to use the solve_on_grid method, do"\
+                "\nnot specify the nsta_arr parameter when initializing this object.\n\n")
+        
+        # store start_k
+        self._start_k=start_k
+
         # to return gaps at all k-points
-        if self._nsta<=1:
+        if self._nsta_arr<=1:
             all_gaps=None # trivial case since there is only one band
         else:
             gap_dim=np.copy(self._mesh_arr)-1
-            gap_dim=np.append(gap_dim,self._nsta-1)
+            gap_dim=np.append(gap_dim,self._nsta_arr-1)
             all_gaps=np.zeros(gap_dim,dtype=float)
         #
         if self._dim_arr==1:
@@ -2506,8 +2550,119 @@ class wf_array(object):
         else:
             return None
         
+    def solve_on_one_point(self,kpt,mesh_indices):
+        r"""
+
+        Solve a tight-binding model on a single k-point and store the eigenvectors
+        in the *wf_array* object in the location specified by *mesh_indices*.
+
+        :param kpt: List specifying desired k-point
+
+        :param mesh_indices: List specifying associated set of mesh indices
+
+        :returns:
+          None
+
+        Example usage::
+
+          # Solve eigenvectors on a sphere of radius kappa surrounding
+          # point k_0 in 3d k-space and pack into a predefined 2d wf_array
+          for i in range[n+1]:
+            for j in range[m+1]:
+              theta=np.pi*i/n
+              phi=2*np.pi*j/m
+              kx=k_0[0]+kappa*np.sin(theta)*np.cos(phi)
+              ky=k_0[1]+kappa*np.sin(theta)*np.sin(phi)
+              kz=k_0[2]+kappa*np.cos(theta)
+              wf.solve_on_one_point([kx,ky,kz],[i,j])
+
+        """
+
+        (eval,evec)=self._model.solve_one(kpt,eig_vectors=True)
+        if _is_int(mesh_indices):
+          self._wfs[(mesh_indices,)]=evec
+        else:
+          self._wfs[tuple(mesh_indices)]=evec
+
+    def choose_states(self,subset):
+        r"""
+
+        Create a new *wf_array* object containing a subset of the
+        states in the original one.
+
+        :param subset: List of integers specifying states to keep
+
+        :returns:
+          * **wf_new** -- returns a *wf_array* that is identical in all
+              respects except that a subset of states have been kept.
+
+        Example usage::
+
+          # Make new *wf_array* object containing only two states
+          wf_new=wf.choose_states([3,5])
+
+        """
+
+        # make a full copy of the wf_array
+        wf_new=copy.deepcopy(self)
+
+        if type(subset).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument subset is type",type(subset),
+             ". Must be list or ndarray.")
+        
+        wf_new._nsta_arr=len(subset)
+
+        if self._dim_arr==1:
+            wf_new._wfs=wf_new._wfs[:,subset]
+        elif self._dim_arr==2:
+            wf_new._wfs=wf_new._wfs[:,:,subset]
+        elif self._dim_arr==3:
+            wf_new._wfs=wf_new._wfs[:,:,:,subset]
+        elif self._dim_arr==4:
+            wf_new._wfs=wf_new._wfs[:,:,:,:,subset]
+        else:
+            raise Exception("\n\n_dim_array too large.")
+
+        return(wf_new)
+
+    def empty_like(self,nsta_arr=None):
+        r"""
+
+        Create a new empty *wf_array* object based on the original,
+        optionally modifying the number of states carried in the array.
+
+        :param nsta_arr: Optional parameter specifying the number
+              of states (or bands) to be carried in the array.
+              Defaults to the same as the original *wf_array* object.
+
+        :returns:
+          * **wf_new** -- returns a similar wf_array except that array
+              elements are unitialized and the number of states may have
+              changed.
+
+        Example usage::
+
+          # Make new empty wf_array object containing 6 bands per k-point
+          wf_new=wf.empty_like(nsta_arr=6)
+
+        """
+
+        # make a full copy of the wf_array
+        wf_new=copy.deepcopy(self)
+
+        if nsta_arr == None:
+            wf_new._wfs=np.empty_like(wf_new._wfs)
+        else:
+            wf_shape=list(wf_new._wfs.shape)
+            # modify numer of states (after k indices & before orb and spin)
+            wf_shape[self._dim_arr]=nsta_arr
+            wf_new._wfs=np.empty_like(wf_new._wfs,shape=wf_shape)
+
+        return(wf_new)
+
     def __check_key(self,key):
-        # do some checks for 1D
+        # key is an index list specifying the grid point of interest
+        # exception: in 1D, key should simply be an integer
         if self._dim_arr==1:
             if not _is_int(key):
                 raise TypeError("Key should be an integer!")
@@ -2524,13 +2679,13 @@ class wf_array(object):
                     raise IndexError("Key outside the range!")
 
     def __getitem__(self,key):
-        # check that key is in the correct range
+        # check that index array 'key' is valid
         self.__check_key(key)
         # return wavefunction
         return self._wfs[key]
     
     def __setitem__(self,key,value):
-        # check that key is in the correct range
+        # check that index array 'key' is valid
         self.__check_key(key)
         # store wavefunction
         self._wfs[key]=np.array(value,dtype=complex)
@@ -2655,15 +2810,19 @@ class wf_array(object):
             raise Exception("\n\nWrong value of mesh_dir.")
 
 
-    def berry_phase(self,occ,dir=None,contin=True,berry_evals=False):
+    def berry_phase(self,occ="All",dir=None,contin=True,berry_evals=False):
         r"""
 
-        Computes the Berry phase along a given array direction and
-        for a given set of occupied states.  This assumes that the
-        occupied bands are well separated in energy from unoccupied
-        bands. It is the responsibility of the user to check that
-        this is satisfied.  By default, the Berry phase traced over
-        occupied bands is returned, but optionally the individual
+        Computes the Berry phase along a given array direction
+        and for a given set of states.  These are typically the
+        occupied Bloch states, in which case *occ* should range
+        over all occupied bands.  In this context, the occupied
+        and unoccupied bands should be well separated in energy;
+        it is the responsibility of the user to check that this
+        is satisfied.  If *occ* is not specified or is specified
+        as 'All', all states are selected. By default, the
+        function returns the Berry phase traced over the
+        specified set of bands, but optionally the individual
         phases of the eigenvalues of the global unitary rotation
         matrix (corresponding to "maximally localized Wannier
         centers" or "Wilson loop eigenvalues") can be requested
@@ -2692,8 +2851,9 @@ class wf_array(object):
         in Sec. 4.5 of :download:`notes on tight-binding formalism
         <misc/pythtb-formalism.pdf>`.
 
-        :param occ: Array of indices of energy bands which are considered
-          to be occupied.
+        :param occ: Optional array of indices of states to be included
+          in the subsequent calculations, typically the indices of
+          bands considered occupied.  Default is all bands.
 
         :param dir: Index of wf_array direction along which Berry phase is
           computed. This parameters needs not be specified for
@@ -2745,6 +2905,14 @@ class wf_array(object):
 
         """
 
+        # special case requesting all states in the array
+        if occ=="All" or occ is None:
+            # note that 'None' means 'not specified', not 'no states'
+            occ=list(range(self._nsta_arr))
+
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is not a list.")
+        
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
@@ -2846,8 +3014,17 @@ class wf_array(object):
 
     def position_matrix(self, key, occ, dir):
         """Similar to :func:`pythtb.tb_model.position_matrix`.  Only
-        difference is that states are now specified with key in the
-        mesh *key* and indices of bands *occ*."""
+        difference is that, in addition to specifying *dir*, one also
+        has to specify *key* (k-point of interest) and *occ* (list of
+        states to be included, which can optionally be 'All')."""
+
+        # Check for special case of parameter occ
+        if occ=="All":
+            occ=list(range(self._nsta_arr))
+
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is not a list.")
+            
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
@@ -2857,8 +3034,17 @@ class wf_array(object):
 
     def position_expectation(self, key, occ, dir):
         """Similar to :func:`pythtb.tb_model.position_expectation`.  Only
-        difference is that states are now specified with key in the
-        mesh *key* and indices of bands *occ*."""
+        difference is that, in addition to specifying *dir*, one also
+        has to specify *key* (k-point of interest) and *occ* (list of
+        states to be included, which can optionally be 'All')."""
+
+        # Check for special case of parameter occ
+        if occ=="All":
+            occ=list(range(self._nsta_arr))
+
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is not a list.")
+            
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
@@ -2866,19 +3052,28 @@ class wf_array(object):
         evec=self._wfs[tuple(key)][occ]
         return self._model.position_expectation(evec,dir)
 
-    def position_hwf(self, key, occ, dir, hwf_evec=False, basis="bloch"):
-        """Similar to :func:`pythtb.tb_model.position_hwf`.  Only
-        difference is that states are now specified with key in the
-        mesh *key* and indices of bands *occ*."""
+    def position_hwf(self, key, occ, dir, hwf_evec=False, basis="wavefunction"):
+        """Similar to :func:`pythtb.tb_model.position_hwf`, except that
+        in addition to specifying *dir*, one also has to specify
+        *key*, the k-point of interest, and *occ*, a list of states to
+        be included (typically the occupied states)."""
+
+        # Check for special case of parameter occ
+        if occ=="All":
+            occ=list(range(self._nsta_arr))
+
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is type",type(occ),
+             ". Must be list or ndarray.")
+            
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
-        #
+
         evec=self._wfs[tuple(key)][occ]
         return self._model.position_hwf(evec,dir,hwf_evec,basis)
 
-
-    def berry_flux(self,occ,dirs=None,individual_phases=False):
+    def berry_flux(self,occ="All",dirs=None,individual_phases=False):
         r"""
 
         In the case of a 2-dimensional *wf_array* array calculates the
@@ -2887,8 +3082,10 @@ class wf_array(object):
         over all 2-dimensional slices of a higher-dimensional
         *wf_array*.
 
-        :param occ: Array of indices of energy bands which are considered
-          to be occupied.
+        :param occ: Optional array of indices of states to be included
+          in the subsequent calculations, typically the indices of
+          bands considered occupied.  If not specified or specified as
+          'All', all bands are included.
 
         :param dirs: Array of indices of two wf_array directions on which
           the Berry flux is computed. This parameter needs not be
@@ -2919,12 +3116,20 @@ class wf_array(object):
 
         """
 
+        # special case requesting all states in the array
+        if occ=="All" or occ is None:
+            # note that 'None' means 'not specified', not 'no states'
+            occ=list(range(self._nsta_arr))
+
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is not a list.")
+            
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
 
         # default case is to take first two directions for flux calculation
-        if dirs==None:
+        if dirs is None:
             dirs=[0,1]
 
         # consistency checks
@@ -3026,219 +3231,9 @@ Warning:
 """)
         return self.berry_flux(occ,individual_phases)
 
-
-
-def k_path(kpts,nk,endpoint=True):
-    r"""
-
-      .. warning:: This function is here only for backwards compatibility 
-        with version of pythtb prior to 1.7.0.  Please use related :func:`pythtb.tb_model.k_path`
-        function as this function might not exist in the future releases of the code.
-
-    """
-
-    print(""" 
-
-Warning:
-
-  Usage of function k_path is discouraged.  
-  Instead of the following code:
-    k_vec=k_path(...)
-  please use the following code:
-    (k_vec,k_dist,k_node)=my_model.k_path(...)
-  Note that this k_path function is a member of the tb_model class.
-
-""")
-
-    if kpts=='full':
-        # this means the full Brillouin zone for 1D case
-        if endpoint==True:
-            return np.arange(nk+1,dtype=float)/float(nk)
-        else:
-            return np.arange(nk,dtype=float)/float(nk)
-    elif kpts=='half':
-        # this means the half Brillouin zone for 1D case
-        if endpoint==True:
-            return np.arange(nk+1,dtype=float)/float(2.*nk)
-        else:
-            return np.arange(nk,dtype=float)/float(2.*nk)
-    else:
-        # general case
-        kint=[]
-        k_list=np.array(kpts)
-        # go over all kpoints
-        for i in range(len(k_list)-1):
-            # go over all steps
-            for j in range(nk):
-                cur=k_list[i]+(k_list[i+1]-k_list[i])*float(j)/float(nk)
-                kint.append(cur)
-        # add last point
-        if endpoint==True:
-            kint.append(k_list[-1])
-        #
-        kint=np.array(kint)
-        return kint
-
-def _nicefy_eig(eval,eig=None):
-    "Sort eigenvaules and eigenvectors, if given, and convert to real numbers"
-    # first take only real parts of the eigenvalues
-    eval=np.array(eval.real,dtype=float)
-    # sort energies
-    args=eval.argsort()
-    eval=eval[args]
-    if not (eig is None):
-        eig=eig[args]
-        return (eval,eig)
-    return eval
-
-# for nice justified printout
-def _nice_float(x,just,rnd):
-    return str(round(x,rnd)).rjust(just)
-def _nice_int(x,just):
-    return str(x).rjust(just)
-def _nice_complex(x,just,rnd):
-    ret=""
-    ret+=_nice_float(complex(x).real,just,rnd)
-    if complex(x).imag<0.0:
-        ret+=" - "
-    else:
-        ret+=" + "
-    ret+=_nice_float(abs(complex(x).imag),just,rnd)
-    ret+=" i"
-    return ret
-    
-def _wf_dpr(wf1,wf2):
-    """calculate dot product between two wavefunctions.
-    wf1 and wf2 are of the form [orbital,spin]"""
-    return np.dot(wf1.flatten().conjugate(),wf2.flatten())
-
-def _one_berry_loop(wf,berry_evals=False):
-    """Do one Berry phase calculation (also returns a product of M
-    matrices).  Always returns numbers between -pi and pi.  wf has
-    format [kpnt,band,orbital,spin] and kpnt has to be one dimensional.
-    Assumes that first and last k-point are the same. Therefore if
-    there are n wavefunctions in total, will calculate phase along n-1
-    links only!  If berry_evals is True then will compute phases for
-    individual states, these corresponds to 1d hybrid Wannier
-    function centers. Otherwise just return one number, Berry phase."""
-    # number of occupied states
-    nocc=wf.shape[1]
-    # temporary matrices
-    prd=np.identity(nocc,dtype=complex)
-    ovr=np.zeros([nocc,nocc],dtype=complex)
-    # go over all pairs of k-points, assuming that last point is overcounted!
-    for i in range(wf.shape[0]-1):
-        # generate overlap matrix, go over all bands
-        for j in range(nocc):
-            for k in range(nocc):
-                ovr[j,k]=_wf_dpr(wf[i,j,:],wf[i+1,k,:])
-        # only find Berry phase
-        if berry_evals==False:
-            # multiply overlap matrices
-            prd=np.dot(prd,ovr)
-        # also find phases of individual eigenvalues
-        else:
-            # cleanup matrices with SVD then take product
-            matU,sing,matV=np.linalg.svd(ovr)
-            prd=np.dot(prd,np.dot(matU,matV))
-    # calculate Berry phase
-    if berry_evals==False:
-        det=np.linalg.det(prd)
-        pha=(-1.0)*np.angle(det)
-        return pha
-    # calculate phases of all eigenvalues
-    else:
-        evals=np.linalg.eigvals(prd)
-        eval_pha=(-1.0)*np.angle(evals)
-        # sort these numbers as well
-        eval_pha=np.sort(eval_pha)
-        return eval_pha
-
-def _one_flux_plane(wfs2d):
-    "Compute fluxes on a two-dimensional plane of states."
-    # size of the mesh
-    nk0=wfs2d.shape[0]
-    nk1=wfs2d.shape[1]
-    # number of bands (will compute flux of all bands taken together)
-    nbnd=wfs2d.shape[2]
-
-    # here store flux through each plaquette of the mesh
-    all_phases=np.zeros((nk0-1,nk1-1),dtype=float)
-
-    # go over all plaquettes
-    for i in range(nk0-1):
-        for j in range(nk1-1):
-            # generate a small loop made out of four pieces
-            wf_use=[]
-            wf_use.append(wfs2d[i,j])
-            wf_use.append(wfs2d[i+1,j])
-            wf_use.append(wfs2d[i+1,j+1])
-            wf_use.append(wfs2d[i,j+1])
-            wf_use.append(wfs2d[i,j])
-            wf_use=np.array(wf_use,dtype=complex)
-            # calculate phase around one plaquette
-            all_phases[i,j]=_one_berry_loop(wf_use)
-
-    return all_phases
-
-def no_2pi(x,clos):
-    "Make x as close to clos by adding or removing 2pi"
-    while abs(clos-x)>np.pi:
-        if clos-x>np.pi:
-            x+=2.0*np.pi
-        elif clos-x<-1.0*np.pi:
-            x-=2.0*np.pi
-    return x
-
-def _one_phase_cont(pha,clos):
-    """Reads in 1d array of numbers *pha* and makes sure that they are
-    continuous, i.e., that there are no jumps of 2pi. First number is
-    made as close to *clos* as possible."""
-    ret=np.copy(pha)
-    # go through entire list and "iron out" 2pi jumps
-    for i in range(len(ret)):
-        # which number to compare to
-        if i==0: cmpr=clos
-        else: cmpr=ret[i-1]
-        # make sure there are no 2pi jumps
-        ret[i]=no_2pi(ret[i],cmpr)
-    return ret
-
-def _array_phases_cont(arr_pha,clos):
-    """Reads in 2d array of phases *arr_pha* and makes sure that they
-    are continuous along first index, i.e., that there are no jumps of
-    2pi. First array of phasese is made as close to *clos* as
-    possible."""
-    ret=np.zeros_like(arr_pha)
-    # go over all points
-    for i in range(arr_pha.shape[0]):
-        # which phases to compare to
-        if i==0: cmpr=clos
-        else: cmpr=ret[i-1,:]
-        # remember which indices are still available to be matched
-        avail=list(range(arr_pha.shape[1]))
-        # go over all phases in cmpr[:]
-        for j in range(cmpr.shape[0]):
-            # minimal distance between pairs
-            min_dist=1.0E10
-            # closest index
-            best_k=None
-            # go over each phase in arr_pha[i,:]
-            for k in avail:
-                cur_dist=np.abs(np.exp(1.0j*cmpr[j])-np.exp(1.0j*arr_pha[i,k]))
-                if cur_dist<=min_dist:
-                    min_dist=cur_dist
-                    best_k=k
-            # remove this index from being possible pair later
-            avail.pop(avail.index(best_k))
-            # store phase in correct place
-            ret[i,j]=arr_pha[i,best_k]
-            # make sure there are no 2pi jumps
-            ret[i,j]=no_2pi(ret[i,j],cmpr[j])
-    return ret
-
-
+#=======================================================================
 class w90(object):
+#=======================================================================
     r""" 
 
     This class of the PythTB package imports tight-binding model
@@ -3790,6 +3785,220 @@ class w90(object):
 
         return (kpts,ene)
 
+#=======================================================================
+# Begin internal definitions
+#=======================================================================
+
+def k_path(kpts,nk,endpoint=True):
+    r"""
+
+      .. warning:: This function is here only for backwards compatibility 
+        with version of pythtb prior to 1.7.0.  Please use related :func:`pythtb.tb_model.k_path`
+        function as this function might not exist in the future releases of the code.
+
+    """
+
+    print(""" 
+
+Warning:
+
+  Usage of function k_path is discouraged.  
+  Instead of the following code:
+    k_vec=k_path(...)
+  please use the following code:
+    (k_vec,k_dist,k_node)=my_model.k_path(...)
+  Note that this k_path function is a member of the tb_model class.
+
+""")
+
+    if kpts=='full':
+        # this means the full Brillouin zone for 1D case
+        if endpoint==True:
+            return np.arange(nk+1,dtype=float)/float(nk)
+        else:
+            return np.arange(nk,dtype=float)/float(nk)
+    elif kpts=='half':
+        # this means the half Brillouin zone for 1D case
+        if endpoint==True:
+            return np.arange(nk+1,dtype=float)/float(2.*nk)
+        else:
+            return np.arange(nk,dtype=float)/float(2.*nk)
+    else:
+        # general case
+        kint=[]
+        k_list=np.array(kpts)
+        # go over all kpoints
+        for i in range(len(k_list)-1):
+            # go over all steps
+            for j in range(nk):
+                cur=k_list[i]+(k_list[i+1]-k_list[i])*float(j)/float(nk)
+                kint.append(cur)
+        # add last point
+        if endpoint==True:
+            kint.append(k_list[-1])
+        #
+        kint=np.array(kint)
+        return kint
+
+def _nicefy_eig(eval,eig=None):
+    "Sort eigenvaules and eigenvectors, if given, and convert to real numbers"
+    # first take only real parts of the eigenvalues
+    eval=np.array(eval.real,dtype=float)
+    # sort energies
+    args=eval.argsort()
+    eval=eval[args]
+    if not (eig is None):
+        eig=eig[args]
+        return (eval,eig)
+    return eval
+
+# for nice justified printout
+def _nice_float(x,just,rnd):
+    return str(round(x,rnd)).rjust(just)
+def _nice_int(x,just):
+    return str(x).rjust(just)
+def _nice_complex(x,just,rnd):
+    ret=""
+    ret+=_nice_float(complex(x).real,just,rnd)
+    if complex(x).imag<0.0:
+        ret+=" - "
+    else:
+        ret+=" + "
+    ret+=_nice_float(abs(complex(x).imag),just,rnd)
+    ret+=" i"
+    return ret
+    
+def _wf_dpr(wf1,wf2):
+    """calculate dot product between two wavefunctions.
+    wf1 and wf2 are of the form [orbital,spin]"""
+    return np.dot(wf1.flatten().conjugate(),wf2.flatten())
+
+def _one_berry_loop(wf,berry_evals=False):
+    """Do one Berry phase calculation (also returns a product of M
+    matrices).  Always returns numbers between -pi and pi.  wf has
+    format [kpnt,band,orbital,spin] and kpnt has to be one dimensional.
+    Assumes that first and last k-point are the same. Therefore if
+    there are n wavefunctions in total, will calculate phase along n-1
+    links only!  If berry_evals is True then will compute phases for
+    individual states, these corresponds to 1d hybrid Wannier
+    function centers. Otherwise just return one number, Berry phase."""
+    # number of occupied states
+    nocc=wf.shape[1]
+    # temporary matrices
+    prd=np.identity(nocc,dtype=complex)
+    ovr=np.zeros([nocc,nocc],dtype=complex)
+    # go over all pairs of k-points, assuming that last point is overcounted!
+    for i in range(wf.shape[0]-1):
+        # generate overlap matrix, go over all bands
+        for j in range(nocc):
+            for k in range(nocc):
+                ovr[j,k]=_wf_dpr(wf[i,j,:],wf[i+1,k,:])
+        # only find Berry phase
+        if berry_evals==False:
+            # multiply overlap matrices
+            prd=np.dot(prd,ovr)
+        # also find phases of individual eigenvalues
+        else:
+            # cleanup matrices with SVD then take product
+            matU,sing,matV=np.linalg.svd(ovr)
+            prd=np.dot(prd,np.dot(matU,matV))
+    # calculate Berry phase
+    if berry_evals==False:
+        det=np.linalg.det(prd)
+        pha=(-1.0)*np.angle(det)
+        return pha
+    # calculate phases of all eigenvalues
+    else:
+        evals=np.linalg.eigvals(prd)
+        eval_pha=(-1.0)*np.angle(evals)
+        # sort these numbers as well
+        eval_pha=np.sort(eval_pha)
+        return eval_pha
+
+def _one_flux_plane(wfs2d):
+    "Compute fluxes on a two-dimensional plane of states."
+    # size of the mesh
+    nk0=wfs2d.shape[0]
+    nk1=wfs2d.shape[1]
+    # number of bands (will compute flux of all bands taken together)
+    nbnd=wfs2d.shape[2]
+
+    # here store flux through each plaquette of the mesh
+    all_phases=np.zeros((nk0-1,nk1-1),dtype=float)
+
+    # go over all plaquettes
+    for i in range(nk0-1):
+        for j in range(nk1-1):
+            # generate a small loop made out of four pieces
+            wf_use=[]
+            wf_use.append(wfs2d[i,j])
+            wf_use.append(wfs2d[i+1,j])
+            wf_use.append(wfs2d[i+1,j+1])
+            wf_use.append(wfs2d[i,j+1])
+            wf_use.append(wfs2d[i,j])
+            wf_use=np.array(wf_use,dtype=complex)
+            # calculate phase around one plaquette
+            all_phases[i,j]=_one_berry_loop(wf_use)
+
+    return all_phases
+
+def no_2pi(x,clos):
+    "Make x as close to clos by adding or removing 2pi"
+    while abs(clos-x)>np.pi:
+        if clos-x>np.pi:
+            x+=2.0*np.pi
+        elif clos-x<-1.0*np.pi:
+            x-=2.0*np.pi
+    return x
+
+def _one_phase_cont(pha,clos):
+    """Reads in 1d array of numbers *pha* and makes sure that they are
+    continuous, i.e., that there are no jumps of 2pi. First number is
+    made as close to *clos* as possible."""
+    ret=np.copy(pha)
+    # go through entire list and "iron out" 2pi jumps
+    for i in range(len(ret)):
+        # which number to compare to
+        if i==0: cmpr=clos
+        else: cmpr=ret[i-1]
+        # make sure there are no 2pi jumps
+        ret[i]=no_2pi(ret[i],cmpr)
+    return ret
+
+def _array_phases_cont(arr_pha,clos):
+    """Reads in 2d array of phases *arr_pha* and makes sure that they
+    are continuous along first index, i.e., that there are no jumps of
+    2pi. First array of phasese is made as close to *clos* as
+    possible."""
+    ret=np.zeros_like(arr_pha)
+    # go over all points
+    for i in range(arr_pha.shape[0]):
+        # which phases to compare to
+        if i==0: cmpr=clos
+        else: cmpr=ret[i-1,:]
+        # remember which indices are still available to be matched
+        avail=list(range(arr_pha.shape[1]))
+        # go over all phases in cmpr[:]
+        for j in range(cmpr.shape[0]):
+            # minimal distance between pairs
+            min_dist=1.0E10
+            # closest index
+            best_k=None
+            # go over each phase in arr_pha[i,:]
+            for k in avail:
+                cur_dist=np.abs(np.exp(1.0j*cmpr[j])-np.exp(1.0j*arr_pha[i,k]))
+                if cur_dist<=min_dist:
+                    min_dist=cur_dist
+                    best_k=k
+            # remove this index from being possible pair later
+            avail.pop(avail.index(best_k))
+            # store phase in correct place
+            ret[i,j]=arr_pha[i,best_k]
+            # make sure there are no 2pi jumps
+            ret[i,j]=no_2pi(ret[i,j],cmpr[j])
+    return ret
+
+
 
 def _cart_to_red(tmp,cart):
     "Convert cartesian vectors cart to reduced coordinates of a1,a2,a3 vectors"
@@ -3841,4 +4050,3 @@ def _offdiag_approximation_warning_and_stop():
 ----------------------------------------------------------------------
 
 """)
-    
