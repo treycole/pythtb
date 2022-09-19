@@ -2809,6 +2809,70 @@ class wf_array(object):
         else:
             raise Exception("\n\nWrong value of mesh_dir.")
 
+    def position_matrix(self, key, occ, dir):
+        """Similar to :func:`pythtb.tb_model.position_matrix`.  Only
+        difference is that, in addition to specifying *dir*, one also
+        has to specify *key* (k-point of interest) and *occ* (list of
+        states to be included, which can optionally be 'All')."""
+
+        # Check for special case of parameter occ
+        if occ=="All":
+            occ=list(range(self._nsta_arr))
+
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is not a list.")
+            
+        # check if model came from w90
+        if self._model._assume_position_operator_diagonal==False:
+            _offdiag_approximation_warning_and_stop()
+        #
+        evec=self._wfs[tuple(key)][occ]
+        return self._model.position_matrix(evec,dir)
+
+    def position_expectation(self, key, occ, dir):
+        """Similar to :func:`pythtb.tb_model.position_expectation`.  Only
+        difference is that, in addition to specifying *dir*, one also
+        has to specify *key* (k-point of interest) and *occ* (list of
+        states to be included, which can optionally be 'All')."""
+
+        # Check for special case of parameter occ
+        if occ=="All":
+            occ=list(range(self._nsta_arr))
+
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is not a list.")
+            
+        # check if model came from w90
+        if self._model._assume_position_operator_diagonal==False:
+            _offdiag_approximation_warning_and_stop()
+        #
+        evec=self._wfs[tuple(key)][occ]
+        return self._model.position_expectation(evec,dir)
+
+    def position_hwf(self, key, occ, dir, hwf_evec=False, basis="wavefunction"):
+        """Similar to :func:`pythtb.tb_model.position_hwf`, except that
+        in addition to specifying *dir*, one also has to specify
+        *key*, the k-point of interest, and *occ*, a list of states to
+        be included (typically the occupied states).
+
+        For backwards compatibility the default value of *basis* here different
+        from that in :func:`pythtb.tb_model.position_hwf`.
+        """
+
+        # Check for special case of parameter occ
+        if occ=="All":
+            occ=list(range(self._nsta_arr))
+
+        if type(occ).__name__ not in ['list','ndarray']:
+            raise Exception("\n\nArgument occ is type",type(occ),
+             ". Must be list or ndarray.")
+            
+        # check if model came from w90
+        if self._model._assume_position_operator_diagonal==False:
+            _offdiag_approximation_warning_and_stop()
+
+        evec=self._wfs[tuple(key)][occ]
+        return self._model.position_hwf(evec,dir,hwf_evec,basis)
 
     def berry_phase(self,occ="All",dir=None,contin=True,berry_evals=False):
         r"""
@@ -3011,72 +3075,7 @@ class wf_array(object):
                 elif self._dim_arr!=1:
                     raise Exception("\n\nWrong dimensionality!")
         return ret
-
-    def position_matrix(self, key, occ, dir):
-        """Similar to :func:`pythtb.tb_model.position_matrix`.  Only
-        difference is that, in addition to specifying *dir*, one also
-        has to specify *key* (k-point of interest) and *occ* (list of
-        states to be included, which can optionally be 'All')."""
-
-        # Check for special case of parameter occ
-        if occ=="All":
-            occ=list(range(self._nsta_arr))
-
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is not a list.")
-            
-        # check if model came from w90
-        if self._model._assume_position_operator_diagonal==False:
-            _offdiag_approximation_warning_and_stop()
-        #
-        evec=self._wfs[tuple(key)][occ]
-        return self._model.position_matrix(evec,dir)
-
-    def position_expectation(self, key, occ, dir):
-        """Similar to :func:`pythtb.tb_model.position_expectation`.  Only
-        difference is that, in addition to specifying *dir*, one also
-        has to specify *key* (k-point of interest) and *occ* (list of
-        states to be included, which can optionally be 'All')."""
-
-        # Check for special case of parameter occ
-        if occ=="All":
-            occ=list(range(self._nsta_arr))
-
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is not a list.")
-            
-        # check if model came from w90
-        if self._model._assume_position_operator_diagonal==False:
-            _offdiag_approximation_warning_and_stop()
-        #
-        evec=self._wfs[tuple(key)][occ]
-        return self._model.position_expectation(evec,dir)
-
-    def position_hwf(self, key, occ, dir, hwf_evec=False, basis="wavefunction"):
-        """Similar to :func:`pythtb.tb_model.position_hwf`, except that
-        in addition to specifying *dir*, one also has to specify
-        *key*, the k-point of interest, and *occ*, a list of states to
-        be included (typically the occupied states).
-
-        For backwards compatibility the default value of *basis* here different
-        from that in :func:`pythtb.tb_model.position_hwf`.
-        """
-
-        # Check for special case of parameter occ
-        if occ=="All":
-            occ=list(range(self._nsta_arr))
-
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is type",type(occ),
-             ". Must be list or ndarray.")
-            
-        # check if model came from w90
-        if self._model._assume_position_operator_diagonal==False:
-            _offdiag_approximation_warning_and_stop()
-
-        evec=self._wfs[tuple(key)][occ]
-        return self._model.position_hwf(evec,dir,hwf_evec,basis)
-
+    
     def berry_flux(self,occ="All",dirs=None,individual_phases=False):
         r"""
 
