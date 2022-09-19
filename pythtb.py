@@ -113,8 +113,6 @@ class tb_model(object):
         if (type(lat) is str and lat == 'unit') or lat is None:
             self._lat=np.identity(dim_r,float)
             print(" Lattice vectors not specified! I will use identity matrix.")
-        elif type(lat).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument lat is not a list.")
         else:
             self._lat=np.array(lat,dtype=float)
             if self._lat.shape!=(dim_r,dim_r):
@@ -138,8 +136,6 @@ class tb_model(object):
             self._norb=orb
             self._orb=np.zeros((orb,dim_r))
             print(" Orbital positions not specified. I will assume ",orb," orbitals at the origin")
-        elif type(orb).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument orb is not a list or an integer")
         else:
             self._orb=np.array(orb,dtype=float)
             if len(self._orb.shape)!=2:
@@ -2606,11 +2602,9 @@ class wf_array(object):
         # make a full copy of the wf_array
         wf_new=copy.deepcopy(self)
 
-        if type(subset).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument subset is type",type(subset),
-             ". Must be list or ndarray.")
+        subset=np.array(subset,dtype=int)
         
-        wf_new._nsta_arr=len(subset)
+        wf_new._nsta_arr=subset.shape[0]
 
         if self._dim_arr==1:
             wf_new._wfs=wf_new._wfs[:,subset]
@@ -2817,10 +2811,9 @@ class wf_array(object):
 
         # Check for special case of parameter occ
         if occ=="All":
-            occ=list(range(self._nsta_arr))
-
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is not a list.")
+            occ=np.arange(self._nsta_arr,dtype=int)
+        else:
+            occ=np.array(occ,dtype=int)
             
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
@@ -2837,10 +2830,9 @@ class wf_array(object):
 
         # Check for special case of parameter occ
         if occ=="All":
-            occ=list(range(self._nsta_arr))
-
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is not a list.")
+            occ=np.arange(self._nsta_arr,dtype=int)
+        else:
+            occ=np.array(occ,dtype=int)
             
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
@@ -2861,11 +2853,9 @@ class wf_array(object):
 
         # Check for special case of parameter occ
         if occ=="All":
-            occ=list(range(self._nsta_arr))
-
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is type",type(occ),
-             ". Must be list or ndarray.")
+            occ=np.arange(self._nsta_arr,dtype=int)
+        else:
+            occ=np.array(occ,dtype=int)
             
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
@@ -2972,10 +2962,9 @@ class wf_array(object):
         # special case requesting all states in the array
         if occ=="All" or occ is None:
             # note that 'None' means 'not specified', not 'no states'
-            occ=list(range(self._nsta_arr))
-
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is not a list.")
+            occ=np.arange(self._nsta_arr,dtype=int)
+        else:
+            occ=np.array(occ,dtype=int)
         
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
@@ -3122,10 +3111,9 @@ class wf_array(object):
         # special case requesting all states in the array
         if occ=="All" or occ is None:
             # note that 'None' means 'not specified', not 'no states'
-            occ=list(range(self._nsta_arr))
-
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is not a list.")
+            occ=np.arange(self._nsta_arr,dtype=int)
+        else:
+            occ=np.array(occ,dtype=int)
             
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
