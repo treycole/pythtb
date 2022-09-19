@@ -189,11 +189,6 @@ class tb_model(object):
         either set energy for one tight-binding orbital, or all at
         once.
 
-        .. warning:: In previous version of PythTB this function was
-          called *set_sites*. For backwards compatibility one can still
-          use that name but that feature will be removed in future
-          releases.
-
         :param onsite_en: Either a list of on-site energies (in
           arbitrary units) for each orbital, or a single on-site
           energy (in this case *ind_i* parameter must be given). In
@@ -347,11 +342,6 @@ class tb_model(object):
            automatically. If you want to specifiy hoppings in both
            directions, see description of parameter
            *allow_conjugate_pair*.
-
-        .. warning:: In previous version of PythTB this function was
-          called *add_hop*. For backwards compatibility one can still
-          use that name but that feature will be removed in future
-          releases.
 
         :param hop_amp: Hopping amplitude; can be real or complex
           number, equals :math:`H_{ij}({\bf R})`. If *nspin* is *2*
@@ -2288,12 +2278,6 @@ somehow changed Cartesian coordinates of orbitals.""")
                 raise Exception("\n\nBasis must be either 'wavefunction', 'bloch', or 'orbital'")
 
 
-# keeping old name for backwards compatibility
-# will be removed in future
-tb_model.set_sites=tb_model.set_onsite
-tb_model.add_hop=tb_model.set_hop
-tbmodel=tb_model
-
 #=======================================================================
 class wf_array(object):
 #=======================================================================
@@ -2855,7 +2839,7 @@ class wf_array(object):
         *key*, the k-point of interest, and *occ*, a list of states to
         be included (typically the occupied states).
 
-        For backwards compatibility the default value of *basis* here different
+        For backwards compatibility the default value of *basis* here is different
         from that in :func:`pythtb.tb_model.position_hwf`.
         """
 
@@ -3218,24 +3202,6 @@ class wf_array(object):
 
         else:
             raise Exception("\n\nWrong dimensionality!")
-
-
-    def berry_curv(self,occ,individual_phases=False):
-        r"""
-
-      .. warning:: This function has been renamed as :func:`pythtb.berry_flux` and is provided
-        here only for backwards compatibility with versions of pythtb prior to 1.7.0.  Please
-        use related :func:`pythtb.berry_flux` as this function may not exist in future releases.
-
-        """
-
-        print(""" 
-
-Warning:
-  Usage of function berry_curv is discouraged.
-  It has been renamed as berry_flux, which should be used instead.
-""")
-        return self.berry_flux(occ,individual_phases)
 
 #=======================================================================
 class w90(object):
@@ -3794,57 +3760,6 @@ class w90(object):
 #=======================================================================
 # Begin internal definitions
 #=======================================================================
-
-def k_path(kpts,nk,endpoint=True):
-    r"""
-
-      .. warning:: This function is here only for backwards compatibility 
-        with version of pythtb prior to 1.7.0.  Please use related :func:`pythtb.tb_model.k_path`
-        function as this function might not exist in the future releases of the code.
-
-    """
-
-    print(""" 
-
-Warning:
-
-  Usage of function k_path is discouraged.  
-  Instead of the following code:
-    k_vec=k_path(...)
-  please use the following code:
-    (k_vec,k_dist,k_node)=my_model.k_path(...)
-  Note that this k_path function is a member of the tb_model class.
-
-""")
-
-    if kpts=='full':
-        # this means the full Brillouin zone for 1D case
-        if endpoint==True:
-            return np.arange(nk+1,dtype=float)/float(nk)
-        else:
-            return np.arange(nk,dtype=float)/float(nk)
-    elif kpts=='half':
-        # this means the half Brillouin zone for 1D case
-        if endpoint==True:
-            return np.arange(nk+1,dtype=float)/float(2.*nk)
-        else:
-            return np.arange(nk,dtype=float)/float(2.*nk)
-    else:
-        # general case
-        kint=[]
-        k_list=np.array(kpts)
-        # go over all kpoints
-        for i in range(len(k_list)-1):
-            # go over all steps
-            for j in range(nk):
-                cur=k_list[i]+(k_list[i+1]-k_list[i])*float(j)/float(nk)
-                kint.append(cur)
-        # add last point
-        if endpoint==True:
-            kint.append(k_list[-1])
-        #
-        kint=np.array(kint)
-        return kint
 
 def _nicefy_eig(eval,eig=None):
     "Sort eigenvaules and eigenvectors, if given, and convert to real numbers"
