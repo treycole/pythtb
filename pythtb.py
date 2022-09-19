@@ -2172,7 +2172,7 @@ somehow changed Cartesian coordinates of orbitals.""")
         pos_exp=self.position_matrix(evec,dir).diagonal()
         return np.array(np.real(pos_exp),dtype=float)
 
-    def position_hwf(self,evec,dir,hwf_evec=False,basis="wavefunction"):
+    def position_hwf(self,evec,dir,hwf_evec=False,basis="orbital"):
         r""" 
 
         Returns eigenvalues and optionally eigenvectors of the
@@ -2219,7 +2219,7 @@ somehow changed Cartesian coordinates of orbitals.""")
           Note that option basis="bloch" is a synonym for basis="wavefunction".
           If basis="orbital", the elements of hwf[i,orb] (or hwf[i,orb,spin]
           if nspin=2) give the amplitudes of the i-th hybrid Wannier function on
-          the specified basis function.  Default is basis="wavefunction".
+          the specified basis function.  Default is basis="orbital".
 
         :returns:
           * **hwfc** -- Eigenvalues of the position operator matrix :math:`X`
@@ -3056,7 +3056,11 @@ class wf_array(object):
         """Similar to :func:`pythtb.tb_model.position_hwf`, except that
         in addition to specifying *dir*, one also has to specify
         *key*, the k-point of interest, and *occ*, a list of states to
-        be included (typically the occupied states)."""
+        be included (typically the occupied states).
+
+        For backwards compatibility the default value of *basis* here different
+        from that in :func:`pythtb.tb_model.position_hwf`.
+        """
 
         # Check for special case of parameter occ
         if occ=="All":
