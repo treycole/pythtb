@@ -2603,6 +2603,8 @@ class wf_array(object):
         wf_new=copy.deepcopy(self)
 
         subset=np.array(subset,dtype=int)
+        if subset.ndim!=1:
+            raise Exception("\n\nParameter subset must be a one-dimensional array.")
         
         wf_new._nsta_arr=subset.shape[0]
 
@@ -2814,6 +2816,9 @@ class wf_array(object):
             occ=np.arange(self._nsta_arr,dtype=int)
         else:
             occ=np.array(occ,dtype=int)
+
+        if occ.ndim!=1:
+            raise Exception("""\n\nParameter occ must be a one-dimensional array or string "All".""")
             
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
@@ -2833,6 +2838,9 @@ class wf_array(object):
             occ=np.arange(self._nsta_arr,dtype=int)
         else:
             occ=np.array(occ,dtype=int)
+            
+        if occ.ndim!=1:
+            raise Exception("""\n\nParameter occ must be a one-dimensional array or string "All".""")
             
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
@@ -2856,6 +2864,9 @@ class wf_array(object):
             occ=np.arange(self._nsta_arr,dtype=int)
         else:
             occ=np.array(occ,dtype=int)
+
+        if occ.ndim!=1:
+            raise Exception("""\n\nParameter occ must be a one-dimensional array or string "All".""")
             
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
@@ -2965,7 +2976,11 @@ class wf_array(object):
             occ=np.arange(self._nsta_arr,dtype=int)
         else:
             occ=np.array(occ,dtype=int)
-        
+
+        if occ.ndim!=1:
+            raise Exception("""\n\nParameter occ must be a one-dimensional array or string "All" or None.""")
+
+                    
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
