@@ -541,7 +541,8 @@ direction.  (Or, alternatively, see the documentation on the
                 ret[1,1]+=use_val[0]
                 # sigma_x
                 ret[0,1]+=use_val[1]
-                ret[1,0]+=use_val[1]                # sigma_y
+                ret[1,0]+=use_val[1]
+                # sigma_y
                 ret[0,1]+=use_val[2]*(-1.0j)
                 ret[1,0]+=use_val[2]*( 1.0j)
                 # sigma_z
