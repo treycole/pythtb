@@ -11,22 +11,34 @@ examples when creating the website, and that all tox tests are passing.
 3. Any changes we now make to this release candidate should go to the
 release/1.x.x. branch.
 
-4a. Update __version__ variable and date in the header of pythtb.py
+4a. Update __version__ variable and date in the header of pythtb.py.
+Also update the year in the line below starting with "Copyright"
+
+  git add pythtb.py
 
 4b. Update version string in setup.py
+
+  git add setup.py
 
 4c. Update website/local/release/release.rst by specifying what is new in the
 package.
 
+  git add website/local/release/release.rst
+
 4d. Add folder in website/local/release/ver_ABC for the old version of the package,
 put in .tar.gz file. of the old version.
 *It is enough to do this for the old version only!*
-You will also have to add that folder to cvs.
+New version will be added automatically by the "go" script in website folder.
 To get old source file use this command:
 wget http://www.physics.rutgers.edu/pythtb/_downloads/pythtb-X.X.X.tar.gz
 
+  git add ver_1.OLD.OLD
+  git add ver_1.OLD.OLD/pythtb-1.OLD.OLD.tar.gz
+
 4e. Update website/source/install.rst with the new version. It is enough to
 change string "1.6.1" with "1.6.2" or similar.
+
+  git add install.rst
 
 4f. Update website/source/conf.py. Version number appears at two places, just
 update the string.
@@ -34,7 +46,13 @@ update the string.
 4g. There is NO need to update src/CHANGES. We may want to remove that
 file in the future.
 
-5. We should test the website to make sure it is rendered correctly.
+4h. Do a quick grep on the old version number just to make sure there
+isn't something new that needs to be done.
+
+5. We should test the website to make sure it is rendered correctly. David
+should do this test on release/1.x.x branch
+
+   git checkout release/1.x.x
 
 6. Sinisa will wait for David's confirmation that website is running well
 on his end before proceeding to the next step.
@@ -80,3 +98,5 @@ lines below:
 9. David should now do the final update of the website from the "master" branch of git.  David,
 please add here more information if needed.
 
+
+10. Update this file if needed.

@@ -1,5 +1,24 @@
-Version 1.7.2 (current)
+Version 1.8.0 (current)
 ^^^^^^^^^^^^^^^^^^^^^^^
+
+20 September 2022: :download:`pythtb-1.8.0.tar.gz <misc/pythtb-1.8.0.tar.gz>`
+
+* Updated class wf_array to make it easier to store states
+  which are not Bloch-like eigenstates.
+
+* Added new functionality to wf_array (solve_on_one_point,
+  choose_states, empty_like
+
+* Added function change_nonperiodic_vector and changed the way
+  "to_home" parameter works.
+
+* Fixed various small issues.
+
+* Removed some functions that were kept for backwards compatibility
+  (berry_curv, k_path, tbmodel, set_sites, add_hop).
+  
+Version 1.7.2
+^^^^^^^^^^^^^
 
 1 August 2017: :download:`pythtb-1.7.2.tar.gz <misc/pythtb-1.7.2.tar.gz>`
 
