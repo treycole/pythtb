@@ -100,4 +100,4 @@ pull request on the website.
   git push origin --delete feature_DESCRIPTOR       ! remotely
 
 8. When we have decided to issue a new release of the code we should
-follow steps described in RELEASINGNEWVERSION
+follow steps described in NEWVERSION

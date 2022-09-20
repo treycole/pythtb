@@ -1,6 +1,6 @@
 1. I will assume that up to this point the candidate for new
 release is in develop branch on the git.  Also, I will assume that we have
-tested already the website to some exten,t and that the code can run all the
+tested already the website to some extent, and that the code can run all the
 examples when creating the website, and that all tox tests are passing.
 
 2. Now let us create a release branch off of develop:

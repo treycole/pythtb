@@ -7,7 +7,7 @@ Version 1.8.0 (current)
   which are not Bloch-like eigenstates.
 
 * Added new functionality to wf_array (solve_on_one_point,
-  choose_states, empty_like
+  choose_states, empty_like)
 
 * Added function change_nonperiodic_vector and changed the way
   "to_home" parameter works.
