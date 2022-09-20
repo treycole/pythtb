@@ -245,17 +245,17 @@ extensive in 2D, so that k-space is only 2D.
    :include-source:
 
 
-.. _cubic_slab:
+.. _cubic_slab_hwf:
 
-Cubic slab
-----------
+Hybrid Wannier functions on a cubic slab
+----------------------------------------
 
 This code illustrates a calculation of the Berry phases along x
 of individual z-localized hybrid Wannier bands for a slab model
 (finite in z but extended in x and y), using a *wf_array* structure
 to simplify the calculation.
 
-.. plot :: examples/cubic_slab.py
+.. plot :: examples/cubic_slab_hwf.py
    :include-source:
 
 

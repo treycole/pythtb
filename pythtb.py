@@ -113,8 +113,6 @@ class tb_model(object):
         if (type(lat) is str and lat == 'unit') or lat is None:
             self._lat=np.identity(dim_r,float)
             print(" Lattice vectors not specified! I will use identity matrix.")
-        elif type(lat).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument lat is not a list.")
         else:
             self._lat=np.array(lat,dtype=float)
             if self._lat.shape!=(dim_r,dim_r):
@@ -138,8 +136,6 @@ class tb_model(object):
             self._norb=orb
             self._orb=np.zeros((orb,dim_r))
             print(" Orbital positions not specified. I will assume ",orb," orbitals at the origin")
-        elif type(orb).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument orb is not a list or an integer")
         else:
             self._orb=np.array(orb,dtype=float)
             if len(self._orb.shape)!=2:
@@ -192,11 +188,6 @@ class tb_model(object):
         Defines on-site energies for tight-binding orbitals. One can
         either set energy for one tight-binding orbital, or all at
         once.
-
-        .. warning:: In previous version of PythTB this function was
-          called *set_sites*. For backwards compatibility one can still
-          use that name but that feature will be removed in future
-          releases.
 
         :param onsite_en: Either a list of on-site energies (in
           arbitrary units) for each orbital, or a single on-site
@@ -351,11 +342,6 @@ class tb_model(object):
            automatically. If you want to specifiy hoppings in both
            directions, see description of parameter
            *allow_conjugate_pair*.
-
-        .. warning:: In previous version of PythTB this function was
-          called *add_hop*. For backwards compatibility one can still
-          use that name but that feature will be removed in future
-          releases.
 
         :param hop_amp: Hopping amplitude; can be real or complex
           number, equals :math:`H_{ij}({\bf R})`. If *nspin* is *2*
@@ -555,7 +541,8 @@ direction.  (Or, alternatively, see the documentation on the
                 ret[1,1]+=use_val[0]
                 # sigma_x
                 ret[0,1]+=use_val[1]
-                ret[1,0]+=use_val[1]                # sigma_y
+                ret[1,0]+=use_val[1]
+                # sigma_y
                 ret[0,1]+=use_val[2]*(-1.0j)
                 ret[1,0]+=use_val[2]*( 1.0j)
                 # sigma_z
@@ -2172,7 +2159,7 @@ somehow changed Cartesian coordinates of orbitals.""")
         pos_exp=self.position_matrix(evec,dir).diagonal()
         return np.array(np.real(pos_exp),dtype=float)
 
-    def position_hwf(self,evec,dir,hwf_evec=False,basis="wavefunction"):
+    def position_hwf(self,evec,dir,hwf_evec=False,basis="orbital"):
         r""" 
 
         Returns eigenvalues and optionally eigenvectors of the
@@ -2219,7 +2206,7 @@ somehow changed Cartesian coordinates of orbitals.""")
           Note that option basis="bloch" is a synonym for basis="wavefunction".
           If basis="orbital", the elements of hwf[i,orb] (or hwf[i,orb,spin]
           if nspin=2) give the amplitudes of the i-th hybrid Wannier function on
-          the specified basis function.  Default is basis="wavefunction".
+          the specified basis function.  Default is basis="orbital".
 
         :returns:
           * **hwfc** -- Eigenvalues of the position operator matrix :math:`X`
@@ -2291,12 +2278,6 @@ somehow changed Cartesian coordinates of orbitals.""")
             else:
                 raise Exception("\n\nBasis must be either 'wavefunction', 'bloch', or 'orbital'")
 
-
-# keeping old name for backwards compatibility
-# will be removed in future
-tb_model.set_sites=tb_model.set_onsite
-tb_model.add_hop=tb_model.set_hop
-tbmodel=tb_model
 
 #=======================================================================
 class wf_array(object):
@@ -2375,7 +2356,7 @@ class wf_array(object):
     (e.g., premultiplied by a position, velocity, or Hamiltonian
     operator); or for hybrid Wannier functions (i.e., eigenstates
     of a position operator in a nonperiodic direction).  For an
-    example of this kind, see :ref:`cubic_slab`.
+    example of this kind, see :ref:`cubic_slab_hwf`.
 
     :param model: Object of type :class:`pythtb.tb_model` representing
       tight-binding model associated with this array of eigenvectors.
@@ -2606,11 +2587,11 @@ class wf_array(object):
         # make a full copy of the wf_array
         wf_new=copy.deepcopy(self)
 
-        if type(subset).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument subset is type",type(subset),
-             ". Must be list or ndarray.")
+        subset=np.array(subset,dtype=int)
+        if subset.ndim!=1:
+            raise Exception("\n\nParameter subset must be a one-dimensional array.")
         
-        wf_new._nsta_arr=len(subset)
+        wf_new._nsta_arr=subset.shape[0]
 
         if self._dim_arr==1:
             wf_new._wfs=wf_new._wfs[:,subset]
@@ -2650,7 +2631,7 @@ class wf_array(object):
         # make a full copy of the wf_array
         wf_new=copy.deepcopy(self)
 
-        if nsta_arr == None:
+        if nsta_arr is None:
             wf_new._wfs=np.empty_like(wf_new._wfs)
         else:
             wf_shape=list(wf_new._wfs.shape)
@@ -2809,6 +2790,75 @@ class wf_array(object):
         else:
             raise Exception("\n\nWrong value of mesh_dir.")
 
+    def position_matrix(self, key, occ, dir):
+        """Similar to :func:`pythtb.tb_model.position_matrix`.  Only
+        difference is that, in addition to specifying *dir*, one also
+        has to specify *key* (k-point of interest) and *occ* (list of
+        states to be included, which can optionally be 'All')."""
+
+        # Check for special case of parameter occ
+        if type(occ) is str and occ == 'All':
+            occ=np.arange(self._nsta_arr,dtype=int)
+        else:
+            occ=np.array(occ,dtype=int)
+
+        if occ.ndim!=1:
+            raise Exception("""\n\nParameter occ must be a one-dimensional array or string "All".""")
+            
+        # check if model came from w90
+        if self._model._assume_position_operator_diagonal==False:
+            _offdiag_approximation_warning_and_stop()
+        #
+        evec=self._wfs[tuple(key)][occ]
+        return self._model.position_matrix(evec,dir)
+
+    def position_expectation(self, key, occ, dir):
+        """Similar to :func:`pythtb.tb_model.position_expectation`.  Only
+        difference is that, in addition to specifying *dir*, one also
+        has to specify *key* (k-point of interest) and *occ* (list of
+        states to be included, which can optionally be 'All')."""
+
+        # Check for special case of parameter occ
+        if type(occ) is str and occ == 'All':
+            occ=np.arange(self._nsta_arr,dtype=int)
+        else:
+            occ=np.array(occ,dtype=int)
+            
+        if occ.ndim!=1:
+            raise Exception("""\n\nParameter occ must be a one-dimensional array or string "All".""")
+            
+        # check if model came from w90
+        if self._model._assume_position_operator_diagonal==False:
+            _offdiag_approximation_warning_and_stop()
+        #
+        evec=self._wfs[tuple(key)][occ]
+        return self._model.position_expectation(evec,dir)
+
+    def position_hwf(self, key, occ, dir, hwf_evec=False, basis="wavefunction"):
+        """Similar to :func:`pythtb.tb_model.position_hwf`, except that
+        in addition to specifying *dir*, one also has to specify
+        *key*, the k-point of interest, and *occ*, a list of states to
+        be included (typically the occupied states).
+
+        For backwards compatibility the default value of *basis* here is different
+        from that in :func:`pythtb.tb_model.position_hwf`.
+        """
+
+        # Check for special case of parameter occ
+        if type(occ) is str and occ == 'All':
+            occ=np.arange(self._nsta_arr,dtype=int)
+        else:
+            occ=np.array(occ,dtype=int)
+
+        if occ.ndim!=1:
+            raise Exception("""\n\nParameter occ must be a one-dimensional array or string "All".""")
+            
+        # check if model came from w90
+        if self._model._assume_position_operator_diagonal==False:
+            _offdiag_approximation_warning_and_stop()
+
+        evec=self._wfs[tuple(key)][occ]
+        return self._model.position_hwf(evec,dir,hwf_evec,basis)
 
     def berry_phase(self,occ="All",dir=None,contin=True,berry_evals=False):
         r"""
@@ -2906,13 +2956,16 @@ class wf_array(object):
         """
 
         # special case requesting all states in the array
-        if occ=="All" or occ is None:
+        if (type(occ) is str and occ == 'All') or occ is None:
             # note that 'None' means 'not specified', not 'no states'
-            occ=list(range(self._nsta_arr))
+            occ=np.arange(self._nsta_arr,dtype=int)
+        else:
+            occ=np.array(occ,dtype=int)
 
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is not a list.")
-        
+        if occ.ndim!=1:
+            raise Exception("""\n\nParameter occ must be a one-dimensional array or string "All" or None.""")
+
+                    
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
             _offdiag_approximation_warning_and_stop()
@@ -3011,68 +3064,7 @@ class wf_array(object):
                 elif self._dim_arr!=1:
                     raise Exception("\n\nWrong dimensionality!")
         return ret
-
-    def position_matrix(self, key, occ, dir):
-        """Similar to :func:`pythtb.tb_model.position_matrix`.  Only
-        difference is that, in addition to specifying *dir*, one also
-        has to specify *key* (k-point of interest) and *occ* (list of
-        states to be included, which can optionally be 'All')."""
-
-        # Check for special case of parameter occ
-        if occ=="All":
-            occ=list(range(self._nsta_arr))
-
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is not a list.")
-            
-        # check if model came from w90
-        if self._model._assume_position_operator_diagonal==False:
-            _offdiag_approximation_warning_and_stop()
-        #
-        evec=self._wfs[tuple(key)][occ]
-        return self._model.position_matrix(evec,dir)
-
-    def position_expectation(self, key, occ, dir):
-        """Similar to :func:`pythtb.tb_model.position_expectation`.  Only
-        difference is that, in addition to specifying *dir*, one also
-        has to specify *key* (k-point of interest) and *occ* (list of
-        states to be included, which can optionally be 'All')."""
-
-        # Check for special case of parameter occ
-        if occ=="All":
-            occ=list(range(self._nsta_arr))
-
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is not a list.")
-            
-        # check if model came from w90
-        if self._model._assume_position_operator_diagonal==False:
-            _offdiag_approximation_warning_and_stop()
-        #
-        evec=self._wfs[tuple(key)][occ]
-        return self._model.position_expectation(evec,dir)
-
-    def position_hwf(self, key, occ, dir, hwf_evec=False, basis="wavefunction"):
-        """Similar to :func:`pythtb.tb_model.position_hwf`, except that
-        in addition to specifying *dir*, one also has to specify
-        *key*, the k-point of interest, and *occ*, a list of states to
-        be included (typically the occupied states)."""
-
-        # Check for special case of parameter occ
-        if occ=="All":
-            occ=list(range(self._nsta_arr))
-
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is type",type(occ),
-             ". Must be list or ndarray.")
-            
-        # check if model came from w90
-        if self._model._assume_position_operator_diagonal==False:
-            _offdiag_approximation_warning_and_stop()
-
-        evec=self._wfs[tuple(key)][occ]
-        return self._model.position_hwf(evec,dir,hwf_evec,basis)
-
+    
     def berry_flux(self,occ="All",dirs=None,individual_phases=False):
         r"""
 
@@ -3117,12 +3109,11 @@ class wf_array(object):
         """
 
         # special case requesting all states in the array
-        if occ=="All" or occ is None:
+        if (type(occ) is str and occ == 'All') or occ is None:
             # note that 'None' means 'not specified', not 'no states'
-            occ=list(range(self._nsta_arr))
-
-        if type(occ).__name__ not in ['list','ndarray']:
-            raise Exception("\n\nArgument occ is not a list.")
+            occ=np.arange(self._nsta_arr,dtype=int)
+        else:
+            occ=np.array(occ,dtype=int)
             
         # check if model came from w90
         if self._model._assume_position_operator_diagonal==False:
@@ -3212,24 +3203,6 @@ class wf_array(object):
 
         else:
             raise Exception("\n\nWrong dimensionality!")
-
-
-    def berry_curv(self,occ,individual_phases=False):
-        r"""
-
-      .. warning:: This function has been renamed as :func:`pythtb.berry_flux` and is provided
-        here only for backwards compatibility with versions of pythtb prior to 1.7.0.  Please
-        use related :func:`pythtb.berry_flux` as this function may not exist in future releases.
-
-        """
-
-        print(""" 
-
-Warning:
-  Usage of function berry_curv is discouraged.
-  It has been renamed as berry_flux, which should be used instead.
-""")
-        return self.berry_flux(occ,individual_phases)
 
 #=======================================================================
 class w90(object):
@@ -3788,57 +3761,6 @@ class w90(object):
 #=======================================================================
 # Begin internal definitions
 #=======================================================================
-
-def k_path(kpts,nk,endpoint=True):
-    r"""
-
-      .. warning:: This function is here only for backwards compatibility 
-        with version of pythtb prior to 1.7.0.  Please use related :func:`pythtb.tb_model.k_path`
-        function as this function might not exist in the future releases of the code.
-
-    """
-
-    print(""" 
-
-Warning:
-
-  Usage of function k_path is discouraged.  
-  Instead of the following code:
-    k_vec=k_path(...)
-  please use the following code:
-    (k_vec,k_dist,k_node)=my_model.k_path(...)
-  Note that this k_path function is a member of the tb_model class.
-
-""")
-
-    if kpts=='full':
-        # this means the full Brillouin zone for 1D case
-        if endpoint==True:
-            return np.arange(nk+1,dtype=float)/float(nk)
-        else:
-            return np.arange(nk,dtype=float)/float(nk)
-    elif kpts=='half':
-        # this means the half Brillouin zone for 1D case
-        if endpoint==True:
-            return np.arange(nk+1,dtype=float)/float(2.*nk)
-        else:
-            return np.arange(nk,dtype=float)/float(2.*nk)
-    else:
-        # general case
-        kint=[]
-        k_list=np.array(kpts)
-        # go over all kpoints
-        for i in range(len(k_list)-1):
-            # go over all steps
-            for j in range(nk):
-                cur=k_list[i]+(k_list[i+1]-k_list[i])*float(j)/float(nk)
-                kint.append(cur)
-        # add last point
-        if endpoint==True:
-            kint.append(k_list[-1])
-        #
-        kint=np.array(kint)
-        return kint
 
 def _nicefy_eig(eval,eig=None):
     "Sort eigenvaules and eigenvectors, if given, and convert to real numbers"
