@@ -23,61 +23,6 @@ Do NOT edit following folders directly:
 website/source/examples
 website/source/misc
 
-
-+++++++++++++++++++++++++++++++
-How to update version of PythTB
-+++++++++++++++++++++++++++++++
-
-1. Update __version__ variable and date in the header of pythtb.py
-
-2. Update version string in setup.py
-
-3. Update website/local/release/release.rst by specifying what is new in the
-package.
-
-4. Add folder in website/local/release/ver_ABC for the old version of the package,
-put in .tar.gz file. of the old version.
-*It is enough to do this for the old version only!*
-You will also have to add that folder to cvs.
-To get old source file use this command:
-wget http://www.physics.rutgers.edu/pythtb/_downloads/pythtb-X.X.X.tar.gz
-
-5. Update website/source/install.rst with the new version. It is enough to
-change string "1.6.1" with "1.6.2" or similar.
-
-6. Update website/source/conf.py. Version number appears at two places, just
-update the string.
-
-7. There is NO need to update src/CHANGES. We may want to remove that
-file in the future.
-
-8. Update the code on the PyPI server by following these instruction.
-
-Make sure that you link ../private/.pypirc_MOVE_TO_HOME to home folder as ~/.pypirc  !
-David, let me know if you don't have this file.  It contains passwords so I
-don't want to keep it on github.
-
-Here are instructions for testing purposes only:
-
-  rm -rf dist
-  python setup.py sdist
-  twine upload dist/* -r testpypi
-
-If you wish to test the package do this,
-
-  pip install -i https://testpypi.python.org/pypi pythtb==1.x.x
-
-When you are sure that this works you can officially upload it to pypi like this.
-Note that this code below should not be executed lightly! These lines will make
-some changes in the pypi servers and after that it is hard to tweak things.
-Therefore make sure you do all the tests you need to do first with the 
-"testpypi" version!  Once you are happy with how things look like execute
-lines below:
-
-  rm -rf dist
-  python setup.py sdist
-  twine upload dist/* -r pypi
-
 ================
 How to test code 
 ================

@@ -99,22 +99,5 @@ pull request on the website.
   git branch -d feature_DESCRIPTOR                  ! locally
   git push origin --delete feature_DESCRIPTOR       ! remotely
 
-8. When we have decided to issue a new release of the code:
-
-Create a release branch off of develop:
-
-  git checkout develop
-  git checkout -b release/0.1.0
-
-If needed, polish the code, make sure documentation is up to
-date with the new version, make tiny bug fixes, update the website,
-etc.  These changes should all go to the release/0.1.0 branch.
-
-Note that in the meantime someone else could be working on the
-develop branch.  That is fine, that ship has sailed, and what we
-release as 0.1.0 will not have those changes (unless we really
-insist).
-
-When we are happy with polishing release/0.1.0, we should merge
-it into master, and also into develop (checking for and resolving
-conflicts if develop has been changed).
+8. When we have decided to issue a new release of the code we should
+follow steps described in RELEASINGNEWVERSION
