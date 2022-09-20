@@ -1,81 +1,82 @@
 1. I will assume that up to this point the candidate for new
-release is in develop branch on the git.
+release is in develop branch on the git.  Also, I will assume that we have
+tested already the website to some exten,t and that the code can run all the
+examples when creating the website, and that all tox tests are passing.
 
-2. We should test the website to make sure it is rendered correctly.
-
-3. We should also run tox tests, as described in README.
-
-4. Now let us ceate a release branch off of develop:
+2. Now let us create a release branch off of develop:
 
   git checkout develop
-  git checkout -b release/0.1.0
+  git checkout -b release/1.x.x
 
-5. If needed, polish the code, make sure documentation is up to
-date with the new version, make tiny bug fixes, update the website,
-etc.  These changes should all go to the release/0.1.0 branch.
+3. Any changes we now make to this release candidate should go to the
+release/1.x.x. branch.
 
-Note that in the meantime someone else could be working on the
-develop branch.  That is fine, that ship has sailed, and what we
-release as 0.1.0 will not have those changes (unless we really
-insist).
+4a. Update __version__ variable and date in the header of pythtb.py
 
-6a. Update __version__ variable and date in the header of pythtb.py
+4b. Update version string in setup.py
 
-6b. Update version string in setup.py
-
-6c. Update website/local/release/release.rst by specifying what is new in the
+4c. Update website/local/release/release.rst by specifying what is new in the
 package.
 
-6d. Add folder in website/local/release/ver_ABC for the old version of the package,
+4d. Add folder in website/local/release/ver_ABC for the old version of the package,
 put in .tar.gz file. of the old version.
 *It is enough to do this for the old version only!*
 You will also have to add that folder to cvs.
 To get old source file use this command:
 wget http://www.physics.rutgers.edu/pythtb/_downloads/pythtb-X.X.X.tar.gz
 
-6e. Update website/source/install.rst with the new version. It is enough to
+4e. Update website/source/install.rst with the new version. It is enough to
 change string "1.6.1" with "1.6.2" or similar.
 
-6f. Update website/source/conf.py. Version number appears at two places, just
+4f. Update website/source/conf.py. Version number appears at two places, just
 update the string.
 
-6g. There is NO need to update src/CHANGES. We may want to remove that
+4g. There is NO need to update src/CHANGES. We may want to remove that
 file in the future.
 
+5. We should test the website to make sure it is rendered correctly.
 
-7. When we are happy with polishing release/0.1.0, we should merge
-it into master, and also into develop (checking for and resolving
-conflicts if develop has been changed).
+6. Sinisa will wait for David's confirmation that website is running well
+on his end before proceeding to the next step.
 
+7. When we are happy with polishing release/1.x.x, we should merge
+it into develop and master (checking for and resolving conflicts if develop
+has been changed).
 
-8. Update the code on the PyPI server by following these instruction.
+8. Now I will update the code on the PyPI server.
 
-Make sure that you link ../private/.pypirc_MOVE_TO_HOME to home folder as ~/.pypirc  !
+8a. Make sure that you link ../private/.pypirc_MOVE_TO_HOME to home folder as ~/.pypirc  !
 David, let me know if you don't have this file.  It contains passwords so I
 don't want to keep it on github.
 
-Here are instructions for testing purposes only:
+8b. Here are instructions for testing purposes only:
 
+  git checkout master
   rm -rf dist
   python setup.py sdist
   twine upload dist/* -r testpypi
 
-If you wish to test the package do this,
+8c. If you wish to test the package do this,
 
+  git checkout master
   pip install -i https://testpypi.python.org/pypi pythtb==1.x.x
 
-When you are sure that this works you can officially upload it to pypi like this.
+8d. When you are sure that this works you can officially upload it to pypi like this.
 Note that this code below should not be executed lightly! These lines will make
 some changes in the pypi servers and after that it is hard to tweak things.
 Therefore make sure you do all the tests you need to do first with the 
 "testpypi" version!  Once you are happy with how things look like execute
 lines below:
 
+******************* BE CAREFUL WITH THIS *************************
+
+  git checkout master
   rm -rf dist
   python setup.py sdist
   twine upload dist/* -r pypi
+  
+******************************************************************
 
-
-9. David should now update the website from the "master" branch of git.  David,
+9. David should now do the final update of the website from the "master" branch of git.  David,
 please add here more information if needed.
 
