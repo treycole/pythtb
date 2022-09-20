@@ -34,7 +34,7 @@ def get_kane_mele(topological):
   rashba=0.25*thop
   
   # set on-site energies
-  ret_model.set_sites([esite,(-1.0)*esite])
+  ret_model.set_onsite([esite,(-1.0)*esite])
   
   # set hoppings (one for each connected pair of orbitals)
   # (amplitude, i, j, [lattice vector to cell containing j])
