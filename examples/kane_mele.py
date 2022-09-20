@@ -20,7 +20,7 @@ def get_kane_mele(topological):
   orb=[[1./3.,1./3.],[2./3.,2./3.]]
   
   # make two dimensional tight-binding Kane-Mele model
-  ret_model=tbmodel(2,2,lat,orb,nspin=2)
+  ret_model=tb_model(2,2,lat,orb,nspin=2)
   
   # set model parameters depending on whether you are in the topological
   # phase or not
