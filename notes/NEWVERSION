@@ -1,6 +1,6 @@
 1. I will assume that up to this point the candidate for new
 release is in develop branch on the git.  Also, I will assume that we have
-tested already the website to some extent, and that the code can run all the
+tested already the website to some extent and that the code can run all the
 examples when creating the website, and that all tox tests are passing.
 
 2. Now let us create a release branch off of develop:
@@ -55,21 +55,22 @@ should do this test on release/1.x.x branch
    git checkout release/1.x.x
 
 6. Sinisa will wait for David's confirmation that website is running well
-on his end before proceeding to the next step.
+on his end before proceeding to the next step.  David can push to release/1.x.x
+if he has any additional corrections.
 
 7. When we are happy with polishing release/1.x.x, we should merge
 it into develop and master (checking for and resolving conflicts if develop
 has been changed).
 
-8. Now I will update the code on the PyPI server.
+8. Now Sinisa will update the code on the PyPI server.
 
-8a. Make sure that you link ../private/.pypirc_MOVE_TO_HOME to home folder as ~/.pypirc  !
-David, let me know if you don't have this file.  It contains passwords so I
-don't want to keep it on github.
+8a. Make sure that you link ../../private/.pypirc_MOVE_TO_HOME to home folder as ~/.pypirc  !
+This file contains a passwords so I'm not keeping it on github.
 
 8b. Here are instructions for testing purposes only:
 
   git checkout master
+  git pull
   rm -rf dist
   python setup.py sdist
   twine upload dist/* -r testpypi
@@ -77,7 +78,8 @@ don't want to keep it on github.
 8c. If you wish to test the package do this,
 
   git checkout master
-  pip install -i https://testpypi.python.org/pypi pythtb==1.x.x
+  git pull
+  pip install -i https://test.pypi.org/simple/ pythtb==1.8.0
 
 8d. When you are sure that this works you can officially upload it to pypi like this.
 Note that this code below should not be executed lightly! These lines will make
@@ -89,6 +91,7 @@ lines below:
 ******************* BE CAREFUL WITH THIS *************************
 
   git checkout master
+  git pull
   rm -rf dist
   python setup.py sdist
   twine upload dist/* -r pypi
@@ -97,6 +100,5 @@ lines below:
 
 9. David should now do the final update of the website from the "master" branch of git.  David,
 please add here more information if needed.
-
 
 10. Update this file if needed.
