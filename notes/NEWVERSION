@@ -101,4 +101,8 @@ lines below:
 9. David should now do the final update of the website from the "master" branch of git.  David,
 please add here more information if needed.
 
+   git checkout master
+   git pull
+   ...
+
 10. Update this file if needed.
