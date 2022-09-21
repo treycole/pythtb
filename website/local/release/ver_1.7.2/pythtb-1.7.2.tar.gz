@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Rutgers University Department of Physics and Astronomy</title>
+<link href="/main19.css" rel="stylesheet" type="text/css" />
+<link href="http://www.physics.rutgers.edu/main19.css" rel="stylesheet" type="text/css" />
+<link href="index-test.css" rel="stylesheet" type="text/css" />
+<link href="index.css" rel="stylesheet" type="text/css" />
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-1317269-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+</head>
+
+<body>
+
+<div id="maincontainer">
+
+<div id="topsection">
+<div class="innertube">
+<map name="searches" id="searches">
+<area shape="rect" href="http://www.physics.rutgers.edu/dev/directory.shtml" coords="740,0,850,30" alt="search physics" />
+<area shape="rect" href="http://search.rutgers.edu" coords="900,0,1020,30"
+ alt="search Rutgers" />
+<area shape="Rect" href="http://sas.rutgers.edu" coords="70,50,300,102" alt="Search Rutgers" target="_new">
+</map>
+
+<img usemap="#searches" src="http://www.physics.rutgers.edu/dev/newbanner.png"  width="1010" height="115" alt="Rutgers School of Arts and Sciences: Physics and Astronomy" border="0" />
+</div>
+</div>
+
+<div style="width:100%;">
+<div id="contentwrapper">
+<div id="contentcolumn">
+<div class="biginnertube">
+<table><tr><td ><h1>ERROR - Page not found</h1><h2>The web page you requested was not found.</h2>Some possible reasons for this:<ul><li>There may be a typographical error in the URL<li>The page may have been renamed<li>The page you are looking for may have been removed</ul><p>Please use the menu at the left side of the page or the search at thetop of the page to find what you are looking for.  </p><p>If you can't find the information you need please contact the webmaster</p></td></tr></table></div>
+</div>
+</div>
+
+<div id="leftcolumn" >
+<div class="innertube">
+<h2>Find more about:</h2>
+
+<table cellspacing="0">
+<tr><td><a href="http://www.physics.rutgers.edu/descr/descr-ug-program2.shtml">Undergraduate Programs</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/grad">Graduate Programs</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/dev/descr-research2.shtml">Research Areas</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/descr/facilities2.shtml">Facilities and Resources</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/dev/directory.shtml">Department Directory</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/dev/contact4.shtml">How to Reach Us</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/dev/physicsnews2.shtml">News and Seminars</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/dept/history">Department History</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/jobs">Job Openings</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/ruwipa">Women in Physics</a></td></tr>
+<tr><td><a href="https://physics.rutgers.edu/support-us">Giving to Physics & Astronomy</a></td></tr>
+</table>
+
+<h2>Jump to:</h2>
+<table cellspacing="0">
+<tr><td><a href="http://www.physics.rutgers.edu/homes-ugcourses.shtml">Undergraduate Courses</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/homes-gradcourses.shtml">Graduate Courses</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/newsletter">Events Newsletter</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/outreach">Outreach Activities</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/ast/ast-serin.html">Observatory Nights</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/alumnifriends">Alumni & Friends</a></td></tr>
+<tr><td><a href="http://www.physics.rutgers.edu/alumninewsletter">Alumni Newsletter</a></td></tr>
+</table>
+
+<div class="dirsearch">
+<table cellspacing="0">
+<tr><td><a href="https://physics.rutgers.edu">Physics Homepage</a></tr></td>
+</table>
+</div>
+
+<div class="dirsearch">
+<table cellspacing="0">
+<tr><!--td>Directory Search:</td--></tr>
+<tr><td><form method="post" action="http://cgisvr.physics.rutgers.edu/cgi-bin/physdb/search-directory.pl">
+ <label for="dirsearch">Directory Search:</label> 
+ <input name="key" type="text" id="dirsearch" value="" size="11" />
+ <input name="submit" type="submit" value="Go" />
+</form></td></tr>
+</table>
+</div>
+
+<div class="ruhome">
+<a href="http://www.rutgers.edu/">
+RETURN TO RUTGERS<br />HOME PAGE</a>
+</div>
+
+<center><a href="http://250.rutgers.edu" border=0><img src="http://www.physics.rutgers.edu/dev/RUTGERS250RED.gif" width=140 alt="Rutgers 250th anniversary logo.  Visit page to learn more."></a></center>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>
+

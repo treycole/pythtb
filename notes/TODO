@@ -1,6 +1,12 @@
 *This is a place where I core-dump list of ideas, it is not regularly updated.*
 
-Implement support for write_tb option from wannier90
+Implement support for write_tb option from wannier90.
+
+Potential BUG: I think that prefix_hr.dat file written by Wannier90 contains
+hamiltonian in the psi-space, not u-space.  Therefore, numbers in there
+should not be multiplied by exp(i tau * k) where tau is center of the Wannier
+function.
+
 _______________________
 
 <<<<<<< TODO

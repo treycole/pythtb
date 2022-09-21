@@ -111,17 +111,17 @@ or install `Anaconda <https://www.continuum.io/downloads>`_ version of python.
 To install PythTB without 'pip' first download either of the following 
 two archived forms
 
-* :download:`pythtb-1.7.2.tar.gz <misc/pythtb-1.7.2.tar.gz>`
-* :download:`pythtb-1.7.2.zip <misc/pythtb-1.7.2.zip>`
+* :download:`pythtb-1.8.0.tar.gz <misc/pythtb-1.8.0.tar.gz>`
+* :download:`pythtb-1.8.0.zip <misc/pythtb-1.8.0.zip>`
 
 and unpack it with one of these commands::
 
-   tar -zxf pythtb-1.7.2.tar.gz
-   unzip pythtb-1.7.2.zip
+   tar -zxf pythtb-1.8.0.tar.gz
+   unzip pythtb-1.8.0.zip
 
 Then move into the working directory and install it::
 
-   cd pythtb-1.7.2
+   cd pythtb-1.8.0
    python setup.py install
 
 (You may have to `sudo` the second command.)  To check that the

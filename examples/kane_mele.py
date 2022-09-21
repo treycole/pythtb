@@ -20,7 +20,7 @@ def get_kane_mele(topological):
   orb=[[1./3.,1./3.],[2./3.,2./3.]]
   
   # make two dimensional tight-binding Kane-Mele model
-  ret_model=tbmodel(2,2,lat,orb,nspin=2)
+  ret_model=tb_model(2,2,lat,orb,nspin=2)
   
   # set model parameters depending on whether you are in the topological
   # phase or not
@@ -34,7 +34,7 @@ def get_kane_mele(topological):
   rashba=0.25*thop
   
   # set on-site energies
-  ret_model.set_sites([esite,(-1.0)*esite])
+  ret_model.set_onsite([esite,(-1.0)*esite])
   
   # set hoppings (one for each connected pair of orbitals)
   # (amplitude, i, j, [lattice vector to cell containing j])

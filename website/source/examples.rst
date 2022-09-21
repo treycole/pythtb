@@ -245,6 +245,35 @@ extensive in 2D, so that k-space is only 2D.
    :include-source:
 
 
+.. _cubic_slab_hwf:
+
+Hybrid Wannier functions on a cubic slab
+----------------------------------------
+
+This code illustrates a calculation of the Berry phases along x
+of individual z-localized hybrid Wannier bands for a slab model
+(finite in z but extended in x and y), using a *wf_array* structure
+to simplify the calculation.
+
+.. plot :: examples/cubic_slab_hwf.py
+   :include-source:
+
+
+.. _bn_ribbon_berry:
+
+BN ribbon with change of nonperiodic vector
+-------------------------------------------
+
+This boron nitride ribbon calculation illustrates a case where
+it is a good idea to change a nonperiodic lattice vector to be
+normal to the periodic direction(s).  While the model is
+physically the same before and after the change, as shown by the
+identical band structures, the Berry phase is consistent with
+the polarization in the extended direction only after the change.
+
+.. plot :: examples/bn_ribbon_berry.py
+   :include-source:
+
 
 .. _w90_quick:
 
