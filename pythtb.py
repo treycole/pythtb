@@ -1,10 +1,10 @@
 from __future__ import print_function
 
 # PythTB python tight binding module.
-# August 25th, 2017
-__version__='1.7.2'
+# September 20th, 2022
+__version__='1.8.0'
 
-# Copyright 2010, 2012, 2016, 2017 by Sinisa Coh and David Vanderbilt
+# Copyright 2010, 2012, 2016, 2017, 2022 by Sinisa Coh and David Vanderbilt
 #
 # This file is part of PythTB.  PythTB is free software: you can
 # redistribute it and/or modify it under the terms of the GNU General
