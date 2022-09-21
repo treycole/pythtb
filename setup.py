@@ -4,8 +4,8 @@ from distutils.core import setup
 
 setup(name='pythtb',
       version='1.8.0',
-      author='Sinisa Coh and David Vanderbilt',
-      author_email='sinisacoh@gmail.com',
+      author='Sinisa Coh, David Vanderbilt',
+      author_email='sinisacoh@gmail.com, dhv@physics.rutgers.edu',
       url='http://www.physics.rutgers.edu/pythtb',
       download_url='http://www.physics.rutgers.edu/pythtb',
       keywords='tight binding, solid state physics, condensed matter physics, materials science',

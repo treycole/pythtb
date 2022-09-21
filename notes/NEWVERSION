@@ -29,8 +29,9 @@ package.
 put in .tar.gz file. of the old version.
 *It is enough to do this for the old version only!*
 New version will be added automatically by the "go" script in website folder.
-To get old source file use this command:
-wget http://www.physics.rutgers.edu/pythtb/_downloads/pythtb-X.X.X.tar.gz
+To get old source file go to this website:
+https://pypi.org/project/pythtb/1.OLD.OLD/#files
+and download the source.  Then do this,
 
   git add ver_1.OLD.OLD
   git add ver_1.OLD.OLD/pythtb-1.OLD.OLD.tar.gz
