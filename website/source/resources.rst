@@ -10,6 +10,11 @@ from a presentation given by Sinisa Coh during lectures on Sep 30th
 
 *  :download:`Introduction to Python, Numpy, Matplotlib, PythTB <misc/pythtb-talk.pdf>`
 
+Here is a one hour lecture on PythTB given by Sinisa Coh during the
+Wannier 2022 Summer School on May 19th 2022:
+   
+* `One hour lecture on PythTB <https://www.youtube.com/watch?v=-PzVB37rP30>`_
+   
 Python Web Resources
 --------------------
 
