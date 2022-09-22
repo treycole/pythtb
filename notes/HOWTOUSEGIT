@@ -56,7 +56,12 @@ This will initially be a copy of 'develop'.
 To submit changes to the feature branch remotely:
 
   git commit -m "type message here"
-  git push origin feature_DESCRIPTOR
+  git push -u origin feature_DESCRIPTOR
+
+This last line has to be done once per local repository.  Next
+time you can simply do
+
+  git push origin
 
 Note that any time you change any file, you need to "git add" it
 again before committing and pushing.
@@ -64,7 +69,7 @@ again before committing and pushing.
 5. If Sinisa did some work on the same branch, and then did
 add/commit/push_origin David can add those changes by doing
 
-  git pull origin feature_DESCRIPTOR
+  git pull -u origin feature_DESCRIPTOR
 
 6. When David is done working on the feature branch, and it has
 been pushed to origin, he should create a pull request to have
