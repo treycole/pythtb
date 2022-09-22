@@ -6,7 +6,12 @@ git checkout develop
 git checkout -b feature_DESCRIPTOR
 git add FILENAME
 git commit -m "type message here"
-git push origin feature_DESCRIPTOR
+git push -u origin feature_DESCRIPTOR
+
+
+FOR EVERY FOLLOWING COMMIT SIMPLY DO:
+
+
 
 *******************************************************
 
