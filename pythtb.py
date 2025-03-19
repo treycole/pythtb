@@ -1,12 +1,12 @@
 from __future__ import print_function
 
 # PythTB python tight binding module.
-# September 20th, 2022
-__version__='1.8.0'
+# March 19th, 2025
+__version__='2.0.0'
 
-# Copyright 2010, 2012, 2016, 2017, 2022 by Sinisa Coh and David Vanderbilt
+# Copyright 2010, 2012, 2016, 2017, 2022, 2025 by Trey Cole, Sinisa Coh and David Vanderbilt
 #
-# This file is part of PythTB.  PythTB is free software: you can
+# This file is part of PythTB. PythTB is free software: you can
 # redistribute it and/or modify it under the terms of the GNU General
 # Public License as published by the Free Software Foundation, either
 # version 3 of the License, or (at your option) any later version.
@@ -25,6 +25,12 @@ __version__='1.8.0'
 import numpy as np # numerics for matrices
 import sys # for exiting
 import copy # for deepcopying
+import logging
+
+# Configure logging at the top of the file
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 class tb_model(object):
     r"""
@@ -91,99 +97,114 @@ class tb_model(object):
 
     """
 
-    def __init__(self,dim_k,dim_r,lat=None,orb=None,per=None,nspin=1):
+    def __init__(
+            self, dim_k:int, dim_r:int,
+            lat=None, orb="bravais", per=None, nspin:int=1
+            ):
 
-        # initialize _dim_k = dimensionality of k-space (integer)
-        if not _is_int(dim_k):
-            raise Exception("\n\nArgument dim_k not an integer")
-        if dim_k < 0 or dim_k > 4:
-            raise Exception("\n\nArgument dim_k out of range. Must be between 0 and 4.")
-        self._dim_k=dim_k
+        # Dimensionality of real space
+        if not isinstance(dim_r, int):
+            raise ValueError("Argument dim_r must be an integer")
+        if dim_r > 4:
+            raise ValueError("Argument dim_r must be less than 4.")
 
-        # initialize _dim_r = dimensionality of r-space (integer)
-        if not _is_int(dim_r):
-            raise Exception("\n\nArgument dim_r not an integer")
-        if dim_r < dim_k or dim_r > 4:
-            raise Exception("\n\nArgument dim_r out of range. Must be dim_r>=dim_k and dim_r<=4.")
-        self._dim_r=dim_r
-
-        # initialize _lat = lattice vectors, array of dim_r*dim_r
-        #   format is _lat(lat_vec_index,cartesian_index)
-        # special option: 'unit' implies unit matrix, also default value
-        if (type(lat) is str and lat == 'unit') or lat is None:
-            self._lat=np.identity(dim_r,float)
-            print(" Lattice vectors not specified! I will use identity matrix.")
+        # Dimensionality of k-space 
+        if not isinstance(dim_k, int):
+            raise ValueError("Argument dim_k must be an integer.")
+        if dim_k > dim_r:
+            raise ValueError("Argument dim_k must be less than dim_r.")
+        
+        self._dim_r = dim_r
+        self._dim_k = dim_k
+    
+        # initialize lattice vectors
+        # shape: (dim_r, dim_r)
+        # idx: (lattice direction, cartesian components)
+        # default: 'unit' implies unit matrix
+        if lat is None or (isinstance(lat, str) and lat == 'unit'):
+            self._lat = np.identity(dim_r, float)
+            logger.info("Lattice vectors not specified. Using identity matrix.")
         else:
-            self._lat=np.array(lat,dtype=float)
-            if self._lat.shape!=(dim_r,dim_r):
-                raise Exception("\n\nWrong lat array dimensions")
+            assert isinstance(lat, (list, np.ndarray)), \
+                "Lattice vectors must be a list or numpy array."
+            if isinstance(lat, list):
+                lat = np.array(lat, dtype=float)
+            if lat.shape != (dim_r, dim_r):
+                raise ValueError("Wrong lat array dimensions. Must have shape (dim_r, dim_r).")
+            
+            self._lat = lat
+
         # check that volume is not zero and that have right handed system
-        if dim_r>0:
-            if np.abs(np.linalg.det(self._lat))<1.0E-6:
-                raise Exception("\n\nLattice vectors length/area/volume too close to zero, or zero.")
-            if np.linalg.det(self._lat)<0.0:
-                raise Exception("\n\nLattice vectors need to form right handed system.")
-
-        # initialize _norb = number of basis orbitals per cell
-        #   and       _orb = orbital locations, in reduced coordinates
-        #   format is _orb(orb_index,lat_vec_index)
-        # special option: 'bravais' implies one atom at origin
-        if (type(orb) is str and orb == 'bravais') or orb is None:
-            self._norb=1
-            self._orb=np.zeros((1,dim_r))
-            print(" Orbital positions not specified. I will assume a single orbital at the origin.")
-        elif _is_int(orb):
-            self._norb=orb
-            self._orb=np.zeros((orb,dim_r))
-            print(" Orbital positions not specified. I will assume ",orb," orbitals at the origin")
+        if dim_r > 0:
+            det_lat = np.linalg.det(self._lat)
+            if det_lat < 0:
+                raise ValueError("Lattice vectors need to form right handed system.")
+            if det_lat < 1e-6:
+                raise ValueError("Volume of unit cell is zero.")
+            
+        # Initialize orbitals defined in reduced coordinates
+        # shape: (norb, dim_r)
+        # idx: (orbital, reduced components)
+        # default: 'bravais' implies one orbital at origin
+        if (isinstance(orb, str) and orb == 'bravais'):
+            self._norb = 1
+            self._orb = np.zeros((1, dim_r))
+            logger.info("Orbital positions is default value 'bravais'. Assuming a single orbital at the origin.")
+        elif isinstance(orb, int):
+            self._norb = orb
+            self._orb = np.zeros((orb, dim_r))
+            logger.info(f"Orbital positions is an integer. Assuming {orb} orbitals at the origin")
         else:
-            self._orb=np.array(orb,dtype=float)
-            if len(self._orb.shape)!=2:
-                raise Exception("\n\nWrong orb array rank")
-            self._norb=self._orb.shape[0] # number of orbitals
-            if self._orb.shape[1]!=dim_r:
-                raise Exception("\n\nWrong orb array dimensions")
+            orb = np.array(orb, dtype=float)
+            if orb.ndim != 2:
+                raise ValueError("Orbtial array must have two axes.")
+            if orb.shape[1] != dim_r:
+                raise Exception("Number of components along second axes of ortbital array must match real space dimension.")
+            
+            self._orb = orb # orbtial vectors
+            self._norb = orb.shape[0] # number of orbitals
 
-        # choose which self._dim_k out of self._dim_r dimensions are
-        # to be considered periodic.        
+        # Specifying which dimensions are periodic.        
         if per is None:
-            # by default first _dim_k dimensions are periodic
-            self._per=list(range(self._dim_k))
+            logger.info("Periodic directions not specified. Using the first dim_k directions.")
+            self._per = list(range(self._dim_k))
         else:
-            if len(per)!=self._dim_k:
-                raise Exception("\n\nWrong choice of periodic/infinite direction!")
-            # store which directions are the periodic ones
-            self._per=per
+            per = list(per)
+            if len(per) != self._dim_k:
+                raise ValueError("Number of periodic directions must equal the k-space dimension, dim_k.")
+            self._per = per
 
-        # remember number of spin components
-        if nspin not in [1,2]:
-            raise Exception("\n\nWrong value of nspin, must be 1 or 2!")
-        self._nspin=nspin
+        # Validate number of spin components
+        if nspin not in [1, 2]:
+            raise ValueError("nspin must be 1 or 2")
+        self._nspin = nspin
+
+        # Number of electronic states at each k-point
+        self._nstate = self._norb*self._nspin
 
         # by default, assume model did not come from w90 object and that
         # position operator is diagonal
-        self._assume_position_operator_diagonal=True
-
-        # compute number of electronic states at each k-point
-        self._nsta=self._norb*self._nspin
+        self._assume_position_operator_diagonal = True
         
         # Initialize onsite energies to zero
-        if self._nspin==1:
-            self._site_energies=np.zeros((self._norb),dtype=float)
-        elif self._nspin==2:
-            self._site_energies=np.zeros((self._norb,2,2),dtype=complex)
-        # remember which onsite energies user has specified
-        self._site_energies_specified=np.zeros(self._norb,dtype=bool)
-        self._site_energies_specified[:]=False
-        
-        # Initialize hoppings to empty list
-        self._hoppings=[]
+        if self._nspin == 1:
+            self._site_energies = np.zeros((self._norb), dtype=float)
+        elif self._nspin == 2:
+            self._site_energies = np.zeros((self._norb, 2, 2), dtype=complex)
 
         # The onsite energies and hoppings are not specified
         # when creating a 'tb_model' object.  They are speficied
         # subsequently by separate function calls defined below.
 
-    def set_onsite(self,onsite_en,ind_i=None,mode="set"):
+        # remember which onsite energies user has specified
+        self._site_energies_specified = np.zeros(self._norb, dtype=bool)
+        self._site_energies_specified[:] = False
+        
+        # Initialize hoppings to empty list
+        self._hoppings=[]
+
+
+    def set_onsite(self, onsite_en, ind_i=None, mode="set"):
         r"""        
         Defines on-site energies for tight-binding orbitals. One can
         either set energy for one tight-binding orbital, or all at
@@ -560,19 +581,20 @@ matrix.""")
             return ret        
         
     def display(self):
-        r"""
-        Prints on the screen some information about this tight-binding
-        model. This function doesn't take any parameters.
+        """
+        Prints information about the tight-binding model.
         """
         print('---------------------------------------')
         print('report of tight-binding model')
         print('---------------------------------------')
-        print('k-space dimension           =',self._dim_k)
-        print('r-space dimension           =',self._dim_r)
-        print('number of spin components   =',self._nspin)
-        print('periodic directions         =',self._per)
-        print('number of orbitals          =',self._norb)
-        print('number of electronic states =',self._nsta)
+        print(f'k-space dimension           = {self._dim_k}')
+        print(f'r-space dimension           = {self._dim_r}')
+        print(f'number of spin components   = {self._nspin}')
+        print(f'periodic directions         = {self._per}')
+        print(f'number of orbitals          = {self._norb}')
+        print(f'number of electronic states = {self._nstate}')
+
+
         print('lattice vectors:')
         for i,o in enumerate(self._lat):
             print(" #",_nice_int(i,2)," ===>  [", end=' ')
