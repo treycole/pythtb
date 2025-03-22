@@ -150,7 +150,7 @@ class tb_model(object):
             self._norb = 1
             self._orb = np.zeros((1, dim_r))
             logger.info("Orbital positions is default value 'bravais'. Assuming a single orbital at the origin.")
-        elif isinstance(orb, int):
+        elif isinstance(orb, (int, np.integer)):
             self._norb = orb
             self._orb = np.zeros((orb, dim_r))
             logger.info(f"Orbital positions is an integer. Assuming {orb} orbitals at the origin")
@@ -202,6 +202,82 @@ class tb_model(object):
         
         # Initialize hoppings to empty list
         self._hoppings=[]
+
+
+    def display(self):
+        """
+        Prints information about the tight-binding model.
+        """
+        print('---------------------------------------')
+        print('report of tight-binding model')
+        print('---------------------------------------')
+        print(f'k-space dimension           = {self._dim_k}')
+        print(f'r-space dimension           = {self._dim_r}')
+        print(f'number of spin components   = {self._nspin}')
+        print(f'periodic directions         = {self._per}')
+        print(f'number of orbitals          = {self._norb}')
+        print(f'number of electronic states = {self._nstate}')
+
+
+        print('lattice vectors:')
+        for i,o in enumerate(self._lat):
+            print(" #",_nice_int(i,2)," ===>  [", end=' ')
+            for j,v in enumerate(o):
+                print(_nice_float(v,7,4), end=' ')
+                if j!=len(o)-1:
+                    print(",", end=' ')
+            print("]")
+        print('positions of orbitals:')
+        for i,o in enumerate(self._orb):
+            print(" #",_nice_int(i,2)," ===>  [", end=' ')
+            for j,v in enumerate(o):
+                print(_nice_float(v,7,4), end=' ')
+                if j!=len(o)-1:
+                    print(",", end=' ')
+            print("]")
+        print('site energies:')
+        for i,site in enumerate(self._site_energies):
+            print(" #",_nice_int(i,2)," ===>  ", end=' ')
+            if self._nspin==1:
+                print(_nice_float(site,7,4))
+            elif self._nspin==2:
+                print(str(site).replace("\n"," "))
+        print('hoppings:')
+        for i,hopping in enumerate(self._hoppings):
+            print("<",_nice_int(hopping[1],2),"| H |",_nice_int(hopping[2],2), end=' ')
+            if len(hopping)==4:
+                print("+ [", end=' ')
+                for j,v in enumerate(hopping[3]):
+                    print(_nice_int(v,2), end=' ')
+                    if j!=len(hopping[3])-1:
+                        print(",", end=' ')
+                    else:
+                        print("]", end=' ')
+            print(">     ===> ", end=' ')
+            if self._nspin==1:
+                print(_nice_complex(hopping[0],7,4))
+            elif self._nspin==2:
+                print(str(hopping[0]).replace("\n"," "))
+        print('hopping distances:')
+        for i,hopping in enumerate(self._hoppings):
+            print("|  pos(",_nice_int(hopping[1],2),")  - pos(",_nice_int(hopping[2],2), end=' ')
+            if len(hopping)==4:
+                print("+ [", end=' ')
+                for j,v in enumerate(hopping[3]):
+                    print(_nice_int(v,2), end=' ')
+                    if j!=len(hopping[3])-1:
+                        print(",", end=' ')
+                    else:
+                        print("]", end=' ')
+            print(") |  =  ", end=' ')
+            pos_i=np.dot(self._orb[hopping[1]],self._lat)
+            pos_j=np.dot(self._orb[hopping[2]],self._lat)
+            if len(hopping)==4:
+                pos_j+=np.dot(hopping[3],self._lat)
+            dist=np.linalg.norm(pos_j-pos_i)
+            print(_nice_float(dist,7,4))
+
+        print()
 
 
     def set_onsite(self, onsite_en, ind_i=None, mode="set"):
@@ -261,70 +337,47 @@ class tb_model(object):
 
         """
         if ind_i is None:
-            if (len(onsite_en)!=self._norb):
-                raise Exception("\n\nWrong number of site energies")
-        # make sure ind_i is not out of scope
-        if ind_i!=None:
-            if ind_i<0 or ind_i>=self._norb:
-                raise Exception("\n\nIndex ind_i out of scope.")
+            if (len(onsite_en) != self._norb):
+                raise Exception(
+                    "List of onsite energies must "
+                    "include a value for every orbital when `ind_i` is unspecified."
+                    )
+            to_check = onsite_en
+        else:
+            if ind_i < 0 or ind_i >= self._norb:
+                raise Exception("Index ind_i is not within the range of number of orbitals.")
+            to_check = [onsite_en]
+
         # make sure that onsite terms are real/hermitian
-        if ind_i!=None:
-            to_check=[onsite_en]
-        else:
-            to_check=onsite_en
         for ons in to_check:
-            if np.array(ons).shape==():
-                if np.abs(np.array(ons)-np.array(ons).conjugate())>1.0E-8:
-                    raise Exception("\n\nOnsite energy should not have imaginary part!")
-            elif np.array(ons).shape==(4,):
-                if np.max(np.abs(np.array(ons)-np.array(ons).conjugate()))>1.0E-8:
-                    raise Exception("\n\nOnsite energy or Zeeman field should not have imaginary part!")
-            elif np.array(ons).shape==(2,2):
-                if np.max(np.abs(np.array(ons)-np.array(ons).T.conjugate()))>1.0E-8:
-                    raise Exception("\n\nOnsite matrix should be Hermitian!")
-        # specifying onsite energies from scratch, can be called only once
-        if mode.lower()=="set":
-            # specifying only one site at a time
-            if ind_i!=None:
-                # make sure we specify things only once
-                if self._site_energies_specified[ind_i]==True:
-                    raise Exception("\n\nOnsite energy for this site was already specified! Use mode=\"reset\" or mode=\"add\".")
-                else:
-                    self._site_energies[ind_i]=self._val_to_block(onsite_en)
-                    self._site_energies_specified[ind_i]=True
-            # specifying all sites at once
+            ons = np.array(ons)
+            if not np.allclose(np.amax(abs(ons - ons.conj().T)), 0):
+                raise ValueError("Onsite terms should be real, or in case where it is a matrix, Hermitian.")
+            
+        if mode.lower() == "set":
+            if ind_i is not None:
+                if self._site_energies_specified[ind_i]:
+                    logger.warning(f"Onsite energy for site {ind_i} was already set, it is being reset to the specified values.")
+                
+                self._site_energies[ind_i] = self._val_to_block(onsite_en)
+                self._site_energies_specified[ind_i] = True
             else:
-                # make sure we specify things only once
                 if True in self._site_energies_specified[ind_i]:
-                    raise Exception("\n\nSome or all onsite energies were already specified! Use mode=\"reset\" or mode=\"add\".")
-                else:
-                    for i in range(self._norb):
-                        self._site_energies[i]=self._val_to_block(onsite_en[i])
-                    self._site_energies_specified[:]=True
-        # reset values of onsite terms, without adding to previous value
-        elif mode.lower()=="reset":
-            # specifying only one site at a time
-            if ind_i!=None:
-                self._site_energies[ind_i]=self._val_to_block(onsite_en)
-                self._site_energies_specified[ind_i]=True
-            # specifying all sites at once
+                    logger.warning("Some or all of the onsite energies were already set, it is being reset to the specified values.")
+
+                for i in range(self._norb):
+                    self._site_energies[i] = self._val_to_block(onsite_en[i])
+                self._site_energies_specified[:] = True
+        elif mode.lower() == "add":
+            if ind_i is not None:
+                self._site_energies[ind_i] += self._val_to_block(onsite_en)
+                self._site_energies_specified[ind_i] = True
             else:
                 for i in range(self._norb):
-                    self._site_energies[i]=self._val_to_block(onsite_en[i])
-                self._site_energies_specified[:]=True
-        # add to previous value
-        elif mode.lower()=="add":
-            # specifying only one site at a time
-            if ind_i!=None:
-                self._site_energies[ind_i]+=self._val_to_block(onsite_en)
-                self._site_energies_specified[ind_i]=True
-            # specifying all sites at once
-            else:
-                for i in range(self._norb):
-                    self._site_energies[i]+=self._val_to_block(onsite_en[i])
-                self._site_energies_specified[:]=True
+                    self._site_energies[i] += self._val_to_block(onsite_en[i])
+                self._site_energies_specified[:] = True
         else:
-            raise Exception("\n\nWrong value of mode parameter")
+            raise ValueError("Mode should be either 'set' or 'add'.")
         
     def set_hop(self,hop_amp,ind_i,ind_j,ind_R=None,mode="set",allow_conjugate_pair=False):
         r"""
@@ -435,17 +488,16 @@ class tb_model(object):
           tb.set_hop(100.0, 0, 2, [0, 1], mode="add")
 
         """
-        #
-        if self._dim_k!=0 and (ind_R is None):
+        if self._dim_k !=0 and (ind_R is None):
             raise Exception("\n\nNeed to specify ind_R!")
         # if necessary convert from integer to array
-        if self._dim_k==1 and _is_int(ind_R):
-            tmpR=np.zeros(self._dim_r,dtype=int)
+        if self._dim_k==1 and isinstance(ind_R, (int, np.integer)):
+            tmpR=np.zeros(self._dim_r, dtype=int)
             tmpR[self._per]=ind_R
             ind_R=tmpR
         # check length of ind_R
-        if self._dim_k!=0:
-            if len(ind_R)!=self._dim_r:
+        if self._dim_k != 0:
+            if len(ind_R) != self._dim_r:
                 raise Exception("\n\nLength of input ind_R vector must equal dim_r! Even if dim_k<dim_r.")
         # make sure ind_i and ind_j are not out of scope
         if ind_i<0 or ind_i>=self._norb:
@@ -463,33 +515,33 @@ class tb_model(object):
                 for k in self._per:
                     if int(ind_R[k])!=0:
                         all_zer=False
-                if all_zer==True:
+                if all_zer is True:
                     raise Exception("\n\nDo not use set_hop for onsite terms. Use set_onsite instead!")
-        #
+        
         # make sure that if <i|H|j+R> is specified that <j|H|i-R> is not!
-        if allow_conjugate_pair==False:
+        if not allow_conjugate_pair:
             for h in self._hoppings:
                 if ind_i==h[2] and ind_j==h[1]:
                     if self._dim_k==0:
                         raise Exception(\
-"""\n
-Following matrix element was already implicitely specified:
-   i="""+str(ind_i)+" j="+str(ind_j)+"""
-Remember, specifying <i|H|j> automatically specifies <j|H|i>.  For
-consistency, specify all hoppings for a given bond in the same
-direction.  (Or, alternatively, see the documentation on the
-'allow_conjugate_pair' flag.)
-""")
+                            """\n
+                            Following matrix element was already implicitely specified:
+                            i="""+str(ind_i)+" j="+str(ind_j)+"""
+                            Remember, specifying <i|H|j> automatically specifies <j|H|i>.  For
+                            consistency, specify all hoppings for a given bond in the same
+                            direction.  (Or, alternatively, see the documentation on the
+                            'allow_conjugate_pair' flag.)
+                            """)
                     elif False not in (np.array(ind_R)[self._per]==(-1)*np.array(h[3])[self._per]):
                         raise Exception(\
-"""\n
-Following matrix element was already implicitely specified:
-   i="""+str(ind_i)+" j="+str(ind_j)+" R="+str(ind_R)+"""
-Remember,specifying <i|H|j+R> automatically specifies <j|H|i-R>.  For
-consistency, specify all hoppings for a given bond in the same
-direction.  (Or, alternatively, see the documentation on the
-'allow_conjugate_pair' flag.)
-""")
+                            """\n
+                            Following matrix element was already implicitely specified:
+                            i="""+str(ind_i)+" j="+str(ind_j)+" R="+str(ind_R)+"""
+                            Remember,specifying <i|H|j+R> automatically specifies <j|H|i-R>.  For
+                            consistency, specify all hoppings for a given bond in the same
+                            direction.  (Or, alternatively, see the documentation on the
+                            'allow_conjugate_pair' flag.)
+                            """)
         # convert to 2by2 matrix if needed
         hop_use=self._val_to_block(hop_amp)
         # hopping term parameters to be stored
@@ -497,7 +549,7 @@ direction.  (Or, alternatively, see the documentation on the
             new_hop=[hop_use,int(ind_i),int(ind_j)]
         else:
             new_hop=[hop_use,int(ind_i),int(ind_j),np.array(ind_R)]
-        #
+        
         # see if there is a hopping term with same i,j,R
         use_index=None
         for iih,h in enumerate(self._hoppings):
@@ -510,150 +562,66 @@ direction.  (Or, alternatively, see the documentation on the
                     if False not in (np.array(ind_R)[self._per]==np.array(h[3])[self._per]):
                         same_ijR=True
             # if they are the same then store index of site at which they are the same
-            if same_ijR==True:
+            if same_ijR:
                 use_index=iih
-        #
+        
         # specifying hopping terms from scratch, can be called only once
         if mode.lower()=="set":
             # make sure we specify things only once
-            if use_index!=None:
+            if use_index is not None:
                 raise Exception("\n\nHopping energy for this site was already specified! Use mode=\"reset\" or mode=\"add\".")
             else:
                 self._hoppings.append(new_hop)
         # reset value of hopping term, without adding to previous value
         elif mode.lower()=="reset":
-            if use_index!=None:
+            if use_index is not None:
                 self._hoppings[use_index]=new_hop
             else:
                 self._hoppings.append(new_hop)
         # add to previous value
         elif mode.lower()=="add":
-            if use_index!=None:
+            if use_index is not None:
                 self._hoppings[use_index][0]+=new_hop[0]
             else:
                 self._hoppings.append(new_hop)
         else:
             raise Exception("\n\nWrong value of mode parameter")
 
-    def _val_to_block(self,val):
+    def _val_to_block(self, val):
         """If nspin=2 then returns a 2 by 2 matrix from the input
         parameters. If only one real number is given in the input then
         assume that this is the diagonal term. If array with four
         elements is given then first one is the diagonal term, and
         other three are Zeeman field direction. If given a 2 by 2
         matrix, just return it.  If nspin=1 then just returns val."""
+
         # spinless case
-        if self._nspin==1:
+        if self._nspin == 1:
+            if not isinstance(val, (int, np.integer)):
+                raise ValueError("Onsite energy for a given orbital must be an integer in spinless case.")
             return val
-        # spinfull case
-        elif self._nspin==2:
-            # matrix to return
-            ret=np.zeros((2,2),dtype=complex)
-            # 
-            use_val=np.array(val)
-            # only one number is given
-            if use_val.shape==():
-                ret[0,0]+=use_val
-                ret[1,1]+=use_val
-            # if four numbers are given
-            elif use_val.shape==(4,):
-                # diagonal
-                ret[0,0]+=use_val[0]
-                ret[1,1]+=use_val[0]
-                # sigma_x
-                ret[0,1]+=use_val[1]
-                ret[1,0]+=use_val[1]
-                # sigma_y
-                ret[0,1]+=use_val[2]*(-1.0j)
-                ret[1,0]+=use_val[2]*( 1.0j)
-                # sigma_z
-                ret[0,0]+=use_val[3]
-                ret[1,1]+=use_val[3]*(-1.0)        
-            # if 2 by 2 matrix is given
-            elif use_val.shape==(2,2):
+        # spinful case
+        elif self._nspin == 2:
+            sigma_0 = np.array([[1,0], [0,1]], dtype=complex)
+            sigma_x = np.array([[0,1], [1,0]], dtype=complex)
+            sigma_y = np.array([[0,-1j], [1j,0]], dtype=complex)
+            sigma_z = np.array([[1,0], [0,-1]], dtype=complex)
+
+            paulis = [sigma_0, sigma_x, sigma_y, sigma_z]
+            
+            if isinstance(val, (int, np.integer)):
+                val = [val]
+
+            use_val = np.array(val)
+            if use_val.ndim == 2:
                 return use_val
+            elif use_val.ndim == 1:
+                ret = sum([val * paulis[i] for i, val in enumerate(use_val)])
+                return ret
             else:
-                raise Exception(\
-"""\n
-Wrong format of the on-site or hopping term. Must be single number, or
-in the case of a spinfull model can be array of four numbers or 2x2
-matrix.""")            
-            return ret        
-        
-    def display(self):
-        """
-        Prints information about the tight-binding model.
-        """
-        print('---------------------------------------')
-        print('report of tight-binding model')
-        print('---------------------------------------')
-        print(f'k-space dimension           = {self._dim_k}')
-        print(f'r-space dimension           = {self._dim_r}')
-        print(f'number of spin components   = {self._nspin}')
-        print(f'periodic directions         = {self._per}')
-        print(f'number of orbitals          = {self._norb}')
-        print(f'number of electronic states = {self._nstate}')
-
-
-        print('lattice vectors:')
-        for i,o in enumerate(self._lat):
-            print(" #",_nice_int(i,2)," ===>  [", end=' ')
-            for j,v in enumerate(o):
-                print(_nice_float(v,7,4), end=' ')
-                if j!=len(o)-1:
-                    print(",", end=' ')
-            print("]")
-        print('positions of orbitals:')
-        for i,o in enumerate(self._orb):
-            print(" #",_nice_int(i,2)," ===>  [", end=' ')
-            for j,v in enumerate(o):
-                print(_nice_float(v,7,4), end=' ')
-                if j!=len(o)-1:
-                    print(",", end=' ')
-            print("]")
-        print('site energies:')
-        for i,site in enumerate(self._site_energies):
-            print(" #",_nice_int(i,2)," ===>  ", end=' ')
-            if self._nspin==1:
-                print(_nice_float(site,7,4))
-            elif self._nspin==2:
-                print(str(site).replace("\n"," "))
-        print('hoppings:')
-        for i,hopping in enumerate(self._hoppings):
-            print("<",_nice_int(hopping[1],2),"| H |",_nice_int(hopping[2],2), end=' ')
-            if len(hopping)==4:
-                print("+ [", end=' ')
-                for j,v in enumerate(hopping[3]):
-                    print(_nice_int(v,2), end=' ')
-                    if j!=len(hopping[3])-1:
-                        print(",", end=' ')
-                    else:
-                        print("]", end=' ')
-            print(">     ===> ", end=' ')
-            if self._nspin==1:
-                print(_nice_complex(hopping[0],7,4))
-            elif self._nspin==2:
-                print(str(hopping[0]).replace("\n"," "))
-        print('hopping distances:')
-        for i,hopping in enumerate(self._hoppings):
-            print("|  pos(",_nice_int(hopping[1],2),")  - pos(",_nice_int(hopping[2],2), end=' ')
-            if len(hopping)==4:
-                print("+ [", end=' ')
-                for j,v in enumerate(hopping[3]):
-                    print(_nice_int(v,2), end=' ')
-                    if j!=len(hopping[3])-1:
-                        print(",", end=' ')
-                    else:
-                        print("]", end=' ')
-            print(") |  =  ", end=' ')
-            pos_i=np.dot(self._orb[hopping[1]],self._lat)
-            pos_j=np.dot(self._orb[hopping[2]],self._lat)
-            if len(hopping)==4:
-                pos_j+=np.dot(hopping[3],self._lat)
-            dist=np.linalg.norm(pos_j-pos_i)
-            print(_nice_float(dist,7,4))
-
-        print()
+                raise ValueError("Onsite energy has incorrect dimensions. "
+                "Must either be an integer, list, or 2x2 matrix for spinful calculation.")     
+    
 
     def visualize(self,dir_first,dir_second=None,eig_dr=None,draw_hoppings=True,ph_color="black"):
         r"""
@@ -739,7 +707,7 @@ matrix.""")
         """
 
         # check the format of eig_dr
-        if not (eig_dr is None):
+        if eig_dr is not None:
             if eig_dr.shape!=(self._norb,):
                 raise Exception("\n\nWrong format of eig_dr! Must be array of size norb.")
         
@@ -794,12 +762,18 @@ matrix.""")
                     ph=ph+2.0*np.pi
                 ph=6.0*ph/(2.0*np.pi)
                 x_ph=1.0-np.abs(ph%2.0-1.0)
-                if ph>=0.0 and ph<1.0: ret_col=[1.0 ,x_ph,0.0 ]
-                if ph>=1.0 and ph<2.0: ret_col=[x_ph,1.0 ,0.0 ]
-                if ph>=2.0 and ph<3.0: ret_col=[0.0 ,1.0 ,x_ph]
-                if ph>=3.0 and ph<4.0: ret_col=[0.0 ,x_ph,1.0 ]
-                if ph>=4.0 and ph<5.0: ret_col=[x_ph,0.0 ,1.0 ]
-                if ph>=5.0 and ph<=6.0: ret_col=[1.0 ,0.0 ,x_ph]
+                if ph>=0.0 and ph<1.0: 
+                    ret_col=[1.0 ,x_ph,0.0 ]
+                if ph>=1.0 and ph<2.0: 
+                    ret_col=[x_ph,1.0 ,0.0 ]
+                if ph>=2.0 and ph<3.0: 
+                    ret_col=[0.0 ,1.0 ,x_ph]
+                if ph>=3.0 and ph<4.0: 
+                    ret_col=[0.0 ,x_ph,1.0 ]
+                if ph>=4.0 and ph<5.0: 
+                    ret_col=[x_ph,0.0 ,1.0 ]
+                if ph>=5.0 and ph<=6.0: 
+                    ret_col=[1.0 ,0.0 ,x_ph]
                 return ret_col
 
         # draw origin
@@ -819,7 +793,7 @@ matrix.""")
             ax.plot([pos[0]],[pos[1]],"o",c=c_orb,mec="w",mew=0.0,zorder=10,ms=4.0)
 
         # draw hopping terms
-        if draw_hoppings==True:
+        if draw_hoppings:
             for h in self._hoppings:
                 # draw both i->j+R and i-R->j hop
                 for s in range(2):
@@ -850,7 +824,7 @@ matrix.""")
                     ax.plot([pos_j[0]],[pos_j[1]],"o",c=c_nei,zorder=9,mew=0.0,ms=4.0,mec="w")
 
         # now draw the eigenstate
-        if not (eig_dr is None):
+        if eig_dr is not None:
             for i in range(self._norb):
                 # find position of orbital in cartesian coordinates
                 pos=to_cart(self._orb[i])
@@ -897,7 +871,7 @@ matrix.""")
         """Generate Hamiltonian for a certain k-point,
         K-point is given in reduced coordinates!"""
         kpnt=np.array(k_input)
-        if not (k_input is None):
+        if k_input is not None:
             # if kpnt is just a number then convert it to an array
             if len(kpnt.shape)==0:
                 kpnt=np.array([kpnt])
@@ -957,7 +931,7 @@ matrix.""")
         if np.max(ham_use-ham_use.T.conj())>1.0E-9:
             raise Exception("\n\nHamiltonian matrix is not hermitian?!")
         #solve matrix
-        if eig_vectors==False: # only find eigenvalues
+        if not eig_vectors: # only find eigenvalues
             eval=np.linalg.eigvalsh(ham_use)
             # sort eigenvalues and convert to real numbers
             eval=_nicefy_eig(eval)
@@ -971,10 +945,10 @@ matrix.""")
             (eval,eig)=_nicefy_eig(eval,eig)
             # reshape eigenvectors if doing a spinfull calculation
             if self._nspin==2:
-                eig=eig.reshape((self._nsta,self._norb,2))
+                eig=eig.reshape((self._nstate,self._norb,2))
             return (eval,eig)
 
-    def solve_all(self,k_list=None,eig_vectors=False):
+    def solve_all(self, k_list=None, eig_vectors=False):
         r"""
         Solves for eigenvalues and (optionally) eigenvectors of the
         tight-binding model on a given one-dimensional list of k-vectors.
@@ -1055,22 +1029,22 @@ matrix.""")
 
         """
         # if not 0-dim case
-        if not (k_list is None):
+        if k_list is not None:
             nkp=len(k_list) # number of k points
             # first initialize matrices for all return data
             #    indices are [band,kpoint]
-            ret_eval=np.zeros((self._nsta,nkp),dtype=float)
+            ret_eval=np.zeros((self._nstate,nkp),dtype=float)
             #    indices are [band,kpoint,orbital,spin]
             if self._nspin==1:
-                ret_evec=np.zeros((self._nsta,nkp,self._norb),dtype=complex)
+                ret_evec=np.zeros((self._nstate,nkp,self._norb),dtype=complex)
             elif self._nspin==2:
-                ret_evec=np.zeros((self._nsta,nkp,self._norb,2),dtype=complex)
+                ret_evec=np.zeros((self._nstate,nkp,self._norb,2),dtype=complex)
             # go over all kpoints
             for i,k in enumerate(k_list):
                 # generate Hamiltonian at that point
                 ham=self._gen_ham(k)
                 # solve Hamiltonian
-                if eig_vectors==False:
+                if not eig_vectors:
                     eval=self._sol_ham(ham,eig_vectors=eig_vectors)
                     ret_eval[:,i]=eval[:]
                 else:
@@ -1081,7 +1055,7 @@ matrix.""")
                     elif self._nspin==2:
                         ret_evec[:,i,:,:]=evec[:,:,:]
             # return stuff
-            if eig_vectors==False:
+            if not eig_vectors:
                 # indices of eval are [band,kpoint]
                 return ret_eval
             else:
@@ -1091,7 +1065,7 @@ matrix.""")
             # generate Hamiltonian
             ham=self._gen_ham()
             # solve
-            if eig_vectors==False:
+            if not eig_vectors:
                 eval=self._sol_ham(ham,eig_vectors=eig_vectors)
                 # indices of eval are [band]
                 return eval
@@ -3944,18 +3918,16 @@ def _array_phases_cont(arr_pha,clos):
 
 
 
-def _cart_to_red(tmp,cart):
+def _cart_to_red(tmp, cart):
     "Convert cartesian vectors cart to reduced coordinates of a1,a2,a3 vectors"
-    (a1,a2,a3)=tmp
+    (a1, a2, a3) = tmp
     # matrix with lattice vectors
-    cnv=np.array([a1,a2,a3])
-    # transpose a matrix
-    cnv=cnv.T
-    # invert a matrix
-    cnv=np.linalg.inv(cnv)
+    cnv = np.array([a1, a2, a3])
+    cnv = cnv.T # transpose
+    cnv = np.linalg.inv(cnv) # inverse
     # reduced coordinates
     red=np.zeros_like(cart,dtype=float)
-    for i in range(0,len(cart)):
+    for i in range(0, len(cart)):
         red[i]=np.dot(cnv,cart[i])
     return red
 
