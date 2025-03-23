@@ -39,7 +39,7 @@ def _decompose_pauli_matrix(M, precision=3):
     
     That is, find coefficients a0, a1, a2, a3 such that:
     
-        M = a0 * I + a1 * σₓ + a2 * σ_y + a3 * σ_z
+        M = a0 * I + a1 * sigma_x + a2 * sigma_y + a3 * sigma_z
     
     Parameters:
         M (array-like): A 2x2 matrix (as a numpy array or convertible to one).
@@ -56,7 +56,6 @@ def _decompose_pauli_matrix(M, precision=3):
         raise ValueError("Matrix must be 2x2 for Pauli decomposition.")
     
     # Define the 2x2 identity and Pauli matrices.
-    sigma0 = np.array([[1, 0], [0, 1]], dtype=complex)
     sigma_x = np.array([[0, 1], [1, 0]], dtype=complex)
     sigma_y = np.array([[0, -1j], [1j, 0]], dtype=complex)
     sigma_z = np.array([[1, 0], [0, -1]], dtype=complex)
@@ -78,7 +77,7 @@ def _decompose_pauli_matrix(M, precision=3):
     # Build a list of terms, including only those with non-negligible coefficients.
     terms = []
     if abs(a0) > 1e-10:
-        terms.append(f"{fmt(a0)}I")
+        terms.append(f"{fmt(a0)} \sigma_0")
     if abs(a1) > 1e-10:
         terms.append(f"{fmt(a1)} \sigma_x")
     if abs(a2) > 1e-10:
@@ -644,8 +643,11 @@ class tb_model(object):
             new_hop = [hop_use, int(ind_i), int(ind_j), np.array(ind_R)]
         
         # see if there is a hopping term with same i,j,R
+        # print(ind_i, ind_j, ind_R)
+        # print(self._hoppings)
         use_index = None
         for iih, h in enumerate(self._hoppings):
+            # print(h)
             # check if the same
             same_ijR = False 
             if ind_i == h[1] and ind_j == h[2]:
@@ -656,30 +658,28 @@ class tb_model(object):
             # if they are the same then store index of site at which they are the same
             if same_ijR:
                 use_index = iih
+
+        # print(use_index)
+        # print()
         
         # specifying hopping terms from scratch, can be called only once
         if mode.lower() == "set":
             # make sure we specify things only once
             if use_index is not None:
-                logger.warning("Hopping energy for this site was already specified! Use mode=\"reset\" or mode=\"add\".")
+                logger.warning(
+                    f"Hopping for {ind_i} -> {ind_j} + {ind_R} was already set to {self._hoppings[use_index][0]}. "
+                    f"Resetting to {hop_amp}.")
                 # raise Exception("\n\nHopping energy for this site was already specified! Use mode=\"reset\" or mode=\"add\".")
                 self._hoppings[use_index] = new_hop
             else:
                 self._hoppings.append(new_hop)
-        # reset value of hopping term, without adding to previous value
-        elif mode.lower() == "reset":
-            if use_index is not None:
-                self._hoppings[use_index] = new_hop
-            else:
-                self._hoppings.append(new_hop)
-        # add to previous value
         elif mode.lower()=="add":
             if use_index is not None:
                 self._hoppings[use_index][0] += new_hop[0]
             else:
                 self._hoppings.append(new_hop)
         else:
-            raise Exception("\n\nWrong value of mode parameter")
+            raise ValueError("Wrong value of mode parameter. Should be either `set` or `add`.")
 
     def _val_to_block(self, val):
         """If nspin=2 then returns a 2 by 2 matrix from the input
@@ -690,7 +690,7 @@ class tb_model(object):
         matrix, just return it.  If nspin=1 then just returns val."""
         # spinless case
         if self._nspin == 1:
-            if not isinstance(val, (int, np.integer, float)):
+            if not isinstance(val, (int, np.integer, float, complex)):
                 raise ValueError("Onsite energy for a given orbital must be an integer or float in spinless case.")
             return val
         # spinful case
@@ -816,6 +816,7 @@ class tb_model(object):
         def to_cart(red):
             return np.dot(red, self._lat)
         
+        # to ensure proper padding, track all plotted coordinates
         all_coords = []
 
         # Draw the origin
@@ -845,21 +846,23 @@ class tb_model(object):
         # plot dotted bounding lines to unit cell
         ends = np.array(ends)
 
+        # top shifted line
         start = ends[0]
         end = ends[0] + ends[1]
         ax.plot([start[0], end[0]], [start[1], end[1]], ls='--', lw=1, color='b', zorder=0, alpha=0.5)
 
+        # right shifted line
         start = ends[1]
         ax.plot([start[0], end[0]], [start[1], end[1]], ls='--', lw=1, color='b', zorder=0, alpha=0.5)
         
 
         # Draw orbitals: home-cell orbitals in red
+        orb_coords = []
         for i in range(self._norb):
             pos = to_cart(self._orb[i])
             p = proj(pos)
-            ax.scatter(p[0], p[1], color='red', s=50, zorder=5,
-                    label="Orbital" if i == 0 else None)
-            all_coords.append(p)
+            ax.scatter(p[0], p[1], color='red', s=50, zorder=5)
+            orb_coords.append(p)
 
             # For spinful case, annotate orbital with onsite decomposition.
             if self._nspin == 2:
@@ -875,88 +878,111 @@ class tb_model(object):
                 
 
         # Draw hopping terms with curved arrows
+        hopping_coords = []
+
+        # maximum magnitudes of hopping strengths
+        mags = [np.amax(abs(hop[0])) for hop in self._hoppings]
+        biggest_hop = np.amax(mags)
+        arrow_alphas = mags/biggest_hop # transparency propto hopping strength
+        arrow_alphas = 0.3 + 0.7*arrow_alphas**2 # nonlinear mapping for greater visual difference
+
         if draw_hoppings:
-            for h in self._hoppings:
-                # Determine starting and ending orbital positions
-                amp = h[0]
-            
-                i_orb = h[1]
-                j_orb = h[2]
-
-                pos_i = to_cart(self._orb[i_orb])
-                pos_j = to_cart(self._orb[j_orb])
-
-                if self._dim_k != 0 and len(h) == 4:
-                    # Adjust pos_j with lattice translation if provided
-                    pos_j += np.dot(h[3], self._lat)
-        
-                p_i = proj(pos_i)
-                p_j = proj(pos_j)
-                all_coords.append(p_i)
-                all_coords.append(p_j)
-
-                # plot neighboring cell orbital
-                if not np.all(h[3] == 0):
-                    ax.scatter(p_j[0], p_j[1], color='r', s=50, zorder=5, alpha=1)
-
-                # Use a single FancyArrowPatch with a connectionstyle
-                arrow_patch = FancyArrowPatch(
-                    p_i, p_j,
-                    connectionstyle="arc3,rad=+0.2",  # adjust rad to control curvature
-                    arrowstyle='->',
-                    mutation_scale=10,
-                    color='green',
-                    lw=1.5, alpha=0.6, zorder=1
-                )
-                ax.add_patch(arrow_patch)
-
-                # Second arrow: p_j -> p_i, curvature rad=-0.2
-                # (opposite sign to complete the loop)
-                arrow2 = FancyArrowPatch(
-                    p_j, p_i,
-                    connectionstyle="arc3,rad=0.2",  # negative curvature
-                    arrowstyle='->',
-                    mutation_scale=10,
-                    color='green',
-                    lw=1.5,
-                    zorder=1, alpha=0.6
-                )
-                ax.add_patch(arrow2)
-
-                # Annotate the midpoint with the magnitude of the hopping
-                mid_line = ((p_i[0] + p_j[0]) / 2, (p_i[1] + p_j[1]) / 2)
-
-                dx, dy = p_j[0] - p_i[0], p_j[1] - p_i[1]
-                length = np.hypot(dx, dy)
-                if length == 0:
-                    length = 1.0  # avoid division by zero
-                perp = (-dy/length, dx/length)
-
-                # Compute two midpoints, shifted in opposite directions along the perpendicular.
-                mid1 = (mid_line[0] + 0.12 * perp[0],
-                        mid_line[1] + 0.12 * perp[1])
-                mid2 = (mid_line[0] - 0.12 * perp[0],
-                        mid_line[1] - 0.12 * perp[1])
+            for h_idx, h in enumerate(self._hoppings):
+                for shift in range(2): # draw both i->j+R and i-R->j hop
+                    # Determine starting and ending orbital positions
+                    amp = h[0]
                 
-                if self._nspin == 1:
-                     # For spinless case, simply annotate with the numerical value.
-                    amp_str = f"{amp.real:.4f}" if abs(amp.imag)<1e-10 else f"{amp:.4f}"
-                    ax.annotate(f"$t_{{{j_orb},{i_orb}}} = {amp_str}$", xy=mid1, xycoords='data',
-                                fontsize=10, ha='center', va='center',
-                                bbox=dict(boxstyle='round,pad=0.2', fc='g', ec='none', alpha=0.1), zorder=2)
-                    ax.annotate(f"$t_{{{i_orb},{j_orb}}} = {amp_str}^*$", xy=mid2, xycoords='data',
-                                fontsize=10, ha='center', va='center',
-                                bbox=dict(boxstyle='round,pad=0.2', fc='g', ec='none', alpha=0.1), zorer=2)
+                    i_orb = h[1]
+                    j_orb = h[2]
+
+                    pos_i = to_cart(self._orb[i_orb])
+                    pos_j = to_cart(self._orb[j_orb])
+
+                    if self._dim_k != 0 and len(h) == 4:
+                        # Adjust pos_j with lattice translation if provided
+                        if shift == 0:
+                            # i->j+R
+                            pos_j += np.dot(h[3], self._lat)
+                        else:
+                            # i-R->j
+                            pos_i -= np.dot(h[3], self._lat)
+            
+                    p_i = proj(pos_i)
+                    p_j = proj(pos_j)
                     
-                elif self._nspin == 2:
-                    label_t = _decompose_pauli_matrix(amp)
-                    label_t_conj = _decompose_pauli_matrix(np.conjugate(amp))
-                    ax.annotate(f"$t_{{{j_orb},{i_orb}}} = {label_t}$", xy=mid1, xycoords='data',
-                                fontsize=10, ha='center', va='center',
-                                bbox=dict(boxstyle='round,pad=0.2', fc='g', ec='none', alpha=0.1), zorder=2)
-                    ax.annotate(f"$t_{{{i_orb},{j_orb}}} = {label_t_conj}$", xy=mid2, xycoords='data',
-                                fontsize=10, ha='center', va='center',
-                                bbox=dict(boxstyle='round,pad=0.2', fc='g', ec='none', alpha=0.1), zorder=2)
+                    # plot neighboring cell orbital
+                    # ensure we don't plot orbital in unit cell again (if no translation)
+                    if not np.all(h[3] == 0):
+                        # ensure we only scatter orbitals once
+                        if p_j not in hopping_coords and shift == 0 :
+                            ax.scatter(p_j[0], p_j[1], color='r', s=50, zorder=5, alpha=0.5)
+                        if p_i not in hopping_coords and shift == 1:
+                            ax.scatter(p_i[0], p_i[1], color='r', s=50, zorder=5, alpha=0.5)
+
+
+                    # Don't want to plot connecting arrows within unit cell twice
+                    if np.all(h[3] == 0) and shift == 1:
+                        continue
+                    
+                    # First arrow: p_i -> p_j
+                    arrow1 = FancyArrowPatch(
+                        p_i, p_j,
+                        connectionstyle="arc3,rad=+0.1", 
+                        arrowstyle='->',
+                        mutation_scale=10,
+                        color='green',
+                        lw=1.5, alpha=arrow_alphas[h_idx], zorder=1
+                    )
+                    ax.add_patch(arrow1)
+
+                    # Second arrow: p_j -> p_i
+                    arrow2 = FancyArrowPatch(
+                        p_j, p_i,
+                        connectionstyle="arc3,rad=0.1", 
+                        arrowstyle='->',
+                        mutation_scale=10,
+                        color='green',
+                        lw=1.5, alpha=arrow_alphas[h_idx], zorder=1
+                    )
+                    ax.add_patch(arrow2)
+
+                    hopping_coords.append(p_i)
+                    hopping_coords.append(p_j)
+
+                    # # Annotate the midpoint with the magnitude of the hopping
+                    # mid_line = ((p_i[0] + p_j[0]) / 2, (p_i[1] + p_j[1]) / 2)
+
+                    # dx, dy = p_j[0] - p_i[0], p_j[1] - p_i[1]
+                    # length = np.hypot(dx, dy)
+                    # if length == 0:
+                    #     length = 1.0  # avoid division by zero
+                    # perp = (-dy/length, dx/length)
+
+                    # # Compute two midpoints, shifted in opposite directions along the perpendicular.
+                    # mid1 = (mid_line[0] + 0.12 * perp[0],
+                    #         mid_line[1] + 0.12 * perp[1])
+                    # mid2 = (mid_line[0] - 0.12 * perp[0],
+                    #         mid_line[1] - 0.12 * perp[1])
+                    
+                    # if self._nspin == 1:
+                    #      # For spinless case, simply annotate with the numerical value.
+                    #     amp_str = f"{amp.real:.4f}" if abs(amp.imag)<1e-10 else f"{amp:.4f}"
+                    #     # ax.annotate(f"$t_{{{j_orb},{i_orb}}} = {amp_str}$", xy=mid1, xycoords='data',
+                    #     #             fontsize=10, ha='center', va='center',
+                    #     #             bbox=dict(boxstyle='round,pad=0.2', fc='g', ec='none', alpha=0.1), zorder=2)
+                    #     ax.annotate(f"$t_{{{i_orb},{j_orb}}} = {amp_str}$", xy=mid2, xycoords='data',
+                    #                 fontsize=10, ha='center', va='center',
+                    #                 bbox=dict(boxstyle='round,pad=0.2', fc='g', ec='none', alpha=0.1), zorer=2)
+                        
+                    # elif self._nspin == 2:
+                    #     label_t = _decompose_pauli_matrix(amp)
+                    #     label_t_conj = _decompose_pauli_matrix(np.conjugate(amp))
+                    #     ax.annotate(f"$t_{{{j_orb},{i_orb}}} = {label_t_conj}$", xy=mid1, xycoords='data',
+                    #                 fontsize=10, ha='center', va='center',
+                    #                 bbox=dict(boxstyle='round,pad=0.2', fc='g', ec='none', alpha=0.1), zorder=2)
+                    #     ax.annotate(f"$t_{{{i_orb},{j_orb}}} = {label_t}$", xy=mid2, xycoords='data',
+                    #                 fontsize=10, ha='center', va='center',
+                    #                 bbox=dict(boxstyle='round,pad=0.2', fc='g', ec='none', alpha=0.1), zorder=2)
 
 
         # If eigenstate is provided, overlay eigenstate information on the orbitals
@@ -975,6 +1001,9 @@ class tb_model(object):
 
 
         # Adjust the axis so everything fits
+        all_coords += hopping_coords
+        all_coords += orb_coords
+
         xs = [c[0] for c in all_coords]
         ys = [c[1] for c in all_coords]
         min_x, max_x = min(xs), max(xs)
@@ -992,10 +1021,237 @@ class tb_model(object):
             ax.set_ylabel(f"Cartesian coordinate {dir_second}")
         else:
             ax.set_ylabel("")
-        ax.legend(loc="upper right", fontsize=10)
+        # ax.legend(loc="upper right", fontsize=10)
         plt.tight_layout()
 
         return fig, ax  
+    
+
+    def visualize2(self,dir_first,dir_second=None,eig_dr=None,draw_hoppings=True,ph_color="black"):
+        r"""
+
+        Rudimentary function for visualizing tight-binding model geometry,
+        hopping between tight-binding orbitals, and electron eigenstates.
+
+        If eigenvector is not drawn, then orbitals in home cell are drawn
+        as red circles, and those in neighboring cells are drawn with
+        different shade of red. Hopping term directions are drawn with
+        green lines connecting two orbitals. Origin of unit cell is
+        indicated with blue dot, while real space unit vectors are drawn
+        with blue lines.
+
+        If eigenvector is drawn, then electron eigenstate on each orbital
+        is drawn with a circle whose size is proportional to wavefunction
+        amplitude while its color depends on the phase. There are various
+        coloring schemes for the phase factor; see more details under
+        *ph_color* parameter. If eigenvector is drawn and coloring scheme
+        is "red-blue" or "wheel", all other elements of the picture are
+        drawn in gray or black.
+
+        :param dir_first: First index of Cartesian coordinates used for
+          plotting.
+
+        :param dir_second: Second index of Cartesian coordinates used for
+          plotting. For example if dir_first=0 and dir_second=2, and
+          Cartesian coordinates of some orbital is [2.0,4.0,6.0] then it
+          will be drawn at coordinate [2.0,6.0]. If dimensionality of real
+          space (*dim_r*) is zero or one then dir_second should not be
+          specified.
+
+        :param eig_dr: Optional parameter specifying eigenstate to
+          plot. If specified, this should be one-dimensional array of
+          complex numbers specifying wavefunction at each orbital in
+          the tight-binding basis. If not specified, eigenstate is not
+          drawn.
+
+        :param draw_hoppings: Optional parameter specifying whether to
+          draw all allowed hopping terms in the tight-binding
+          model. Default value is True.
+
+        :param ph_color: Optional parameter determining the way
+          eigenvector phase factors are translated into color. Default
+          value is "black". Convention of the wavefunction phase is as
+          in convention 1 in section 3.1 of :download:`notes on
+          tight-binding formalism  <misc/pythtb-formalism.pdf>`.  In
+          other words, these wavefunction phases are in correspondence
+          with cell-periodic functions :math:`u_{n {\bf k}} ({\bf r})`
+          not :math:`\Psi_{n {\bf k}} ({\bf r})`.
+
+          * "black" -- phase of eigenvectors are ignored and wavefunction
+            is always colored in black.
+
+          * "red-blue" -- zero phase is drawn red, while phases or pi or
+            -pi are drawn blue. Phases in between are interpolated between
+            red and blue. Some phase information is lost in this coloring
+            becase phase of +phi and -phi have same color.
+
+          * "wheel" -- each phase is given unique color. In steps of pi/3
+            starting from 0, colors are assigned (in increasing hue) as:
+            red, yellow, green, cyan, blue, magenta, red.
+
+        :returns:
+          * **fig** -- Figure object from matplotlib.pyplot module
+            that can be used to save the figure in PDF, EPS or similar
+            format, for example using fig.savefig("name.pdf") command.
+          * **ax** -- Axes object from matplotlib.pyplot module that can be
+            used to tweak the plot, for example by adding a plot title
+            ax.set_title("Title goes here").
+
+        Example usage::
+
+          # Draws x-y projection of tight-binding model
+          # tweaks figure and saves it as a PDF.
+          (fig, ax) = tb.visualize(0, 1)
+          ax.set_title("Title goes here")
+          fig.savefig("model.pdf")
+
+        See also these examples: :ref:`edge-example`,
+        :ref:`visualize-example`.
+
+        """
+
+        # check the format of eig_dr
+        if not (eig_dr is None):
+            if eig_dr.shape!=(self._norb,):
+                raise Exception("\n\nWrong format of eig_dr! Must be array of size norb.")
+        
+        # check that ph_color is correct
+        if ph_color not in ["black","red-blue","wheel"]:
+            raise Exception("\n\nWrong value of ph_color parameter!")
+
+        # check if dir_second had to be specified
+        if dir_second is None and self._dim_r>1:
+            raise Exception("\n\nNeed to specify index of second coordinate for projection!")
+
+        # start a new figure
+        import matplotlib.pyplot as plt
+        fig=plt.figure(figsize=[plt.rcParams["figure.figsize"][0],
+                                plt.rcParams["figure.figsize"][0]])
+        ax=fig.add_subplot(111, aspect='equal')
+
+        def proj(v):
+            "Project vector onto drawing plane"
+            coord_x=v[dir_first]
+            if dir_second is None:
+                coord_y=0.0
+            else:
+                coord_y=v[dir_second]
+            return [coord_x,coord_y]
+
+        def to_cart(red):
+            "Convert reduced to Cartesian coordinates"
+            return np.dot(red,self._lat)
+
+        # define colors to be used in plotting everything
+        # except eigenvectors
+        if (eig_dr is None) or ph_color=="black":
+            c_cell="b"
+            c_orb="r"
+            c_nei=[0.85,0.65,0.65]
+            c_hop="g"
+        else:
+            c_cell=[0.4,0.4,0.4]
+            c_orb=[0.0,0.0,0.0]
+            c_nei=[0.6,0.6,0.6]
+            c_hop=[0.0,0.0,0.0]
+        # determine color scheme for eigenvectors
+        def color_to_phase(ph):
+            if ph_color=="black":
+                return "k"
+            if ph_color=="red-blue":
+                ph=np.abs(ph/np.pi)
+                return [1.0-ph,0.0,ph]
+            if ph_color=="wheel":
+                if ph<0.0:
+                    ph=ph+2.0*np.pi
+                ph=6.0*ph/(2.0*np.pi)
+                x_ph=1.0-np.abs(ph%2.0-1.0)
+                if ph>=0.0 and ph<1.0: ret_col=[1.0 ,x_ph,0.0 ]
+                if ph>=1.0 and ph<2.0: ret_col=[x_ph,1.0 ,0.0 ]
+                if ph>=2.0 and ph<3.0: ret_col=[0.0 ,1.0 ,x_ph]
+                if ph>=3.0 and ph<4.0: ret_col=[0.0 ,x_ph,1.0 ]
+                if ph>=4.0 and ph<5.0: ret_col=[x_ph,0.0 ,1.0 ]
+                if ph>=5.0 and ph<=6.0: ret_col=[1.0 ,0.0 ,x_ph]
+                return ret_col
+
+        # draw origin
+        ax.plot([0.0],[0.0],"o",c=c_cell,mec="w",mew=0.0,zorder=7,ms=4.5)
+
+        # first draw unit cell vectors which are considered to be periodic
+        for i in self._per:
+            # pick a unit cell vector and project it down to the drawing plane
+            vec=proj(self._lat[i])
+            ax.plot([0.0,vec[0]],[0.0,vec[1]],"-",c=c_cell,lw=1.5,zorder=7)
+
+        # now draw all orbitals
+        for i in range(self._norb):
+            # find position of orbital in cartesian coordinates
+            pos=to_cart(self._orb[i])
+            pos=proj(pos)
+            ax.plot([pos[0]],[pos[1]],"o",c=c_orb,mec="w",mew=0.0,zorder=10,ms=4.0)
+
+        # draw hopping terms
+        if draw_hoppings==True:
+            for h in self._hoppings:
+                # draw both i->j+R and i-R->j hop
+                for s in range(2):
+                    # get "from" and "to" coordinates
+                    pos_i=np.copy(self._orb[h[1]])
+                    pos_j=np.copy(self._orb[h[2]])
+                    # add also lattice vector if not 0-dim
+                    if self._dim_k!=0:
+                        if s==0:
+                            pos_j[self._per]=pos_j[self._per]+h[3][self._per]
+                        if s==1:
+                            pos_i[self._per]=pos_i[self._per]-h[3][self._per]
+                    # project down vector to the plane
+                    pos_i=np.array(proj(to_cart(pos_i)))
+                    pos_j=np.array(proj(to_cart(pos_j)))
+                    # add also one point in the middle to bend the curve
+                    prcnt=0.05 # bend always by this ammount
+                    pos_mid=(pos_i+pos_j)*0.5
+                    dif=pos_j-pos_i # difference vector
+                    orth=np.array([dif[1],-1.0*dif[0]]) # orthogonal to difference vector
+                    orth=orth/np.sqrt(np.dot(orth,orth)) # normalize
+                    pos_mid=pos_mid+orth*prcnt*np.sqrt(np.dot(dif,dif)) # shift mid point in orthogonal direction
+                    # draw hopping
+                    all_pnts=np.array([pos_i,pos_mid,pos_j]).T
+                    ax.plot(all_pnts[0],all_pnts[1],"-",c=c_hop,lw=0.75,zorder=8)
+                    # draw "from" and "to" sites
+                    ax.plot([pos_i[0]],[pos_i[1]],"o",c=c_nei,zorder=9,mew=0.0,ms=4.0,mec="w")
+                    ax.plot([pos_j[0]],[pos_j[1]],"o",c=c_nei,zorder=9,mew=0.0,ms=4.0,mec="w")
+
+        # now draw the eigenstate
+        if not (eig_dr is None):
+            for i in range(self._norb):
+                # find position of orbital in cartesian coordinates
+                pos=to_cart(self._orb[i])
+                pos=proj(pos)
+                # find norm of eigenfunction at this point
+                nrm=(eig_dr[i]*eig_dr[i].conjugate()).real
+                # rescale and get size of circle
+                nrm_rad=2.0*nrm*float(self._norb)
+                # get color based on the phase of the eigenstate
+                phase=np.angle(eig_dr[i])
+                c_ph=color_to_phase(phase)
+                ax.plot([pos[0]],[pos[1]],"o",c=c_ph,mec="w",mew=0.0,ms=nrm_rad,zorder=11,alpha=0.8)
+
+        # center the image
+        #  first get the current limit, which is probably tight
+        xl=ax.set_xlim()
+        yl=ax.set_ylim()
+        # now get the center of current limit
+        centx=(xl[1]+xl[0])*0.5
+        centy=(yl[1]+yl[0])*0.5
+        # now get the maximal size (lengthwise or heightwise)
+        mx=max([xl[1]-xl[0],yl[1]-yl[0]])
+        # set new limits
+        extr=0.05 # add some boundary as well
+        ax.set_xlim(centx-mx*(0.5+extr),centx+mx*(0.5+extr))
+        ax.set_ylim(centy-mx*(0.5+extr),centy+mx*(0.5+extr))
+
+        # return a figure and axes to the user
+        return (fig,ax)
     
 
     def get_num_orbitals(self):
