@@ -2,7 +2,7 @@ from __future__ import print_function
 
 # PythTB python tight binding module.
 # March 19th, 2025
-__version__='2.0.0'
+__version__ = "2.0.0"
 
 # Copyright 2010, 2012, 2016, 2017, 2022, 2025 by Trey Cole, Sinisa Coh and David Vanderbilt
 #
@@ -22,11 +22,12 @@ __version__='2.0.0'
 #
 # PythTB is availabe at http://www.physics.rutgers.edu/pythtb/
 
-import numpy as np # numerics for matrices
-import sympy as sp # for symbolic math
-import sys # for exiting
-import copy # for deepcopying
+import numpy as np  # numerics for matrices
+import sympy as sp  # for symbolic math
+import sys  # for exiting
+import copy  # for deepcopying
 import logging
+from itertools import product
 
 # Configure logging at the top of the file
 logging.basicConfig(level=logging.ERROR)
@@ -36,36 +37,36 @@ logger = logging.getLogger(__name__)
 def _decompose_pauli_matrix(M, precision=3):
     """
     Decompose a 2x2 matrix M in terms of the Pauli matrices.
-    
+
     That is, find coefficients a0, a1, a2, a3 such that:
-    
+
         M = a0 * I + a1 * sigma_x + a2 * sigma_y + a3 * sigma_z
-    
+
     Parameters:
         M (array-like): A 2x2 matrix (as a numpy array or convertible to one).
         precision (int): Number of significant digits for the coefficients.
-    
+
     Returns:
         str: A string representing the decomposition, e.g.
              "1I + 0.3τₓ - 0.2τ_y + 0τ_z"
-             
+
     Note: This function is applicable only when nspin = 2.
     """
     M = np.array(M, dtype=complex)
     if M.shape != (2, 2):
         raise ValueError("Matrix must be 2x2 for Pauli decomposition.")
-    
+
     # Define the 2x2 identity and Pauli matrices.
     sigma_x = np.array([[0, 1], [1, 0]], dtype=complex)
     sigma_y = np.array([[0, -1j], [1j, 0]], dtype=complex)
     sigma_z = np.array([[1, 0], [0, -1]], dtype=complex)
-    
+
     # Compute coefficients using the Hilbert-Schmidt inner product.
     a0 = 0.5 * np.trace(M)
     a1 = 0.5 * np.trace(np.dot(M, sigma_x))
     a2 = 0.5 * np.trace(np.dot(M, sigma_y))
     a3 = 0.5 * np.trace(np.dot(M, sigma_z))
-    
+
     # Helper to format each coefficient.
     def fmt(x):
         # If the imaginary part is negligible, print as a real number.
@@ -73,7 +74,7 @@ def _decompose_pauli_matrix(M, precision=3):
             return f"{x.real:.{precision}g}"
         else:
             return f"({x:.{precision}g})"
-    
+
     # Build a list of terms, including only those with non-negligible coefficients.
     terms = []
     if abs(a0) > 1e-10:
@@ -84,11 +85,11 @@ def _decompose_pauli_matrix(M, precision=3):
         terms.append(f"{fmt(a2)} \sigma_y")
     if abs(a3) > 1e-10:
         terms.append(f"{fmt(a3)} \sigma_z")
-    
+
     # If all coefficients are zero, return "0".
     if not terms:
         return "0"
-    
+
     # Join the terms with " + " (note: you might later post-process to handle negative signs nicely).
     return " + ".join(terms)
 
@@ -150,7 +151,7 @@ class tb_model(object):
        # Creates model that is two-dimensional in real space but only
        # one-dimensional in reciprocal space. Second lattice vector is
        # chosen to be periodic (since per=[1]). Three orbital
-       # coordinates are specified.       
+       # coordinates are specified.
        tb = tb_model(1, 2,
                    lat=[[1.0, 0.5], [0.0, 2.0]],
                    orb=[[0.2, 0.3], [0.1, 0.1], [0.2, 0.2]],
@@ -159,14 +160,8 @@ class tb_model(object):
     """
 
     def __init__(
-            self, 
-            dim_k: int, 
-            dim_r: int,
-            lat = None, 
-            orb = "bravais", 
-            per = None, 
-            nspin: int = 1
-            ):
+        self, dim_k: int, dim_r: int, lat=None, orb="bravais", per=None, nspin: int = 1
+    ):
 
         # Dimensionality of real space
         if not isinstance(dim_r, int):
@@ -174,26 +169,28 @@ class tb_model(object):
         if dim_r > 4:
             raise ValueError("Argument dim_r must be less than 4.")
 
-        # Dimensionality of k-space 
+        # Dimensionality of k-space
         if not isinstance(dim_k, int):
             raise TypeError("Argument dim_k must be an integer.")
         if dim_k > dim_r:
             raise ValueError("Argument dim_k must be less than dim_r.")
-        
+
         self._dim_r = dim_r
         self._dim_k = dim_k
-    
+
         # initialize lattice vectors
         # shape: (dim_r, dim_r)
         # idx: (lattice direction, cartesian components)
         # default: 'unit' implies unit matrix
-        if lat is None or (isinstance(lat, str) and lat == 'unit'):
+        if lat is None or (isinstance(lat, str) and lat == "unit"):
             self._lat = np.identity(dim_r, float)
             logger.info("Lattice vectors not specified. Using identity matrix.")
         elif isinstance(lat, (list, np.ndarray)):
             lat = np.array(lat, dtype=float)
             if lat.shape != (dim_r, dim_r):
-                raise ValueError("Wrong lat array dimensions. Must have shape (dim_r, dim_r).")
+                raise ValueError(
+                    "Wrong lat array dimensions. Must have shape (dim_r, dim_r)."
+                )
             self._lat = lat
         else:
             raise TypeError("Lattice vectors must be a list or numpy array.")
@@ -205,38 +202,52 @@ class tb_model(object):
                 raise ValueError("Lattice vectors need to form right handed system.")
             elif det_lat < 1e-10:
                 raise ValueError("Volume of unit cell is zero.")
-            
+
         # Initialize orbitals defined in reduced coordinates
         # shape: (norb, dim_r)
         # idx: (orbital, reduced components)
         # default: 'bravais' implies one orbital at origin
-        if (isinstance(orb, str) and orb == 'bravais'):
+        if isinstance(orb, str) and orb == "bravais":
             self._norb = 1
             self._orb = np.zeros((1, dim_r))
-            logger.info("Orbital positions is default value 'bravais'. Assuming a single orbital at the origin.")
+            logger.info(
+                "Orbital positions is default value 'bravais'. Assuming a single orbital at the origin."
+            )
         elif isinstance(orb, (int, np.integer)):
             self._norb = orb
             self._orb = np.zeros((orb, dim_r))
-            logger.info(f"Orbital positions is an integer. Assuming {orb} orbitals at the origin")
+            logger.info(
+                f"Orbital positions is an integer. Assuming {orb} orbitals at the origin"
+            )
         elif isinstance(lat, (list, np.ndarray)):
             orb = np.array(orb, dtype=float)
             if orb.ndim != 2:
-                raise ValueError("Orbtial array must have two axes; the first for orbital, the second for reduced unit values.")
+                raise ValueError(
+                    "Orbtial array must have two axes; the first for orbital, the second for reduced unit values."
+                )
             if orb.shape[1] != dim_r:
-                raise Exception("Number of components along second axes of ortbital array must match real space dimension.")
-            self._orb = orb # orbtial vectors
-            self._norb = orb.shape[0] # number of orbitals
+                raise Exception(
+                    "Number of components along second axes of ortbital array must match real space dimension."
+                )
+            self._orb = orb  # orbtial vectors
+            self._norb = orb.shape[0]  # number of orbitals
         else:
-            raise TypeError("Orbital vectors must be array-type, 'bravais', or an integer.")
-          
-        # Specifying which dimensions are periodic.        
+            raise TypeError(
+                "Orbital vectors must be array-type, 'bravais', or an integer."
+            )
+
+        # Specifying which dimensions are periodic.
         if per is None:
-            logger.info("Periodic directions not specified. Using the first dim_k directions.")
+            logger.info(
+                "Periodic directions not specified. Using the first dim_k directions."
+            )
             self._per = list(range(self._dim_k))
         else:
             per = list(per)
             if len(per) != self._dim_k:
-                raise ValueError("Number of periodic directions must equal the k-space dimension, dim_k.")
+                raise ValueError(
+                    "Number of periodic directions must equal the k-space dimension, dim_k."
+                )
             self._per = per
 
         # Validate number of spin components
@@ -245,12 +256,12 @@ class tb_model(object):
         self._nspin = nspin
 
         # Number of electronic states at each k-point
-        self._nstate = self._norb*self._nspin
+        self._nstate = self._norb * self._nspin
 
         # By default, assume model did not come from w90 object and that
         # position operator is diagonal
         self._assume_position_operator_diagonal = True
-        
+
         # Initialize onsite energies to zero
         if self._nspin == 1:
             self._site_energies = np.zeros((self._norb), dtype=float)
@@ -264,7 +275,7 @@ class tb_model(object):
         # remember which onsite energies user has specified
         self._site_energies_specified = np.zeros(self._norb, dtype=bool)
         self._site_energies_specified[:] = False
-        
+
         # Initialize hoppings to empty list
         self._hoppings = []
 
@@ -274,12 +285,11 @@ class tb_model(object):
         """
         return f"pythtb.tb_model(dim_r={self._dim_r}, dim_k={self._dim_k}, nspin={self._nspin})"
 
-    def __str__(self): 
+    def __str__(self):
         """
         Returns a string representation of the tb_model object.
         """
         return self.report(show=False)
-
 
     def report(self, show=True):
         """
@@ -300,17 +310,21 @@ class tb_model(object):
         output.append(header)
 
         formatter = {
-            'float_kind': lambda x: f"{0:^7.0f}" if abs(x) < 1e-10 else f"{x:^7.3f}"
+            "float_kind": lambda x: f"{0:^7.0f}" if abs(x) < 1e-10 else f"{x:^7.3f}"
         }
         output.append("Lattice vectors (Cartesian):")
         for i, vec in enumerate(self._lat):
             # print(f"  # {i} ===> {np.array2string(vec, formatter=formatter, separator=', ')}")
-            output.append(f"  # {i} ===> {np.array2string(vec, formatter=formatter, separator=', ')}")
-        
+            output.append(
+                f"  # {i} ===> {np.array2string(vec, formatter=formatter, separator=', ')}"
+            )
+
         output.append("Orbital vectors (dimensionless):")
         for i, orb in enumerate(self._orb):
             # print(f"  # {i} ===> {np.array2string(orb, formatter=formatter, separator=', ')}")
-            output.append(f"  # {i} ===> {np.array2string(orb, formatter=formatter, separator=', ')}")
+            output.append(
+                f"  # {i} ===> {np.array2string(orb, formatter=formatter, separator=', ')}"
+            )
 
         # Print Site Energies
         output.append("Site energies:")
@@ -322,24 +336,24 @@ class tb_model(object):
 
             output.append(f"  # {i} ===> {energy_str}")
 
-        output.append('Hoppings:')
-        for i,hopping in enumerate(self._hoppings):
+        output.append("Hoppings:")
+        for i, hopping in enumerate(self._hoppings):
             out_str = f"  < {hopping[1]:^1} | H | {hopping[2]:^1}"
-            if len(hopping)==4:
+            if len(hopping) == 4:
                 out_str += " + ["
-                for j,v in enumerate(hopping[3]):
+                for j, v in enumerate(hopping[3]):
                     out_str += f"{v:^5.1f}"
-                    if j != len(hopping[3])-1:
+                    if j != len(hopping[3]) - 1:
                         out_str += ", "
                     else:
-                        out_str+= "] >  ===> "
+                        out_str += "] >  ===> "
             if self._nspin == 1:
                 out_str += f"{hopping[0]:^7.4f}"
             elif self._nspin == 2:
-                out_str += str(hopping[0].round(4)).replace("\n"," ")
+                out_str += str(hopping[0].round(4)).replace("\n", " ")
             output.append(out_str)
 
-        output.append('Hopping distances:')
+        output.append("Hopping distances:")
 
         for i, hopping in enumerate(self._hoppings):
             hop_from = hopping[1]
@@ -350,13 +364,13 @@ class tb_model(object):
 
             out_str = f"  | pos({hop_from:^1}) - pos({hop_to:^1}"
 
-            if len(hopping)==4:
+            if len(hopping) == 4:
                 pos_j += np.dot(hopping[3], self._lat)
 
                 out_str += " + ["
                 for j, Rv in enumerate(hopping[3]):
                     out_str += f"{Rv:^5.1f}"
-                    if j != len(hopping[3])-1:
+                    if j != len(hopping[3]) - 1:
                         out_str += ", "
                     else:
                         out_str += "]"
@@ -370,7 +384,6 @@ class tb_model(object):
             print("\n".join(output))
         else:
             return "\n".join(output)
-        
 
     def get_num_orbitals(self):
         "Returns number of orbitals in the model."
@@ -394,14 +407,16 @@ class tb_model(object):
         Vectors are in Cartesian units.
         """
         return self._lat.copy()
-    
+
     def get_recip_lat(self):
-        A_per = self._lat[np.array(self._per), :][:, np.array(self._per)]  # shape (dim_k, dim_k)
+        A_per = self._lat[np.array(self._per), :][
+            :, np.array(self._per)
+        ]  # shape (dim_k, dim_k)
         b = 2 * np.pi * np.linalg.inv(A_per).T
         return b
 
     def set_onsite(self, onsite_en, ind_i=None, mode="set"):
-        r"""        
+        r"""
         Defines on-site energies for tight-binding orbitals. One can
         either set energy for one tight-binding orbital, or all at
         once.
@@ -425,8 +440,8 @@ class tb_model(object):
           energy you wish to change. This parameter should be
           specified only when *onsite_en* is a single number (not a
           list).
-          
-        :param mode: Similar to parameter *mode* in function set_hop*. 
+
+        :param mode: Similar to parameter *mode* in function set_hop*.
           Speficies way in which parameter *onsite_en* is
           used. It can either set value of on-site energy from scratch,
           reset it, or add to it.
@@ -457,33 +472,41 @@ class tb_model(object):
 
         """
         if ind_i is None:
-            if (len(onsite_en) != self._norb):
+            if len(onsite_en) != self._norb:
                 raise ValueError(
                     "List of onsite energies must "
                     "include a value for every orbital when `ind_i` is unspecified."
-                    )
+                )
             to_check = onsite_en
         else:
             if ind_i < 0 or ind_i >= self._norb:
-                raise ValueError("Index ind_i is not within the range of number of orbitals.")
+                raise ValueError(
+                    "Index ind_i is not within the range of number of orbitals."
+                )
             to_check = [onsite_en]
 
         # make sure that onsite terms are real/hermitian
         for ons in to_check:
             ons = np.array(ons)
             if not np.allclose(np.amax(abs(ons - ons.conj().T)), 0):
-                raise ValueError("Onsite terms should be real, or in case where it is a matrix, Hermitian.")
-            
+                raise ValueError(
+                    "Onsite terms should be real, or in case where it is a matrix, Hermitian."
+                )
+
         if mode.lower() == "set":
             if ind_i is not None:
                 if self._site_energies_specified[ind_i]:
-                    logger.warning(f"Onsite energy for site {ind_i} was already set; resetting to the specified values.")
-                
+                    logger.warning(
+                        f"Onsite energy for site {ind_i} was already set; resetting to the specified values."
+                    )
+
                 self._site_energies[ind_i] = self._val_to_block(onsite_en)
                 self._site_energies_specified[ind_i] = True
             else:
                 if True in self._site_energies_specified:
-                    logger.warning("Some or all of the onsite energies were already set; resetting to the specified values.")
+                    logger.warning(
+                        "Some or all of the onsite energies were already set; resetting to the specified values."
+                    )
 
                 for i in range(self._norb):
                     self._site_energies[i] = self._val_to_block(onsite_en[i])
@@ -498,12 +521,12 @@ class tb_model(object):
                 self._site_energies_specified[:] = True
         else:
             raise ValueError("Mode should be either 'set' or 'add'.")
-        
+
     def set_hop(
-            self, hop_amp, ind_i, ind_j, ind_R=None, mode="set", allow_conjugate_pair=False
-            ):
+        self, hop_amp, ind_i, ind_j, ind_R=None, mode="set", allow_conjugate_pair=False
+    ):
         r"""
-        
+
         Defines hopping parameters between tight-binding orbitals. In
         the notation used in section 3.1 equation 3.6 of
         :download:`notes on tight-binding formalism
@@ -567,7 +590,7 @@ class tb_model(object):
           used. If reciprocal space is zero-dimensional (as in a
           molecule), this parameter does not need to be specified.
 
-        :param mode: Similar to parameter *mode* in function *set_onsite*. 
+        :param mode: Similar to parameter *mode* in function *set_onsite*.
           Speficies way in which parameter *hop_amp* is
           used. It can either set or reset the value of hopping term,
           or add to it.
@@ -583,7 +606,7 @@ class tb_model(object):
           :math:`j \rightarrow i-R` has been
           specified. If both terms are specified, code will
           still count each term two times.
-          
+
         Example usage::
 
           # Specifies complex hopping amplitude between first orbital in home
@@ -598,18 +621,20 @@ class tb_model(object):
         """
         #### Prechecks and formatting ####
 
-        if self._dim_k !=0 and (ind_R is None):
+        if self._dim_k != 0 and (ind_R is None):
             raise ValueError("Must specify ind_R when we have a periodic direction.")
-         # make sure ind_i and ind_j are not out of scope
+        # make sure ind_i and ind_j are not out of scope
         if ind_i < 0 or ind_i >= self._norb:
             raise ValueError("Index ind_i is not within range of number of orbitals.")
         if ind_j < 0 or ind_j >= self._norb:
-            raise ValueError("Index ind_j is not within range of number of orbitals.") 
-        
+            raise ValueError("Index ind_j is not within range of number of orbitals.")
+
         # if necessary convert from integer to array
         if isinstance(ind_R, (int, np.integer)):
             if self._dim_k != 1:
-                raise ValueError("If dim_k is not 1, should not use integer for ind_R. Instead use list.")
+                raise ValueError(
+                    "If dim_k is not 1, should not use integer for ind_R. Instead use list."
+                )
             tmpR = np.zeros(self._dim_r, dtype=int)
             tmpR[self._per] = ind_R
             ind_R = tmpR
@@ -617,45 +642,60 @@ class tb_model(object):
         elif isinstance(ind_R, (np.ndarray, list)):
             ind_R = np.array(ind_R)
             if ind_R.shape != (self._dim_r,):
-                raise ValueError("Length of input ind_R vector must equal dim_r, even if dim_k < dim_r.")
+                raise ValueError(
+                    "Length of input ind_R vector must equal dim_r, even if dim_k < dim_r."
+                )
         else:
-            raise TypeError("ind_R is not of correct type. Should be array-type or integer.")
+            raise TypeError(
+                "ind_R is not of correct type. Should be array-type or integer."
+            )
 
-              
-        # Do not allow onsite hoppings to be specified here 
+        # Do not allow onsite hoppings to be specified here
         if ind_i == ind_j:
             # not extended
             if self._dim_k == 0:
-                raise ValueError("Do not use set_hop for onsite terms. Use set_onsite instead.")
+                raise ValueError(
+                    "Do not use set_hop for onsite terms. Use set_onsite instead."
+                )
             # hopping within unit cell
             elif ind_R is not None and bool(np.all(ind_R == 0)):
-                raise ValueError("Do not use set_hop for onsite terms. Use set_onsite instead.")
+                raise ValueError(
+                    "Do not use set_hop for onsite terms. Use set_onsite instead."
+                )
 
         # make sure that if <i|H|j+R> is specified that <j|H|i-R> is not!
         if not allow_conjugate_pair:
             for h in self._hoppings:
                 if ind_i == h[2] and ind_j == h[1]:
                     if self._dim_k == 0:
-                        raise ValueError(\
-                           f"""\n
+                        raise ValueError(
+                            f"""\n
                             Following matrix element was already implicitely specified:
                             i={ind_i}, j={ind_j}.
                             Remember, specifying <i|H|j> automatically specifies <j|H|i>.  For
                             consistency, specify all hoppings for a given bond in the same
                             direction. Alternatively, see the documentation on the
                             'allow_conjugate_pair' flag.)
-                            """)
-                    elif np.all(ind_R[self._per]==(-1)*np.array(h[3])[self._per]):
-                        raise ValueError(\
+                            """
+                        )
+                    elif np.all(ind_R[self._per] == (-1) * np.array(h[3])[self._per]):
+                        raise ValueError(
                             """\n
                             Following matrix element was already implicitely specified:
-                            i="""+str(ind_i)+" j="+str(ind_j)+" R="+str(ind_R)+"""
+                            i="""
+                            + str(ind_i)
+                            + " j="
+                            + str(ind_j)
+                            + " R="
+                            + str(ind_R)
+                            + """
                             Remember,specifying <i|H|j+R> automatically specifies <j|H|i-R>.  For
                             consistency, specify all hoppings for a given bond in the same
                             direction.  (Or, alternatively, see the documentation on the
                             'allow_conjugate_pair' flag.)
-                            """)
-                    
+                            """
+                        )
+
         # convert to 2x2 matrix if needed
         hop_use = self._val_to_block(hop_amp)
         # hopping term parameters to be stored
@@ -663,11 +703,11 @@ class tb_model(object):
             new_hop = [hop_use, int(ind_i), int(ind_j)]
         else:
             new_hop = [hop_use, int(ind_i), int(ind_j), np.array(ind_R)]
-        
+
         # see if there is a hopping term with same i,j,R
         use_index = None
         for iih, h in enumerate(self._hoppings):
-            same_ijR = False 
+            same_ijR = False
             if ind_i == h[1] and ind_j == h[2]:
                 if self._dim_k == 0:
                     same_ijR = True
@@ -683,42 +723,47 @@ class tb_model(object):
             if use_index is not None:
                 logger.warning(
                     f"Hopping for {ind_i} -> {ind_j} + {ind_R} was already set to {self._hoppings[use_index][0]}. "
-                    f"Resetting to {hop_amp}.")
+                    f"Resetting to {hop_amp}."
+                )
                 self._hoppings[use_index] = new_hop
             else:
                 self._hoppings.append(new_hop)
-        elif mode.lower()=="add":
+        elif mode.lower() == "add":
             if use_index is not None:
                 self._hoppings[use_index][0] += new_hop[0]
             else:
                 self._hoppings.append(new_hop)
         else:
-            raise ValueError("Wrong value of mode parameter. Should be either `set` or `add`.")
+            raise ValueError(
+                "Wrong value of mode parameter. Should be either `set` or `add`."
+            )
 
     def _val_to_block(self, val):
         """
-        If nspin=2 then returns a 2 by 2 matrix from the input parameters. 
-        If only one real number is given in the input then  assume that this is multiplied by the identity. 
+        If nspin=2 then returns a 2 by 2 matrix from the input parameters.
+        If only one real number is given in the input then  assume that this is multiplied by the identity.
         If array with up to four elements is given then these are multiplied by the Pauli matrices
-        at each respective index. 
-        If given a 2 by 2  matrix, just return it.  
-        
+        at each respective index.
+        If given a 2 by 2  matrix, just return it.
+
         If nspin=1 then just returns val.
         """
         # spinless case
         if self._nspin == 1:
             if not isinstance(val, (int, np.integer, float, complex)):
-                raise TypeError("Onsite energy for a given orbital must be an integer or float in spinless case.")
+                raise TypeError(
+                    "Onsite energy for a given orbital must be an integer or float in spinless case."
+                )
             return val
         # spinful case
         elif self._nspin == 2:
-            sigma_0 = np.array([[1,0], [0,1]], dtype=complex)
-            sigma_x = np.array([[0,1], [1,0]], dtype=complex)
-            sigma_y = np.array([[0,-1j], [1j,0]], dtype=complex)
-            sigma_z = np.array([[1,0], [0,-1]], dtype=complex)
+            sigma_0 = np.array([[1, 0], [0, 1]], dtype=complex)
+            sigma_x = np.array([[0, 1], [1, 0]], dtype=complex)
+            sigma_y = np.array([[0, -1j], [1j, 0]], dtype=complex)
+            sigma_z = np.array([[1, 0], [0, -1]], dtype=complex)
 
             paulis = [sigma_0, sigma_x, sigma_y, sigma_z]
-            
+
             if isinstance(val, (int, np.integer)):
                 val = [val]
 
@@ -727,24 +772,34 @@ class tb_model(object):
             # already
             if use_val.ndim == 2:
                 if not (use_val.shape[0] == 2 and use_val.shape[1] == 2):
-                    raise ValueError("val should be a 2x2 array, list of up to 4 numbers, or number.")
+                    raise ValueError(
+                        "val should be a 2x2 array, list of up to 4 numbers, or number."
+                    )
                 return use_val
             elif use_val.ndim == 1:
                 if use_val.shape[0] > 4:
-                    raise ValueError("val should be a 2x2 array, list of up to 4 numbers, or number.")
+                    raise ValueError(
+                        "val should be a 2x2 array, list of up to 4 numbers, or number."
+                    )
                 return sum([val * paulis[i] for i, val in enumerate(use_val)])
             elif use_val.ndim == 0:
                 return val * paulis[0]
             else:
-                raise ValueError("Onsite energy has incorrect dimensions. "
-                "Must either be an integer, list, or 2x2 matrix for spinful calculation.")   
-
+                raise ValueError(
+                    "Onsite energy has incorrect dimensions. "
+                    "Must either be an integer, list, or 2x2 matrix for spinful calculation."
+                )
 
     def visualize(
-            self, dir_first, dir_second=None, eig_dr=None,
-            draw_hoppings=True, annotate_onsite_en = False,
-            annotate_hoppings=False, ph_color="black"
-            ):
+        self,
+        dir_first,
+        dir_second=None,
+        eig_dr=None,
+        draw_hoppings=True,
+        annotate_onsite_en=False,
+        annotate_hoppings=False,
+        ph_color="black",
+    ):
         r"""
 
         Rudimentary function for visualizing tight-binding model geometry,
@@ -829,7 +884,8 @@ class tb_model(object):
         import matplotlib.pyplot as plt
         from matplotlib.patches import FancyArrowPatch
         import matplotlib.cm as cm
-        cmap = plt.get_cmap('viridis', self._norb)
+
+        cmap = plt.get_cmap("viridis", self._norb)
 
         fig, ax = plt.subplots(figsize=(8, 8))
 
@@ -842,7 +898,7 @@ class tb_model(object):
         # Convert reduced coordinates to Cartesian coordinates
         def to_cart(red):
             return np.dot(red, self._lat)
-        
+
         # to ensure proper padding, track all plotted coordinates
         all_coords = []
 
@@ -859,32 +915,58 @@ class tb_model(object):
             ends.append(end)
 
             # lattice vector arrow
-            arrow = FancyArrowPatch(start, end, arrowstyle='->', mutation_scale=15, color='blue', lw=2, zorder=0)
+            arrow = FancyArrowPatch(
+                start,
+                end,
+                arrowstyle="->",
+                mutation_scale=15,
+                color="blue",
+                lw=2,
+                zorder=0,
+            )
             ax.add_patch(arrow)
-            
+
             # annotation of lattice
             ax.annotate(
                 f"$\\vec{{a}}_{i}$",
                 xy=end,  # (end[0], end[1])
                 xytext=(4, 4),  # offset in points
                 textcoords="offset points",
-                color='blue', fontsize=12,
-                va='bottom', ha='right'
+                color="blue",
+                fontsize=12,
+                va="bottom",
+                ha="right",
             )
             all_coords.append(end)
-        
+
         # plot dotted bounding lines to unit cell
         ends = np.array(ends)
 
         # top shifted line
         start = ends[0]
         end = ends[0] + ends[1]
-        ax.plot([start[0], end[0]], [start[1], end[1]], ls='--', lw=1, color='b', zorder=0, alpha=0.5)
+        ax.plot(
+            [start[0], end[0]],
+            [start[1], end[1]],
+            ls="--",
+            lw=1,
+            color="b",
+            zorder=0,
+            alpha=0.5,
+        )
 
         # right shifted line
         start = ends[1]
-        ax.plot([start[0], end[0]], [start[1], end[1]], ls='--', lw=1, color='b', zorder=0, alpha=0.5)
-        
+        ax.plot(
+            [start[0], end[0]],
+            [start[1], end[1]],
+            ls="--",
+            lw=1,
+            color="b",
+            zorder=0,
+            alpha=0.5,
+        )
+
         # Draw orbitals: home-cell orbitals in red
         orb_coords = []
         for i in range(self._norb):
@@ -893,18 +975,36 @@ class tb_model(object):
             color = cmap(i)
             ax.scatter(p[0], p[1], color=color, s=50, zorder=2, label=f"Orbital {i}")
             orb_coords.append(p)
-            
+
             # For spinful case, annotate orbital with onsite decomposition.
             if self._nspin == 2 and annotate_onsite_en:
                 onsite_str = _decompose_pauli_matrix(self._site_energies[i])
-                ax.annotate(f"$\Delta_{{{i}}} = {onsite_str}$", xy=p, xytext=(5, 5),
-                            textcoords="offset points", fontsize=10, color='red',
-                            bbox=dict(boxstyle='round,pad=0.2', fc='lightcoral', ec='none', alpha=0.6), zorder=5)
+                ax.annotate(
+                    f"$\Delta_{{{i}}} = {onsite_str}$",
+                    xy=p,
+                    xytext=(5, 5),
+                    textcoords="offset points",
+                    fontsize=10,
+                    color="red",
+                    bbox=dict(
+                        boxstyle="round,pad=0.2", fc="lightcoral", ec="none", alpha=0.6
+                    ),
+                    zorder=5,
+                )
             elif self._nspin == 1 and annotate_onsite_en:
                 onsite_str = f"$\Delta_{{{i}}} = {self._site_energies[i]:.2f}$"
-                ax.annotate(onsite_str, xy=p, xytext=(5, 5),
-                            textcoords="offset points", fontsize=10, color='red',
-                            bbox=dict(boxstyle='round,pad=0.2', fc='lightcoral', ec='none', alpha=0.6), zorder=5)
+                ax.annotate(
+                    onsite_str,
+                    xy=p,
+                    xytext=(5, 5),
+                    textcoords="offset points",
+                    fontsize=10,
+                    color="red",
+                    bbox=dict(
+                        boxstyle="round,pad=0.2", fc="lightcoral", ec="none", alpha=0.6
+                    ),
+                    zorder=5,
+                )
 
         # Draw hopping terms with curved arrows
         hopping_coords = []
@@ -912,15 +1012,17 @@ class tb_model(object):
         # maximum magnitudes of hopping strengths
         mags = [np.amax(abs(hop[0])) for hop in self._hoppings]
         biggest_hop = np.amax(mags)
-        arrow_alphas = mags/biggest_hop # transparency propto hopping strength
-        arrow_alphas = 0.3 + 0.7*arrow_alphas**2 # nonlinear mapping for greater visual difference
+        arrow_alphas = mags / biggest_hop  # transparency propto hopping strength
+        arrow_alphas = (
+            0.3 + 0.7 * arrow_alphas**2
+        )  # nonlinear mapping for greater visual difference
 
         if draw_hoppings:
             for h_idx, h in enumerate(self._hoppings):
-                for shift in range(2): # draw both i->j+R and i-R->j hop
+                for shift in range(2):  # draw both i->j+R and i-R->j hop
                     # Determine starting and ending orbital positions
                     amp = h[0]
-                
+
                     i_orb = h[1]
                     j_orb = h[2]
 
@@ -935,45 +1037,64 @@ class tb_model(object):
                         else:
                             # i-R->j
                             pos_i -= np.dot(h[3], self._lat)
-            
+
                     p_i = proj(pos_i)
                     p_j = proj(pos_j)
-                    
+
                     # plot neighboring cell orbital
                     # ensure we don't plot orbital in unit cell again (if no translation)
                     if not np.all(h[3] == 0):
                         # ensure we only scatter orbitals once
-                        if p_j not in hopping_coords and shift == 0 :
-                            ax.scatter(p_j[0], p_j[1], color=cmap(h[2]), s=50, zorder=1, alpha=1)
+                        if p_j not in hopping_coords and shift == 0:
+                            ax.scatter(
+                                p_j[0],
+                                p_j[1],
+                                color=cmap(h[2]),
+                                s=50,
+                                zorder=1,
+                                alpha=1,
+                            )
                         if p_i not in hopping_coords and shift == 1:
-                            ax.scatter(p_i[0], p_i[1], color=cmap(h[1]), s=50, zorder=1, alpha=1)
-
+                            ax.scatter(
+                                p_i[0],
+                                p_i[1],
+                                color=cmap(h[1]),
+                                s=50,
+                                zorder=1,
+                                alpha=1,
+                            )
 
                     # Don't want to plot connecting arrows within unit cell twice
                     if np.all(h[3] == 0) and shift == 1:
                         # Arrow connects orbitals within cell, so shift = 1 is same
                         # conditions as shift = 2 (same arrows)
                         continue
-                    
+
                     # First arrow: p_i -> p_j
                     arrow1 = FancyArrowPatch(
-                        p_i, p_j,
-                        connectionstyle="arc3,rad=0.08", 
-                        arrowstyle='->',
+                        p_i,
+                        p_j,
+                        connectionstyle="arc3,rad=0.08",
+                        arrowstyle="->",
                         mutation_scale=10,
-                        color='green',
-                        lw=1.3, alpha=arrow_alphas[h_idx], zorder=1
+                        color="green",
+                        lw=1.3,
+                        alpha=arrow_alphas[h_idx],
+                        zorder=1,
                     )
                     ax.add_patch(arrow1)
 
                     # Second arrow: p_j -> p_i
                     arrow2 = FancyArrowPatch(
-                        p_j, p_i,
-                        connectionstyle="arc3,rad=0.08", 
-                        arrowstyle='->',
+                        p_j,
+                        p_i,
+                        connectionstyle="arc3,rad=0.08",
+                        arrowstyle="->",
                         mutation_scale=10,
-                        color='green',
-                        lw=1.3, alpha=arrow_alphas[h_idx], zorder=1
+                        color="green",
+                        lw=1.3,
+                        alpha=arrow_alphas[h_idx],
+                        zorder=1,
                     )
                     ax.add_patch(arrow2)
 
@@ -987,13 +1108,21 @@ class tb_model(object):
             for i in range(self._norb):
                 pos = to_cart(self._orb[i])
                 p = proj(pos)
-                amp = np.abs(eig_dr[i])**2  # intensity proportional to probability density
+                amp = (
+                    np.abs(eig_dr[i]) ** 2
+                )  # intensity proportional to probability density
                 phase = np.angle(eig_dr[i])
                 # Map phase from [-pi, pi] to [0,1]
                 color = cmap((phase + np.pi) / (2 * np.pi))
-                ax.scatter(p[0], p[1], s=100 * amp, color=color, edgecolor='k', zorder=10,
-                        label="Eigenstate" if i == 0 else None)
-
+                ax.scatter(
+                    p[0],
+                    p[1],
+                    s=100 * amp,
+                    color=color,
+                    edgecolor="k",
+                    zorder=10,
+                    label="Eigenstate" if i == 0 else None,
+                )
 
         # Adjust the axis so everything fits
         all_coords += hopping_coords
@@ -1010,7 +1139,7 @@ class tb_model(object):
         ax.set_ylim(min_y - pad_y, max_y + pad_y)
 
         # Final plot adjustments
-        ax.set_aspect('equal')
+        ax.set_aspect("equal")
         ax.set_xlabel(f"Cartesian coordinate {dir_first}")
         if dir_second is not None:
             ax.set_ylabel(f"Cartesian coordinate {dir_second}")
@@ -1019,57 +1148,64 @@ class tb_model(object):
         ax.legend(loc="upper right", fontsize=10)
         plt.tight_layout()
 
-        return fig, ax 
-    
+        return fig, ax
 
-    def get_velocity(self, k_pts, Cartesian=False):
+    def get_velocity(self, k_pts, cartesian=False):
         """
         Generate the velocity operator using commutator v_k = d/dk H_k for an array of k-points.
-        
+
         Parameters:
             model: Tight-binding model instance.
             k_pts: Array of k-points in reduced coordinates, shape (n_kpts, dim_k).
-        
+
         Returns:
             vel: Velocity operators at each k-point, shape (dim_k, n_kpts, n_orb, n_orb).
         """
 
-        dim_k = self.dim_k
+        dim_k = self._dim_k
 
         if k_pts is not None:
             # if kpnt is just a number then convert it to an array
             if isinstance(k_pts, (int, np.integer, float)):
                 if self.dim_k != 1:
-                    raise ValueError("k_pts should be a 2D array of shape (n_kpts, dim_k).")
+                    raise ValueError(
+                        "k_pts should be a 2D array of shape (n_kpts, dim_k)."
+                    )
                 k_arr = np.array([[k_pts]])
             elif isinstance(k_pts, (list, np.ndarray)):
                 k_arr = np.array(k_pts)
                 if k_arr.ndim == 1:
                     if k_arr.shape[0] != self._dim_k:
-                        return ValueError("If 'k_pts' is a single k-point, it must be of shape dim_k.")
+                        return ValueError(
+                            "If 'k_pts' is a single k-point, it must be of shape dim_k."
+                        )
                     else:
                         # Reshape to (1, dim_k)
                         k_arr = k_arr[None, :]
             else:
-                raise TypeError("k_pts should be a list or numpy array, or possibly a number for 1d k-space.")
-            
+                raise TypeError(
+                    "k_pts should be a list or numpy array, or possibly a number for 1d k-space."
+                )
+
             # check that k-vector is of corect size
             if k_arr.ndim != 2 or k_arr.shape[-1] != self._dim_k:
                 raise ValueError("k_arr should be a 2D array of shape (n_kpts, dim_k).")
-            
+
             n_kpts = k_arr.shape[0]
 
             if self._nspin == 1:
                 vel = np.zeros((dim_k, n_kpts, self._norb, self._norb), dtype=complex)
             elif self._nspin == 2:
-                vel = np.zeros((dim_k, n_kpts, self._norb, 2, self._norb, 2), dtype=complex)
+                vel = np.zeros(
+                    (dim_k, n_kpts, self._norb, 2, self._norb, 2), dtype=complex
+                )
             else:
                 raise ValueError("Invalid spin value.")
-            
+
         else:
             raise TypeError("k_pts should not be None for velocity operator.")
-        
-        # Lattice vectors in Cartesian coordinates for the periodic directions.       
+
+        # Lattice vectors in Cartesian coordinates for the periodic directions.
         for hopping in self._hoppings:
             if self._nspin == 1:
                 amp = complex(hopping[0])
@@ -1088,69 +1224,78 @@ class tb_model(object):
             # Compute phase factors for all k-points
             phase = np.exp(1j * 2 * np.pi * k_pts @ delta_r_per)  # Shape: (n_kpts,)
 
-            if Cartesian:
-                deriv = 1j * delta_r_per @ self.get_lat()[self._per, :]  # Cartesian derivative (x, y, z)
+            if cartesian:
+                deriv = (
+                    1j * delta_r_per @ self.get_lat()[self._per, :]
+                )  # Cartesian derivative (x, y, z)
             else:
                 deriv = 1j * 2 * np.pi * delta_r_per  # d/dkappa (k1, k2, k3)
 
             # Using numpy broadcasting, combines into 2 axes, multiplying together
-            deriv = deriv[:, np.newaxis] * phase[np.newaxis, :] # shape: (dim_k, n_kpts)
+            deriv = (
+                deriv[:, np.newaxis] * phase[np.newaxis, :]
+            )  # shape: (dim_k, n_kpts)
 
             # Compute the amplitude for all k-points and components
             if self._nspin == 2:
                 amp_k = (
-                    deriv[:, :, np.newaxis, np.newaxis] * 
-                    amp[np.newaxis, np.newaxis, :, :] 
-                    )
+                    deriv[:, :, np.newaxis, np.newaxis]
+                    * amp[np.newaxis, np.newaxis, :, :]
+                )
                 # Shape: (dim_k, n_kpts, n_spin, n_spin)
-            elif self._nspin == 1: 
-                amp_k =  amp * deriv # Shape: (dim_k, n_kpts)
+            elif self._nspin == 1:
+                amp_k = amp * deriv  # Shape: (dim_k, n_kpts)
 
             # Update velocity operator
             if self._nspin == 1:
-                vel[..., i, j] += amp_k 
+                vel[..., i, j] += amp_k
                 vel[..., j, i] += np.conj(amp_k)
             elif self._nspin == 2:
                 vel[..., i, :, j, :] += amp_k
                 vel[..., j, :, i, :] += np.swapaxes(amp_k.conjugate(), -1, -2)
 
-        return vel 
-
+        return vel
 
     def get_ham(self, k_pts=None):
         """
         Generate Bloch Hamiltonian for an array of k-points and varying parameters
 
         This Hamiltonian follows tight-binding convention I where the phase factors
-        associated with the orbital positions are included. This means H(k) =\= H(k+G), but 
+        associated with the orbital positions are included. This means H(k) =\= H(k+G), but
         instead H(k) = U H(k+G) U^(dagger). Taking finite differences for partial k_mu H(k)
         doesn't work in convention I at the boundaries.
 
         Args:
             k_pts (array-like, optional): Array of k-points in reduced coordinates
         """
-                
+
         if k_pts is not None:
             # if kpnt is just a number then convert it to an array
             if isinstance(k_pts, (int, np.integer, float)):
                 if self.dim_k != 1:
-                    raise ValueError("k_pts should be a 2D array of shape (n_kpts, dim_k).")
+                    raise ValueError(
+                        "k_pts should be a 2D array of shape (n_kpts, dim_k)."
+                    )
                 k_arr = np.array([[k_pts]])
             elif isinstance(k_pts, (list, np.ndarray)):
                 k_arr = np.array(k_pts)
                 if k_arr.ndim == 1:
                     if k_arr.shape[0] != self._dim_k:
-                        return ValueError("If 'k_pts' is a single k-point, it must be of shape dim_k.")
+                        return ValueError(
+                            "If 'k_pts' is a single k-point, it must be of shape dim_k."
+                        )
                     else:
                         # Reshape to (1, dim_k)
                         k_arr = k_arr[None, :]
             else:
-                raise TypeError("k_pts should be a list or numpy array, or possibly a number for 1d k-space.")
-            
+                raise TypeError(
+                    "k_pts should be a list or numpy array, or possibly a number for 1d k-space."
+                )
+
             # check that k-vector is of corect size
             if k_arr.ndim != 2 or k_arr.shape[-1] != self._dim_k:
                 raise ValueError("k_arr should be a 2D array of shape (n_kpts, dim_k).")
-            
+
             n_kpts = k_arr.shape[0]
 
             if self._nspin == 1:
@@ -1161,15 +1306,17 @@ class tb_model(object):
                 raise ValueError("Invalid spin value.")
         else:
             if self._dim_k != 0:
-                raise Exception("Must provide a list of k-vectors for the Bloch Hamiltonian of extended systems.")
-            else: # finite sample
+                raise Exception(
+                    "Must provide a list of k-vectors for the Bloch Hamiltonian of extended systems."
+                )
+            else:  # finite sample
                 if self._nspin == 1:
                     ham = np.zeros((self._norb, self._norb), dtype=complex)
                 elif self._nspin == 2:
                     ham = np.zeros((self._norb, 2, self._norb, 2), dtype=complex)
                 else:
                     raise ValueError("Invalid spin value.")
-        
+
         # fill diagonal elements with onsite energies
         orb_idxs = np.arange(self._norb)
         for orb in orb_idxs:
@@ -1177,12 +1324,12 @@ class tb_model(object):
                 ham[..., orb, orb] = self._site_energies[orb]
             elif self._nspin == 2:
                 ham[..., orb, :, orb, :] = self._site_energies[orb]
-        
+
         # Loop over all hoppings
         for hopping in self._hoppings:
             i = hopping[1]
             j = hopping[2]
-            
+
             if self._nspin == 1:
                 amp = complex(hopping[0])
             elif self._nspin == 2:
@@ -1195,66 +1342,74 @@ class tb_model(object):
                 # Compute delta_r for periodic directions
                 delta_r = ind_R - self._orb[i, :] + self._orb[j, :]  # Shape: (dim_r,)
                 delta_r_per = delta_r[np.array(self._per)]  # Shape: (dim_k,)
-                
+
                 # Compute phase factors for all k-points
                 phase = np.exp(1j * 2 * np.pi * k_arr @ delta_r_per)  # Shape: (n_kpts,)
-                
+
                 # Compute the amplitude for all k-points and components
-                if self._nspin == 2:        
+                if self._nspin == 2:
                     amp = phase[:, None, None] * amp  # Shape: (n_kpts, n_spin, n_spin)
-                else: 
+                else:
                     amp *= phase  # Shape: (n_kpts,)
 
             if self._nspin == 1:
-                ham[..., i, j] += amp 
+                ham[..., i, j] += amp
                 ham[..., j, i] += amp.conjugate()
             elif self._nspin == 2:
                 ham[..., i, :, j, :] += amp
-                ham[..., j, :, i, :] += np.swapaxes(amp.conjugate(), -1, -2)        
+                ham[..., j, :, i, :] += np.swapaxes(amp.conjugate(), -1, -2)
 
         return ham
 
-    def _sol_ham(self, ham, return_eigvecs=False):
+    def _sol_ham(self, ham, return_eigvecs=False, keep_spin_ax=True):
         """Solves Hamiltonian and returns eigenvectors, eigenvalues"""
 
         # shape(ham): (Nk, n_orb, n_orb), (Nk, n_orb, n_spin, n_orb, n_spin)
         # or in finite cases (n_orb, n_orb), (n_orb, n_spin, n_orb, n_spin)
         # flatten spin axes
-        if ham.ndim == 2*self._nspin + 1:
+        if ham.ndim == 2 * self._nspin + 1:
             # have k points
-            new_shape = (ham.shape[0],) + (self._nspin*self._norb, self._nspin*self._norb)
+            new_shape = (ham.shape[0],) + (
+                self._nspin * self._norb,
+                self._nspin * self._norb,
+            )
             if self._nspin == 1:
                 shape_evecs = (ham.shape[0],) + (self._norb, self._norb)
             elif self._nspin == 2:
-                shape_evecs = (ham.shape[0],) + (self._nspin*self._norb, self._norb, self._nspin)
-        elif ham.ndim == 2*self._nspin:
+                shape_evecs = (ham.shape[0],) + (
+                    self._nspin * self._norb,
+                    self._norb,
+                    self._nspin,
+                )
+        elif ham.ndim == 2 * self._nspin:
             # must be a finite sample, no k-points
-            new_shape = (self._nspin*self._norb, self._nspin*self._norb)
+            new_shape = (self._nspin * self._norb, self._nspin * self._norb)
             if self._nspin == 1:
                 shape_evecs = (self._norb, self._norb)
             elif self._nspin == 2:
-                shape_evecs = (self._nspin*self._norb, self._norb, self._nspin)
+                shape_evecs = (self._nspin * self._norb, self._norb, self._nspin)
         else:
             raise ValueError("Hamiltonian has wrong shape.")
-        
-        ham_use = ham.reshape(*new_shape) 
 
-        if not np.allclose(ham_use, ham_use.swapaxes(-1,-2).conj()):
+        ham_use = ham.reshape(*new_shape)
+
+        if not np.allclose(ham_use, ham_use.swapaxes(-1, -2).conj()):
             raise Exception("Hamiltonian matrix is not hermitian")
-        
-        #solve matrix
-        if not return_eigvecs: 
+
+        # solve matrix
+        if not return_eigvecs:
             return np.linalg.eigvalsh(ham_use)
-        else: 
+        else:
             eval, evec = np.linalg.eigh(ham_use)
             # transpose matrix eig since otherwise it is confusing
             # now eig[i,:] is eigenvector for eval[i]-th eigenvalue
-            evec = evec.swapaxes(-1,-2)
-            evec = evec.reshape(*shape_evecs) 
-                
+            evec = evec.swapaxes(-1, -2)
+            if keep_spin_ax:
+                evec = evec.reshape(*shape_evecs)
+
             return eval, evec
 
-    def solve_ham(self, k_list=None, return_eigvecs=False):
+    def solve_ham(self, k_list=None, return_eigvecs=False, keep_spin_ax=True):
         r"""
         Solves for eigenvalues and (optionally) eigenvectors of the
         tight-binding model on a given one-dimensional list of k-vectors.
@@ -1288,7 +1443,7 @@ class tb_model(object):
           This parameter shouldn't be specified for system with
           zero-dimensional k-space (*dim_k* =0).
 
-        :param eig_vectors: Optional boolean parameter, specifying whether
+        :param return_eigvecs: Optional boolean parameter, specifying whether
           eigenvectors should be returned. If *eig_vectors* is True, then
           both eigenvalues and eigenvectors are returned, otherwise only
           eigenvalues are returned.
@@ -1311,8 +1466,8 @@ class tb_model(object):
             electron band in question, "kpoint" is index of k-vector
             as given in input parameter *k_list*. Finally, "orbital"
             refers to the tight-binding orbital basis function.
-            Ordering of bands is the same as in *eval*.  
-            
+            Ordering of bands is the same as in *eval*.
+
             Eigenvectors evec[n,k,j] correspond to :math:`C^{n {\bf
             k}}_{j}` from section 3.1 equation 3.5 and 3.7 of the
             :download:`notes on tight-binding formalism
@@ -1331,13 +1486,15 @@ class tb_model(object):
           # Returns eigenvalues for three k-vectors
           eval = tb.solve_all([[0.0, 0.0], [0.0, 0.2], [0.0, 0.5]])
           # Returns eigenvalues and eigenvectors for two k-vectors
-          (eval, evec) = tb.solve_all([[0.0, 0.0], [0.0, 0.2]], eig_vectors=True)
+          (eval, evec) = tb.solve_all([[0.0, 0.0], [0.0, 0.2]], return_eigvecs=True)
 
         """
-        Ham = self._gen_ham(k_list)
+        Ham = self.get_ham(k_list)
 
         if return_eigvecs:
-            eigvals, eigvecs = self._sol_ham(Ham, return_eigvecs=return_eigvecs)
+            eigvals, eigvecs = self._sol_ham(
+                Ham, return_eigvecs=return_eigvecs, keep_spin_ax=keep_spin_ax
+            )
             if self._dim_k != 0:
                 if eigvals.ndim != 2:
                     raise ValueError("Wrong shape of eigvals")
@@ -1356,9 +1513,8 @@ class tb_model(object):
                 if eigvals.shape[0] == 1:
                     eigvals = eigvals[0]
             return eigvals
-        
 
-    def cut_piece(self,num,fin_dir,glue_edgs=False):
+    def cut_piece(self, num, fin_dir, glue_edgs=False):
         r"""
         Constructs a (d-1)-dimensional tight-binding model out of a
         d-dimensional one by repeating the unit cell a given number of
@@ -1399,92 +1555,103 @@ class tb_model(object):
 
 
         """
-        if self._dim_k ==0:
+        if self._dim_k == 0:
             raise Exception("\n\nModel is already finite")
         if not _is_int(num):
             raise TypeError("\n\nArgument num not an integer")
 
         # check value of num
-        if num<1:
+        if num < 1:
             raise ValueError("\n\nArgument num must be positive!")
-        if num==1 and glue_edgs:
+        if num == 1 and glue_edgs:
             raise ValueError("\n\nCan't have num=1 and glueing of the edges!")
 
         # generate orbitals of a finite model
-        fin_orb=[]
-        onsite=[] # store also onsite energies
-        for i in range(num): # go over all cells in finite direction
-            for j in range(self._norb): # go over all orbitals in one cell
+        fin_orb = []
+        onsite = []  # store also onsite energies
+        for i in range(num):  # go over all cells in finite direction
+            for j in range(self._norb):  # go over all orbitals in one cell
                 # make a copy of j-th orbital
-                orb_tmp=np.copy(self._orb[j,:])
+                orb_tmp = np.copy(self._orb[j, :])
                 # change coordinate along finite direction
-                orb_tmp[fin_dir]+=float(i)
+                orb_tmp[fin_dir] += float(i)
                 # add to the list
                 fin_orb.append(orb_tmp)
                 # do the onsite energies at the same time
                 onsite.append(self._site_energies[j])
-        onsite=np.array(onsite)
-        fin_orb=np.array(fin_orb)
+        onsite = np.array(onsite)
+        fin_orb = np.array(fin_orb)
 
         # generate periodic directions of a finite model
-        fin_per=copy.deepcopy(self._per)
+        fin_per = copy.deepcopy(self._per)
         # find if list of periodic directions contains the one you
         # want to make finite
-        if fin_per.count(fin_dir)!=1:
+        if fin_per.count(fin_dir) != 1:
             raise Exception("\n\nCan not make model finite along this direction!")
         # remove index which is no longer periodic
         fin_per.remove(fin_dir)
 
         # generate object of tb_model type that will correspond to a cutout
         fin_model = tb_model(
-            self._dim_k-1, self._dim_r, copy.deepcopy(self._lat), fin_orb,
-            fin_per, self._nspin
-            )
+            self._dim_k - 1,
+            self._dim_r,
+            copy.deepcopy(self._lat),
+            fin_orb,
+            fin_per,
+            self._nspin,
+        )
 
         # remember if came from w90
-        fin_model._assume_position_operator_diagonal = self._assume_position_operator_diagonal
+        fin_model._assume_position_operator_diagonal = (
+            self._assume_position_operator_diagonal
+        )
 
         # now put all onsite terms for the finite model
         fin_model.set_onsite(onsite, mode="set")
 
         # put all hopping terms
-        for c in range(num): # go over all cells in finite direction
-            for h in range(len(self._hoppings)): # go over all hoppings in one cell
+        for c in range(num):  # go over all cells in finite direction
+            for h in range(len(self._hoppings)):  # go over all hoppings in one cell
                 # amplitude of the hop is the same
                 amp = self._hoppings[h][0]
 
                 # lattice vector of the hopping
-                ind_R=copy.deepcopy(self._hoppings[h][3])
-                jump_fin=ind_R[fin_dir] # store by how many cells is the hopping in finite direction
-                if fin_model._dim_k!=0:
-                    ind_R[fin_dir]=0 # one of the directions now becomes finite
+                ind_R = copy.deepcopy(self._hoppings[h][3])
+                # store by how many cells is the hopping in finite direction
+                jump_fin = ind_R[fin_dir]  
+                if fin_model._dim_k != 0:
+                    ind_R[fin_dir] = 0  # one of the directions now becomes finite
 
                 # index of "from" and "to" hopping indices
-                hi=self._hoppings[h][1] + c*self._norb
+                hi = self._hoppings[h][1] + c * self._norb
                 #   have to compensate  for the fact that ind_R in finite direction
                 #   will not be used in the finite model
-                hj=self._hoppings[h][2] + (c + jump_fin)*self._norb
+                hj = self._hoppings[h][2] + (c + jump_fin) * self._norb
 
                 # decide whether this hopping should be added or not
-                to_add=True
+                to_add = True
                 # if edges are not glued then neglect all jumps that spill out
                 if not glue_edgs:
-                    if hj<0 or hj>=self._norb*num:
-                        to_add=False
+                    if hj < 0 or hj >= self._norb * num:
+                        to_add = False
                 # if edges are glued then do mod division to wrap up the hopping
                 else:
-                    hj=int(hj)%int(self._norb*num)
+                    hj = int(hj) % int(self._norb * num)
 
                 # add hopping to a finite model
                 if to_add:
-                    if fin_model._dim_k==0:
-                        fin_model.set_hop(amp,hi,hj,mode="add",allow_conjugate_pair=True)
+                    if fin_model._dim_k == 0:
+                        fin_model.set_hop(
+                            amp, hi, hj, mode="add", allow_conjugate_pair=True
+                        )
                     else:
-                        fin_model.set_hop(amp,hi,hj,ind_R,mode="add",allow_conjugate_pair=True)
+                        fin_model.set_hop(
+                            amp, hi, hj, ind_R, mode="add", allow_conjugate_pair=True
+                        )
 
         return fin_model
 
-    def reduce_dim(self,remove_k,value_k):
+    def reduce_dim(self, remove_k, value_k):
         r"""
         Reduces dimensionality of the model by taking a reciprocal-space
         slice of the Bloch Hamiltonian :math:`{\cal H}_{\bf k}`. The Bloch
@@ -1513,58 +1680,66 @@ class tb_model(object):
 
         """
         #
-        if self._dim_k==0:
+        if self._dim_k == 0:
             raise Exception("\n\nCan not reduce dimensionality even further!")
         # make a copy
-        red_tb=copy.deepcopy(self)
+        red_tb = copy.deepcopy(self)
         # make one of the directions not periodic
         red_tb._per.remove(remove_k)
-        red_tb._dim_k=len(red_tb._per)
+        red_tb._dim_k = len(red_tb._per)
         # check that really removed one and only one direction
-        if red_tb._dim_k!=self._dim_k-1:
+        if red_tb._dim_k != self._dim_k - 1:
             raise Exception("\n\nSpecified wrong dimension to reduce!")
-        
+
         # specify hopping terms from scratch
-        red_tb._hoppings=[]
+        red_tb._hoppings = []
         # set all hopping parameters for this value of value_k
         for h in range(len(self._hoppings)):
-            hop=self._hoppings[h]
-            if self._nspin==1:
-                amp=complex(hop[0])
-            elif self._nspin==2:
-                amp=np.array(hop[0],dtype=complex)
-            i,j = hop[1], hop[2]
-            ind_R=np.array(hop[3],dtype=int)
+            hop = self._hoppings[h]
+            if self._nspin == 1:
+                amp = complex(hop[0])
+            elif self._nspin == 2:
+                amp = np.array(hop[0], dtype=complex)
+            i, j = hop[1], hop[2]
+            ind_R = np.array(hop[3], dtype=int)
             # vector from one site to another
-            rv=-red_tb._orb[i,:]+red_tb._orb[j,:]+np.array(ind_R,dtype=float)
+            rv = -red_tb._orb[i, :] + red_tb._orb[j, :] + np.array(ind_R, dtype=float)
             # take only r-vector component along direction you are not making periodic
-            rv=rv[remove_k]
+            rv = rv[remove_k]
             # Calculate the part of hopping phase, only for this direction
-            phase=np.exp((2.0j)*np.pi*(value_k*rv))
+            phase = np.exp((2.0j) * np.pi * (value_k * rv))
             # store modified version of the hop
             # Since we are getting rid of one dimension, it could be that now
             # one of the hopping terms became onsite term because one direction
             # is no longer periodic
-            if i==j and (np.all(np.array(ind_R[red_tb._per],dtype=int)==0)):
-                if ind_R[remove_k]==0:
+            if i == j and (np.all(np.array(ind_R[red_tb._per], dtype=int) == 0)):
+                if ind_R[remove_k] == 0:
                     # in this case this is really an onsite term
-                    red_tb.set_onsite(amp*phase,i,mode="add")
+                    red_tb.set_onsite(amp * phase, i, mode="add")
                 else:
                     # in this case must treat both R and -R because that term would
                     # have been counted twice without dimensional reduction
-                    if self._nspin==1:
-                        red_tb.set_onsite(amp*phase+(amp*phase).conj(),i,mode="add")
-                    elif self._nspin==2:
-                        red_tb.set_onsite(amp*phase+(amp.T*phase).conj(),i,mode="add")
+                    if self._nspin == 1:
+                        red_tb.set_onsite(
+                            amp * phase + (amp * phase).conj(), i, mode="add"
+                        )
+                    elif self._nspin == 2:
+                        red_tb.set_onsite(
+                            amp * phase + (amp.T * phase).conj(), i, mode="add"
+                        )
             else:
                 # just in case make the R vector zero along the reduction dimension
-                ind_R[remove_k]=0
+                ind_R[remove_k] = 0
                 # add hopping term
-                red_tb.set_hop(amp*phase,i,j,ind_R,mode="add",allow_conjugate_pair=True)
-                
+                red_tb.set_hop(
+                    amp * phase, i, j, ind_R, mode="add", allow_conjugate_pair=True
+                )
+
         return red_tb
 
-    def change_nonperiodic_vector(self, np_dir, new_latt_vec=None, to_home=True, to_home_suppress_warning=False):
+    def change_nonperiodic_vector(
+        self, np_dir, new_latt_vec=None, to_home=True, to_home_suppress_warning=False
+    ):
         r"""Returns tight-binding model :class:`pythtb.tb_model` in which one of
         the nonperiodic "lattice vectors" is changed.  Nonperiodic
         vectors are those elements of *lat* that are not listed as
@@ -1575,20 +1750,20 @@ class tb_model(object):
         coordinates of orbitals in original and returned tb_model are
         the same.
 
-        This function is especially useful after using *cut_piece* to 
+        This function is especially useful after using *cut_piece* to
         create slabs, rods, or ribbons.
 
         By default, the new nonperiodic vector is constructed
-        from the original by removing all components in the periodic 
-        space.  This ensures that the Berry phases computed in the 
-        periodic space correspond to the usual expectations.  For 
-        example, after this change, the Berry phase computed for a 
-        ribbon depends only on the location of the Wannier center 
-        in the extended direction, not on its location in the 
-        transverse direction. Alternatively, the new nonperiodic 
+        from the original by removing all components in the periodic
+        space.  This ensures that the Berry phases computed in the
+        periodic space correspond to the usual expectations.  For
+        example, after this change, the Berry phase computed for a
+        ribbon depends only on the location of the Wannier center
+        in the extended direction, not on its location in the
+        transverse direction. Alternatively, the new nonperiodic
         vector can be set explicitly via the *new_latt_vec* parameter.
 
-        See example :ref:`bn_ribbon_berry` for more 
+        See example :ref:`bn_ribbon_berry` for more
         detail.
 
         :param np_dir: Integer specifying which nonperiodic
@@ -1626,72 +1801,84 @@ class tb_model(object):
         """
 
         # Check that selected direction is nonperiodic
-        if self._per.count(np_dir)==1:
-            print("\nnp_dir =",np_dir)
+        if self._per.count(np_dir) == 1:
+            print("\nnp_dir =", np_dir)
             raise Exception("Selected direction is not nonperiodic")
 
         if new_latt_vec is None:
             # construct new nonperiodic lattice vector
-            per_temp=np.zeros_like(self._lat)
+            per_temp = np.zeros_like(self._lat)
             for direc in self._per:
-                per_temp[direc]=self._lat[direc]
+                per_temp[direc] = self._lat[direc]
             # find projection coefficients onto space of periodic vectors
-            coeffs=np.linalg.lstsq(per_temp.T,self._lat[np_dir],rcond=None)[0]
-            projec=np.dot(self._lat.T,coeffs)
+            coeffs = np.linalg.lstsq(per_temp.T, self._lat[np_dir], rcond=None)[0]
+            projec = np.dot(self._lat.T, coeffs)
             # subtract off to get new nonperiodic vector
-            np_lattice_vec=self._lat[np_dir]-projec
+            np_lattice_vec = self._lat[np_dir] - projec
         else:
             # new_latt_vec is passed as argument
             # check shape and convert to numpy array
-            np_lattice_vec=np.array(new_latt_vec)
-            if np_lattice_vec.shape!=(self._dim_r,):
+            np_lattice_vec = np.array(new_latt_vec)
+            if np_lattice_vec.shape != (self._dim_r,):
                 raise ValueError("\n\nNonperiodic vector has wrong length")
 
         # define new set of lattice vectors
-        np_lat=copy.deepcopy(self._lat)
-        np_lat[np_dir]=np_lattice_vec
+        np_lat = copy.deepcopy(self._lat)
+        np_lat[np_dir] = np_lattice_vec
 
         # convert reduced vector in original lattice to reduced vector in new cell lattice
-        np_orb=[]
-        for orb in self._orb: # go over all orbitals
-            orb_cart=np.dot(self._lat.T,orb)
+        np_orb = []
+        for orb in self._orb:  # go over all orbitals
+            orb_cart = np.dot(self._lat.T, orb)
             # convert to reduced coordinates
-            np_orb.append(np.linalg.solve(np_lat.T,orb_cart))
+            np_orb.append(np.linalg.solve(np_lat.T, orb_cart))
 
         # create new tb_model object to be returned
-        nnp_tb=copy.deepcopy(self)
+        nnp_tb = copy.deepcopy(self)
 
         # update lattice vectors and orbitals
-        nnp_tb._lat=np.array(np_lat,dtype=float)
-        nnp_tb._orb=np.array(np_orb,dtype=float)
+        nnp_tb._lat = np.array(np_lat, dtype=float)
+        nnp_tb._orb = np.array(np_orb, dtype=float)
 
         # double check that everything went as planned
         #
         # is the new vector perpendicular to all periodic directions?
         if new_latt_vec is None:
             for i in nnp_tb._per:
-                if np.abs(np.dot(nnp_tb._lat[i],nnp_tb._lat[np_dir]))>1.0E-6:
-                    raise Exception("""\n\nThis shouldn't happen.  New nonperiodic vector 
-is not perpendicular to periodic vectors!?""")
+                if np.abs(np.dot(nnp_tb._lat[i], nnp_tb._lat[np_dir])) > 1.0e-6:
+                    raise Exception(
+                        """\n\nThis shouldn't happen.  New nonperiodic vector 
+is not perpendicular to periodic vectors!?"""
+                    )
         # are cartesian coordinates of orbitals the same in two cases?
         for i in range(self._orb.shape[0]):
-            cart_old=np.dot(self._lat.T,self._orb[i])
-            cart_new=np.dot(nnp_tb._lat.T,nnp_tb._orb[i])
-            if np.max(np.abs(cart_old-cart_new))>1.0E-6:
-                raise Exception("""\n\nThis shouldn't happen. New choice of nonperiodic vector
-somehow changed Cartesian coordinates of orbitals.""")
+            cart_old = np.dot(self._lat.T, self._orb[i])
+            cart_new = np.dot(nnp_tb._lat.T, nnp_tb._orb[i])
+            if np.max(np.abs(cart_old - cart_new)) > 1.0e-6:
+                raise Exception(
+                    """\n\nThis shouldn't happen. New choice of nonperiodic vector
+somehow changed Cartesian coordinates of orbitals."""
+                )
         # check that volume of the cell is not zero
-        if np.abs(np.linalg.det(nnp_tb._lat))<1.0E-6:
-            raise Exception("\n\nLattice with new choice of nonperiodic vector has zero volume?!")
+        if np.abs(np.linalg.det(nnp_tb._lat)) < 1.0e-6:
+            raise Exception(
+                "\n\nLattice with new choice of nonperiodic vector has zero volume?!"
+            )
 
         # put orbitals to home cell if asked for
         if to_home:
             nnp_tb._shift_to_home(to_home_suppress_warning)
-        
+
         # return new tb model
         return nnp_tb
-    
-    def make_supercell(self, sc_red_lat, return_sc_vectors=False, to_home=True, to_home_suppress_warning=False):
+
+    def make_supercell(
+        self,
+        sc_red_lat,
+        return_sc_vectors=False,
+        to_home=True,
+        to_home_suppress_warning=False,
+    ):
         r"""
 
         Returns tight-binding model :class:`pythtb.tb_model`
@@ -1722,7 +1909,7 @@ somehow changed Cartesian coordinates of orbitals.""")
           is set *True* (which it is by default) then additionally,
           orbitals will be shifted to the home cell.
 
-        :param to_home: Optional parameter, if *True* will shift all orbitals 
+        :param to_home: Optional parameter, if *True* will shift all orbitals
           to the home cell along non-periodic directions. Default value is *True*.
 
         :param to_home_suppress_warning: Optional parameter, if *False* code
@@ -1747,138 +1934,153 @@ somehow changed Cartesian coordinates of orbitals.""")
 
           # Creates super-cell out of 2d tight-binding model tb
           sc_tb = tb.make_supercell([[2, 1], [-1, 2]])
-        
+
         """
-        
+
         # Can't make super cell for model without periodic directions
-        if self._dim_r==0:
-            raise Exception("\n\nMust have at least one periodic direction to make a super-cell")
-        
+        if self._dim_r == 0:
+            raise Exception(
+                "\n\nMust have at least one periodic direction to make a super-cell"
+            )
+
         # convert array to numpy array
-        use_sc_red_lat=np.array(sc_red_lat)
-        
+        use_sc_red_lat = np.array(sc_red_lat)
+
         # checks on super-lattice array
-        if use_sc_red_lat.shape!=(self._dim_r,self._dim_r):
+        if use_sc_red_lat.shape != (self._dim_r, self._dim_r):
             raise Exception("\n\nDimension of sc_red_lat array must be dim_r*dim_r")
-        if use_sc_red_lat.dtype!=int:
+        if use_sc_red_lat.dtype != int:
             raise Exception("\n\nsc_red_lat array elements must be integers")
         for i in range(self._dim_r):
             for j in range(self._dim_r):
-                if (i==j) and (i not in self._per) and use_sc_red_lat[i,j]!=1:
-                    raise Exception("\n\nDiagonal elements of sc_red_lat for non-periodic directions must equal 1.")
-                if (i!=j) and ((i not in self._per) or (j not in self._per)) and use_sc_red_lat[i,j]!=0:
-                    raise Exception("\n\nOff-diagonal elements of sc_red_lat for non-periodic directions must equal 0.")
-        if np.abs(np.linalg.det(use_sc_red_lat))<1.0E-6:
-            raise Exception("\n\nSuper-cell lattice vectors length/area/volume too close to zero, or zero.")
-        if np.linalg.det(use_sc_red_lat)<0.0:
-            raise Exception("\n\nSuper-cell lattice vectors need to form right handed system.")
+                if (i == j) and (i not in self._per) and use_sc_red_lat[i, j] != 1:
+                    raise Exception(
+                        "\n\nDiagonal elements of sc_red_lat for non-periodic directions must equal 1."
+                    )
+                if (
+                    (i != j)
+                    and ((i not in self._per) or (j not in self._per))
+                    and use_sc_red_lat[i, j] != 0
+                ):
+                    raise Exception(
+                        "\n\nOff-diagonal elements of sc_red_lat for non-periodic directions must equal 0."
+                    )
+        if np.abs(np.linalg.det(use_sc_red_lat)) < 1.0e-6:
+            raise Exception(
+                "\n\nSuper-cell lattice vectors length/area/volume too close to zero, or zero."
+            )
+        if np.linalg.det(use_sc_red_lat) < 0.0:
+            raise Exception(
+                "\n\nSuper-cell lattice vectors need to form right handed system."
+            )
 
         # converts reduced vector in original lattice to reduced vector in super-cell lattice
         def to_red_sc(red_vec_orig):
-            return np.linalg.solve(np.array(use_sc_red_lat.T,dtype=float),
-                                   np.array(red_vec_orig,dtype=float))
+            return np.linalg.solve(
+                np.array(use_sc_red_lat.T, dtype=float),
+                np.array(red_vec_orig, dtype=float),
+            )
 
         # conservative estimate on range of search for super-cell vectors
-        max_R=np.max(np.abs(use_sc_red_lat))*self._dim_r
+        max_R = np.max(np.abs(use_sc_red_lat)) * self._dim_r
 
         # candidates for super-cell vectors
-        # this is hard-coded and can be improved!
-        sc_cands=[]
-        if self._dim_r==1:
-            for i in range(-max_R,max_R+1):
-                sc_cands.append(np.array([i]))
-        elif self._dim_r==2:
-            for i in range(-max_R,max_R+1):
-                for j in range(-max_R,max_R+1):
-                    sc_cands.append(np.array([i,j]))
-        elif self._dim_r==3:
-            for i in range(-max_R,max_R+1):
-                for j in range(-max_R,max_R+1):
-                    for k in range(-max_R,max_R+1):
-                        sc_cands.append(np.array([i,j,k]))
-        elif self._dim_r==4:
-            for i in range(-max_R,max_R+1):
-                for j in range(-max_R,max_R+1):
-                    for k in range(-max_R,max_R+1):
-                        for l in range(-max_R,max_R+1):
-                            sc_cands.append(np.array([i,j,k,l]))
-        else:
-            raise Exception("\n\nWrong dimensionality of dim_r!")
-
+        sc_cands = [
+            np.array(candidate) 
+            for candidate in product(range(-max_R, max_R + 1), repeat=self._dim_r)
+            ]
+        
         # find all vectors inside super-cell
         # store them here
-        sc_vec=[]
-        eps_shift=np.sqrt(2.0)*1.0E-8 # shift of the grid, so to avoid double counting
+        sc_vec = []
+        eps_shift = (
+            np.sqrt(2.0) * 1.0e-8
+        )  # shift of the grid, so to avoid double counting
         #
         for vec in sc_cands:
             # compute reduced coordinates of this candidate vector in the super-cell frame
-            tmp_red=to_red_sc(vec).tolist()
+            tmp_red = to_red_sc(vec).tolist()
             # check if in the interior
-            inside=True
+            inside = True
             for t in tmp_red:
-                if t<=-1.0*eps_shift or t>1.0-eps_shift:
-                    inside=False                
+                if t <= -1.0 * eps_shift or t > 1.0 - eps_shift:
+                    inside = False
             if inside:
                 sc_vec.append(np.array(vec))
         # number of times unit cell is repeated in the super-cell
-        num_sc=len(sc_vec)
+        num_sc = len(sc_vec)
 
         # check that found enough super-cell vectors
-        if int(round(np.abs(np.linalg.det(use_sc_red_lat))))!=num_sc:
-            raise Exception("\n\nSuper-cell generation failed! Wrong number of super-cell vectors found.")
+        if int(round(np.abs(np.linalg.det(use_sc_red_lat)))) != num_sc:
+            raise Exception(
+                "\n\nSuper-cell generation failed! Wrong number of super-cell vectors found."
+            )
 
         # cartesian vectors of the super lattice
-        sc_cart_lat=np.dot(use_sc_red_lat,self._lat)
+        sc_cart_lat = np.dot(use_sc_red_lat, self._lat)
 
         # orbitals of the super-cell tight-binding model
-        sc_orb=[]
-        for cur_sc_vec in sc_vec: # go over all super-cell vectors
-            for orb in self._orb: # go over all orbitals
+        sc_orb = []
+        for cur_sc_vec in sc_vec:  # go over all super-cell vectors
+            for orb in self._orb:  # go over all orbitals
                 # shift orbital and compute coordinates in
                 # reduced coordinates of super-cell
-                sc_orb.append(to_red_sc(orb+cur_sc_vec))
+                sc_orb.append(to_red_sc(orb + cur_sc_vec))
 
         # create super-cell tb_model object to be returned
-        sc_tb=tb_model(self._dim_k,self._dim_r,sc_cart_lat,sc_orb,per=self._per,nspin=self._nspin)
+        sc_tb = tb_model(
+            self._dim_k,
+            self._dim_r,
+            sc_cart_lat,
+            sc_orb,
+            per=self._per,
+            nspin=self._nspin,
+        )
 
         # remember if came from w90
-        sc_tb._assume_position_operator_diagonal=self._assume_position_operator_diagonal
+        sc_tb._assume_position_operator_diagonal = (
+            self._assume_position_operator_diagonal
+        )
 
         # repeat onsite energies
         for i in range(num_sc):
             for j in range(self._norb):
-                sc_tb.set_onsite(self._site_energies[j],i*self._norb+j)
+                sc_tb.set_onsite(self._site_energies[j], i * self._norb + j)
 
         # set hopping terms
-        for c,cur_sc_vec in enumerate(sc_vec): # go over all super-cell vectors
-            for h in range(len(self._hoppings)): # go over all hopping terms of the original model
+        for c, cur_sc_vec in enumerate(sc_vec):  # go over all super-cell vectors
+            for h in range(
+                len(self._hoppings)
+            ):  # go over all hopping terms of the original model
                 # amplitude of the hop is the same
-                amp=self._hoppings[h][0]
+                amp = self._hoppings[h][0]
 
                 # lattice vector of the hopping
-                ind_R=copy.deepcopy(self._hoppings[h][3])
+                ind_R = copy.deepcopy(self._hoppings[h][3])
                 # super-cell component of hopping lattice vector
                 # shift also by current super cell vector
-                sc_part=np.floor(to_red_sc(ind_R+cur_sc_vec)) # round down!
-                sc_part=np.array(sc_part,dtype=int)
+                sc_part = np.floor(to_red_sc(ind_R + cur_sc_vec))  # round down!
+                sc_part = np.array(sc_part, dtype=int)
                 # find remaining vector in the original reduced coordinates
-                orig_part=ind_R+cur_sc_vec-np.dot(sc_part,use_sc_red_lat)
+                orig_part = ind_R + cur_sc_vec - np.dot(sc_part, use_sc_red_lat)
                 # remaining vector must equal one of the super-cell vectors
-                pair_ind=None
-                for p,pair_sc_vec in enumerate(sc_vec):
-                    if False not in (pair_sc_vec==orig_part):
+                pair_ind = None
+                for p, pair_sc_vec in enumerate(sc_vec):
+                    if False not in (pair_sc_vec == orig_part):
                         if pair_ind is not None:
                             raise Exception("\n\nFound duplicate super cell vector!")
-                        pair_ind=p
+                        pair_ind = p
                 if pair_ind is None:
                     raise Exception("\n\nDid not find super cell vector!")
-                        
+
                 # index of "from" and "to" hopping indices
-                hi=self._hoppings[h][1] + c*self._norb
-                hj=self._hoppings[h][2] + pair_ind*self._norb
-                
+                hi = self._hoppings[h][1] + c * self._norb
+                hj = self._hoppings[h][2] + pair_ind * self._norb
+
                 # add hopping term
-                sc_tb.set_hop(amp,hi,hj,sc_part,mode="add",allow_conjugate_pair=True)
+                sc_tb.set_hop(
+                    amp, hi, hj, sc_part, mode="add", allow_conjugate_pair=True
+                )
 
         # put orbitals to home cell if asked for
         if to_home:
@@ -1888,13 +2090,13 @@ somehow changed Cartesian coordinates of orbitals.""")
         if not return_sc_vectors:
             return sc_tb
         else:
-            return (sc_tb,sc_vec)
+            return (sc_tb, sc_vec)
 
     def _shift_to_home(self, to_home_suppress_warning=False):
         """Shifts orbital coordinates (along periodic directions) to the home
         unit cell. After this function is called reduced coordinates
         (along periodic directions) of orbitals will be between 0 and
-        1.  
+        1.
 
         Version of pythtb 1.7.2 (and earlier) was shifting orbitals to
         home along even nonperiodic directions.  In the later versions
@@ -1908,40 +2110,44 @@ somehow changed Cartesian coordinates of orbitals.""")
         :param to_home_suppress_warning: Optional parameter, if *False* code
           will print a warning message whenever there is an orbital with
           at least one reduced coordinate smaller than 0 or larger than 1
-          along a non-periodic direction.  If *True* the warning message 
+          along a non-periodic direction.  If *True* the warning message
           will not be printed.  Note that setting this parameter to *True*
           or *False* has no effect on resulting coordinates of the model.
           The only difference between this parameter set to *True* or *False*
-          is whether a warning message is printed or not.  Default value 
-          is *False*.        
+          is whether a warning message is printed or not.  Default value
+          is *False*.
 
         """
-        
+
         # create list of emty lists (one for each real-space direction)
-        warning_list=[[]]*self._dim_r
+        warning_list = [[]] * self._dim_r
         # go over all orbitals
         for i in range(self._norb):
             # find displacement vector needed to bring back to home cell
-            disp_vec=np.zeros(self._dim_r,dtype=int)
+            disp_vec = np.zeros(self._dim_r, dtype=int)
             # shift only in periodic directions
             for k in range(self._dim_r):
-                shift=np.floor(self._orb[i,k]+1.0E-6).astype(int)
+                shift = np.floor(self._orb[i, k] + 1.0e-6).astype(int)
                 if k in self._per:
-                    disp_vec[k]=shift
-                else: # check for shift in non-periodic directions
-                    if shift!=0:
-                        warning_list[k]=warning_list[k]+[i]
+                    disp_vec[k] = shift
+                else:  # check for shift in non-periodic directions
+                    if shift != 0:
+                        warning_list[k] = warning_list[k] + [i]
 
         # print warning message if needed
         if not to_home_suppress_warning:
-            warn_str=""
+            warn_str = ""
             for k in range(self._dim_r):
-                orbs=warning_list[k]
+                orbs = warning_list[k]
                 if orbs != []:
-                    orb_str=', '.join(str(e) for e in orbs)
-                    warn_str+="  * Direction %1d : Orbitals "%k+orb_str+"\n"
+                    orb_str = ", ".join(str(e) for e in orbs)
+                    warn_str += "  * Direction %1d : Orbitals " % k + orb_str + "\n"
             if warn_str != "":
-                print('  '+69*'-'+'\n'+"""\
+                print(
+                    "  "
+                    + 69 * "-"
+                    + "\n"
+                    + """\
   WARNING from '_shift_to_home' (called by 'change_nonperiodic_vector'
   or 'make_supercell'): Orbitals are not "shifted to home" along
   non-periodic directions.  Older versions of PythTb (1.7.2 and older)
@@ -1951,25 +2157,30 @@ somehow changed Cartesian coordinates of orbitals.""")
   *
   In the present case, the following orbitals would have been assigned
   different coordinates in PythTb 1.7.2 and older:
-  *\n"""+warn_str+"""  *
+  *\n"""
+                    + warn_str
+                    + """  *
   To prevent printing this warning, call 'change_nonperiodic_vector'
   or 'make_supercell' with 'to_home_suppress_warning=True'.
   *
   This warning message will be removed in future versions of PythTb.
-"""+'  '+69*'-'+'\n')
+"""
+                    + "  "
+                    + 69 * "-"
+                    + "\n"
+                )
 
             # shift orbitals
-            self._orb[i]-=disp_vec
+            self._orb[i] -= disp_vec
             # shift hoppings
-            if self._dim_k!=0:
+            if self._dim_k != 0:
                 for h in range(len(self._hoppings)):
-                    if self._hoppings[h][1]==i:
-                        self._hoppings[h][3]-=disp_vec
-                    if self._hoppings[h][2]==i:
-                        self._hoppings[h][3]+=disp_vec
-                            
+                    if self._hoppings[h][1] == i:
+                        self._hoppings[h][3] -= disp_vec
+                    if self._hoppings[h][2] == i:
+                        self._hoppings[h][3] += disp_vec
 
-    def remove_orb(self,to_remove):
+    def remove_orb(self, to_remove):
         r"""
 
         Returns a model with some orbitals removed.  Note that this
@@ -1981,16 +2192,16 @@ somehow changed Cartesian coordinates of orbitals.""")
         original model.  Similarly 3 and 4 correspond to 4 and 5.
         Indices of first two orbitals (0 and 1) are unaffected.
 
-        :param to_remove: List of orbital indices to be removed, or 
+        :param to_remove: List of orbital indices to be removed, or
           index of single orbital to be removed
 
         :returns:
 
-          * **del_tb** -- Object of type :class:`pythtb.tb_model` 
+          * **del_tb** -- Object of type :class:`pythtb.tb_model`
             representing a model with removed orbitals.
 
         Example usage::
-        
+
           # if original_model has say 10 orbitals then
           # returned small_model will have only 8 orbitals.
 
@@ -2000,51 +2211,52 @@ somehow changed Cartesian coordinates of orbitals.""")
 
         # if a single integer is given, convert to a list with one element
         if _is_int(to_remove):
-            orb_index=[to_remove]
+            orb_index = [to_remove]
         else:
-            orb_index=copy.deepcopy(to_remove)
+            orb_index = copy.deepcopy(to_remove)
 
         # check range of indices
-        for i,orb_ind in enumerate(orb_index):
-            if orb_ind < 0 or orb_ind > self._norb-1 or (not _is_int(orb_ind)):
+        for i, orb_ind in enumerate(orb_index):
+            if orb_ind < 0 or orb_ind > self._norb - 1 or (not _is_int(orb_ind)):
                 raise Exception("\n\nSpecified wrong orbitals to remove!")
-        for i,ind1 in enumerate(orb_index):
-            for ind2 in orb_index[i+1:]:
-                if ind1==ind2:
+        for i, ind1 in enumerate(orb_index):
+            for ind2 in orb_index[i + 1 :]:
+                if ind1 == ind2:
                     raise Exception("\n\nSpecified duplicate orbitals to remove!")
 
         # put the orbitals to be removed in desceding order
-        orb_index = sorted(orb_index,reverse=True)
+        orb_index = sorted(orb_index, reverse=True)
 
         # make copy of a model
-        ret=copy.deepcopy(self)
+        ret = copy.deepcopy(self)
 
         # adjust some variables in the new model
-        ret._norb-=len(orb_index)
-        ret._nstate-=len(orb_index)*self._nspin
+        ret._norb -= len(orb_index)
+        ret._nstate -= len(orb_index) * self._nspin
         # remove indices one by one
-        for i,orb_ind in enumerate(orb_index):
+        for i, orb_ind in enumerate(orb_index):
             # adjust variables
-            ret._orb = np.delete(ret._orb,orb_ind,0)
-            ret._site_energies = np.delete(ret._site_energies,orb_ind,0)
-            ret._site_energies_specified = np.delete(ret._site_energies_specified,orb_ind)
+            ret._orb = np.delete(ret._orb, orb_ind, 0)
+            ret._site_energies = np.delete(ret._site_energies, orb_ind, 0)
+            ret._site_energies_specified = np.delete(
+                ret._site_energies_specified, orb_ind
+            )
             # adjust hopping terms (in reverse)
-            for j in range(len(ret._hoppings)-1,-1,-1):
-                h=ret._hoppings[j]
+            for j in range(len(ret._hoppings) - 1, -1, -1):
+                h = ret._hoppings[j]
                 # remove all terms that involve this orbital
-                if h[1]==orb_ind or h[2]==orb_ind:
+                if h[1] == orb_ind or h[2] == orb_ind:
                     del ret._hoppings[j]
-                else: # otherwise modify term
-                    if h[1]>orb_ind:
-                        ret._hoppings[j][1]-=1
-                    if h[2]>orb_ind:
-                        ret._hoppings[j][2]-=1
+                else:  # otherwise modify term
+                    if h[1] > orb_ind:
+                        ret._hoppings[j][1] -= 1
+                    if h[2] > orb_ind:
+                        ret._hoppings[j][2] -= 1
         # return new model
         return ret
 
-
-    def k_uniform_mesh(self,mesh_size):
-        r""" 
+    def k_uniform_mesh(self, mesh_size):
+        r"""
         Returns a uniform grid of k-points that can be passed to
         passed to function :func:`pythtb.tb_model.solve_all`.  This
         function is useful for plotting density of states histogram
@@ -2054,88 +2266,90 @@ somehow changed Cartesian coordinates of orbitals.""")
 
         :param mesh_size: Number of k-points in the mesh in each
           periodic direction of the model.
-          
+
         :returns:
 
           * **k_vec** -- Array of k-vectors on the mesh that can be
             directly passed to function  :func:`pythtb.tb_model.solve_all`.
 
         Example usage::
-          
+
           # returns a 10x20x30 mesh of a tight binding model
           # with three periodic directions
           k_vec = my_model.k_uniform_mesh([10,20,30])
           # solve model on the uniform mesh
           my_model.solve_all(k_vec)
-        
+
         """
-        
+
         # get the mesh size and checks for consistency
-        use_mesh=np.array(list(map(round,mesh_size)),dtype=int)
-        if use_mesh.shape!=(self._dim_k,):
+        use_mesh = np.array(list(map(round, mesh_size)), dtype=int)
+        if use_mesh.shape != (self._dim_k,):
             print(use_mesh.shape)
             raise Exception("\n\nIncorrect size of the specified k-mesh!")
-        if np.min(use_mesh)<=0:
+        if np.min(use_mesh) <= 0:
             raise Exception("\n\nMesh must have positive non-zero number of elements.")
 
         # construct the mesh
-        if self._dim_k==1:
+        if self._dim_k == 1:
             # get a mesh
-            k_vec=np.mgrid[0:use_mesh[0]]
+            k_vec = np.mgrid[0 : use_mesh[0]]
             # normalize the mesh
-            norm=np.tile(np.array(use_mesh,dtype=float),use_mesh)
-            norm=norm.reshape(use_mesh.tolist()+[1])
-            norm=norm.transpose([1,0])
-            k_vec=k_vec/norm
+            norm = np.tile(np.array(use_mesh, dtype=float), use_mesh)
+            norm = norm.reshape(use_mesh.tolist() + [1])
+            norm = norm.transpose([1, 0])
+            k_vec = k_vec / norm
             # final reshape
-            k_vec=k_vec.transpose([1,0]).reshape([use_mesh[0],1])
-        elif self._dim_k==2:
+            k_vec = k_vec.transpose([1, 0]).reshape([use_mesh[0], 1])
+        elif self._dim_k == 2:
             # get a mesh
-            k_vec=np.mgrid[0:use_mesh[0],0:use_mesh[1]]
+            k_vec = np.mgrid[0 : use_mesh[0], 0 : use_mesh[1]]
             # normalize the mesh
-            norm=np.tile(np.array(use_mesh,dtype=float),use_mesh)
-            norm=norm.reshape(use_mesh.tolist()+[2])
-            norm=norm.transpose([2,0,1])
-            k_vec=k_vec/norm
+            norm = np.tile(np.array(use_mesh, dtype=float), use_mesh)
+            norm = norm.reshape(use_mesh.tolist() + [2])
+            norm = norm.transpose([2, 0, 1])
+            k_vec = k_vec / norm
             # final reshape
-            k_vec=k_vec.transpose([1,2,0]).reshape([use_mesh[0]*use_mesh[1],2])
-        elif self._dim_k==3:
+            k_vec = k_vec.transpose([1, 2, 0]).reshape([use_mesh[0] * use_mesh[1], 2])
+        elif self._dim_k == 3:
             # get a mesh
-            k_vec=np.mgrid[0:use_mesh[0],0:use_mesh[1],0:use_mesh[2]]
+            k_vec = np.mgrid[0 : use_mesh[0], 0 : use_mesh[1], 0 : use_mesh[2]]
             # normalize the mesh
-            norm=np.tile(np.array(use_mesh,dtype=float),use_mesh)
-            norm=norm.reshape(use_mesh.tolist()+[3])
-            norm=norm.transpose([3,0,1,2])
-            k_vec=k_vec/norm
+            norm = np.tile(np.array(use_mesh, dtype=float), use_mesh)
+            norm = norm.reshape(use_mesh.tolist() + [3])
+            norm = norm.transpose([3, 0, 1, 2])
+            k_vec = k_vec / norm
             # final reshape
-            k_vec=k_vec.transpose([1,2,3,0]).reshape([use_mesh[0]*use_mesh[1]*use_mesh[2],3])
+            k_vec = k_vec.transpose([1, 2, 3, 0]).reshape(
+                [use_mesh[0] * use_mesh[1] * use_mesh[2], 3]
+            )
         else:
             raise Exception("\n\nUnsupported dim_k!")
 
         return k_vec
 
-    def k_path(self,kpts,nk,report=True):
+    def k_path(self, kpts, nk, report=True):
         r"""
-    
+
         Interpolates a path in reciprocal space between specified
         k-points.  In 2D or 3D the k-path can consist of several
         straight segments connecting high-symmetry points ("nodes"),
         and the results can be used to plot the bands along this path.
-        
+
         The interpolated path that is returned contains as
         equidistant k-points as possible.
-    
+
         :param kpts: Array of k-vectors in reciprocal space between
           which interpolated path should be constructed. These
           k-vectors must be given in reduced coordinates.  As a
           special case, in 1D k-space kpts may be a string:
-    
+
           * *"full"*  -- Implies  *[ 0.0, 0.5, 1.0]*  (full BZ)
           * *"fullc"* -- Implies  *[-0.5, 0.0, 0.5]*  (full BZ, centered)
           * *"half"*  -- Implies  *[ 0.0, 0.5]*  (half BZ)
-    
+
         :param nk: Total number of k-points to be used in making the plot.
-        
+
         :param report: Optional parameter specifying whether printout
           is desired (default is True).
 
@@ -2162,9 +2376,9 @@ somehow changed Cartesian coordinates of orbitals.""")
             node on the path in Cartesian coordinates.  This array is
             typically used to plot nodes (typically special points) on
             the path in k-space.
-    
+
         Example usage::
-    
+
           # Construct a path connecting four nodal points in k-space
           # Path will contain 401 k-points, roughly equally spaced
           path = [[0.0, 0.0], [0.0, 0.5], [0.5, 0.5], [0.0, 0.0]]
@@ -2173,117 +2387,124 @@ somehow changed Cartesian coordinates of orbitals.""")
           evals = tb.solve_all(k_vec)
           # then use evals, k_dist, and k_node to plot bandstructure
           # (see examples)
-        
+
         """
-    
+
         # processing of special cases for kpts
-        if kpts=='full':
+        if kpts == "full":
             # full Brillouin zone for 1D case
-            k_list=np.array([[0.],[0.5],[1.]])
-        elif kpts=='fullc':
+            k_list = np.array([[0.0], [0.5], [1.0]])
+        elif kpts == "fullc":
             # centered full Brillouin zone for 1D case
-            k_list=np.array([[-0.5],[0.],[0.5]])
-        elif kpts=='half':
+            k_list = np.array([[-0.5], [0.0], [0.5]])
+        elif kpts == "half":
             # half Brillouin zone for 1D case
-            k_list=np.array([[0.],[0.5]])
+            k_list = np.array([[0.0], [0.5]])
         else:
-            k_list=np.array(kpts)
-    
+            k_list = np.array(kpts)
+
         # in 1D case if path is specified as a vector, convert it to an (n,1) array
-        if len(k_list.shape)==1 and self._dim_k==1:
-            k_list=np.array([k_list]).T
+        if len(k_list.shape) == 1 and self._dim_k == 1:
+            k_list = np.array([k_list]).T
 
         # make sure that k-points in the path have correct dimension
-        if k_list.shape[1]!=self._dim_k:
-            print('input k-space dimension is',k_list.shape[1])
-            print('k-space dimension taken from model is',self._dim_k)
+        if k_list.shape[1] != self._dim_k:
+            print("input k-space dimension is", k_list.shape[1])
+            print("k-space dimension taken from model is", self._dim_k)
             raise Exception("\n\nk-space dimensions do not match")
 
         # must have more k-points in the path than number of nodes
-        if nk<k_list.shape[0]:
-            raise Exception("\n\nMust have more points in the path than number of nodes.")
+        if nk < k_list.shape[0]:
+            raise Exception(
+                "\n\nMust have more points in the path than number of nodes."
+            )
 
         # number of nodes
-        n_nodes=k_list.shape[0]
-    
+        n_nodes = k_list.shape[0]
+
         # extract the lattice vectors from the TB model
-        lat_per=np.copy(self._lat)
+        lat_per = np.copy(self._lat)
         # choose only those that correspond to periodic directions
-        lat_per=lat_per[self._per]    
+        lat_per = lat_per[self._per]
         # compute k_space metric tensor
-        k_metric = np.linalg.inv(np.dot(lat_per,lat_per.T))
+        k_metric = np.linalg.inv(np.dot(lat_per, lat_per.T))
 
         # Find distances between nodes and set k_node, which is
         # accumulated distance since the start of the path
         #  initialize array k_node
-        k_node=np.zeros(n_nodes,dtype=float)
-        for n in range(1,n_nodes):
-            dk = k_list[n]-k_list[n-1]
-            dklen = np.sqrt(np.dot(dk,np.dot(k_metric,dk)))
-            k_node[n]=k_node[n-1]+dklen
-    
+        k_node = np.zeros(n_nodes, dtype=float)
+        for n in range(1, n_nodes):
+            dk = k_list[n] - k_list[n - 1]
+            dklen = np.sqrt(np.dot(dk, np.dot(k_metric, dk)))
+            k_node[n] = k_node[n - 1] + dklen
+
         # Find indices of nodes in interpolated list
-        node_index=[0]
-        for n in range(1,n_nodes-1):
-            frac=k_node[n]/k_node[-1]
-            node_index.append(int(round(frac*(nk-1))))
-        node_index.append(nk-1)
-    
+        node_index = [0]
+        for n in range(1, n_nodes - 1):
+            frac = k_node[n] / k_node[-1]
+            node_index.append(int(round(frac * (nk - 1))))
+        node_index.append(nk - 1)
+
         # initialize two arrays temporarily with zeros
         #   array giving accumulated k-distance to each k-point
-        k_dist=np.zeros(nk,dtype=float)
-        #   array listing the interpolated k-points    
-        k_vec=np.zeros((nk,self._dim_k),dtype=float)
-    
+        k_dist = np.zeros(nk, dtype=float)
+        #   array listing the interpolated k-points
+        k_vec = np.zeros((nk, self._dim_k), dtype=float)
+
         # go over all kpoints
-        k_vec[0]=k_list[0]
-        for n in range(1,n_nodes):
-            n_i=node_index[n-1]
-            n_f=node_index[n]
-            kd_i=k_node[n-1]
-            kd_f=k_node[n]
-            k_i=k_list[n-1]
-            k_f=k_list[n]
-            for j in range(n_i,n_f+1):
-                frac=float(j-n_i)/float(n_f-n_i)
-                k_dist[j]=kd_i+frac*(kd_f-kd_i)
-                k_vec[j]=k_i+frac*(k_f-k_i)
-    
+        k_vec[0] = k_list[0]
+        for n in range(1, n_nodes):
+            n_i = node_index[n - 1]
+            n_f = node_index[n]
+            kd_i = k_node[n - 1]
+            kd_f = k_node[n]
+            k_i = k_list[n - 1]
+            k_f = k_list[n]
+            for j in range(n_i, n_f + 1):
+                frac = float(j - n_i) / float(n_f - n_i)
+                k_dist[j] = kd_i + frac * (kd_f - kd_i)
+                k_vec[j] = k_i + frac * (k_f - k_i)
+
         if report:
-            if self._dim_k==1:
-                print(' Path in 1D BZ defined by nodes at '+str(k_list.flatten()))
+            if self._dim_k == 1:
+                print(" Path in 1D BZ defined by nodes at " + str(k_list.flatten()))
             else:
-                print('----- k_path report begin ----------')
-                original=np.get_printoptions()
+                print("----- k_path report begin ----------")
+                original = np.get_printoptions()
                 np.set_printoptions(precision=5)
-                print('real-space lattice vectors\n', lat_per)
-                print('k-space metric tensor\n', k_metric)
-                print('internal coordinates of nodes\n', k_list)
-                if (lat_per.shape[0]==lat_per.shape[1]):
+                print("real-space lattice vectors\n", lat_per)
+                print("k-space metric tensor\n", k_metric)
+                print("internal coordinates of nodes\n", k_list)
+                if lat_per.shape[0] == lat_per.shape[1]:
                     # lat_per is invertible
-                    lat_per_inv=np.linalg.inv(lat_per).T
-                    print('reciprocal-space lattice vectors\n', lat_per_inv)
+                    lat_per_inv = np.linalg.inv(lat_per).T
+                    print("reciprocal-space lattice vectors\n", lat_per_inv)
                     # cartesian coordinates of nodes
-                    kpts_cart=np.tensordot(k_list,lat_per_inv,axes=1)
-                    print('cartesian coordinates of nodes\n',kpts_cart)
-                print('list of segments:')
-                for n in range(1,n_nodes):
-                    dk=k_node[n]-k_node[n-1]
-                    dk_str=_nice_float(dk,7,5)
-                    print('  length = '+dk_str+'  from ',k_list[n-1],' to ',k_list[n])
-                print('node distance list:', k_node)
-                print('node index list:   ', np.array(node_index))
+                    kpts_cart = np.tensordot(k_list, lat_per_inv, axes=1)
+                    print("cartesian coordinates of nodes\n", kpts_cart)
+                print("list of segments:")
+                for n in range(1, n_nodes):
+                    dk = k_node[n] - k_node[n - 1]
+                    dk_str = _nice_float(dk, 7, 5)
+                    print(
+                        "  length = " + dk_str + "  from ",
+                        k_list[n - 1],
+                        " to ",
+                        k_list[n],
+                    )
+                print("node distance list:", k_node)
+                print("node index list:   ", np.array(node_index))
                 np.set_printoptions(precision=original["precision"])
-                print('----- k_path report end ------------')
+                print("----- k_path report end ------------")
             print()
 
-        return (k_vec,k_dist,k_node)
+        return (k_vec, k_dist, k_node)
 
     def ignore_position_operator_offdiagonal(self):
         """Call to this function enables one to approximately compute
         Berry-like objects from tight-binding models that were
-        obtained from Wannier90."""  
-        self._assume_position_operator_diagonal=True
+        obtained from Wannier90."""
+        self._assume_position_operator_diagonal = True
 
     def position_matrix(self, evec, dir):
         r"""
@@ -2313,7 +2534,7 @@ somehow changed Cartesian coordinates of orbitals.""")
           well defined.
 
         :returns:
-          * **pos_mat** -- Position operator matrix :math:`X_{m n}` as defined 
+          * **pos_mat** -- Position operator matrix :math:`X_{m n}` as defined
             above. This is a square matrix with size determined by number of bands
             given in *evec* input array.  First index of *pos_mat* corresponds to
             bra vector (*m*) and second index to ket (*n*).
@@ -2322,7 +2543,7 @@ somehow changed Cartesian coordinates of orbitals.""")
 
           # diagonalizes Hamiltonian at some k-points
           (evals, evecs) = my_model.solve_all(k_vec,eig_vectors=True)
-          # computes position operator matrix elements for 3-rd kpoint 
+          # computes position operator matrix elements for 3-rd kpoint
           # and bottom five bands along first coordinate
           pos_mat = my_model.position_matrix(evecs[:5,2], 0)
 
@@ -2332,33 +2553,35 @@ somehow changed Cartesian coordinates of orbitals.""")
 
         # make sure specified direction is not periodic!
         if dir in self._per:
-            raise Exception("Can not compute position matrix elements along periodic direction!")
+            raise Exception(
+                "Can not compute position matrix elements along periodic direction!"
+            )
         # make sure direction is not out of range
-        if dir<0 or dir>=self._dim_r:
+        if dir < 0 or dir >= self._dim_r:
             raise Exception("Direction out of range!")
-        
+
         # check if model came from w90
         if not self._assume_position_operator_diagonal:
             _offdiag_approximation_warning_and_stop()
 
         # get coordinates of orbitals along the specified direction
-        pos_tmp=self._orb[:,dir]
+        pos_tmp = self._orb[:, dir]
         # reshape arrays in the case of spinfull calculation
-        if self._nspin==2:
+        if self._nspin == 2:
             # tile along spin direction if needed
-            pos_use=np.tile(pos_tmp,(2,1)).transpose().flatten()
+            pos_use = np.tile(pos_tmp, (2, 1)).transpose().flatten()
             # also flatten the state along the spin index
-            evec_use=evec.reshape((evec.shape[0],evec.shape[1]*evec.shape[2]))                
+            evec_use = evec.reshape((evec.shape[0], evec.shape[1] * evec.shape[2]))
         else:
-            pos_use=pos_tmp
-            evec_use=evec
+            pos_use = pos_tmp
+            evec_use = evec
 
         # position matrix elements
-        pos_mat=np.zeros((evec_use.shape[0],evec_use.shape[0]),dtype=complex)
+        pos_mat = np.zeros((evec_use.shape[0], evec_use.shape[0]), dtype=complex)
         # go over all bands
         for i in range(evec_use.shape[0]):
             for j in range(evec_use.shape[0]):
-                pos_mat[i,j]=np.dot(evec_use[i].conj(),pos_use*evec_use[j])
+                pos_mat[i, j] = np.dot(evec_use[i].conj(), pos_use * evec_use[j])
 
         # make sure matrix is hermitian
         if not np.allclose(pos_mat, pos_mat.T.conj()):
@@ -2366,8 +2589,8 @@ somehow changed Cartesian coordinates of orbitals.""")
 
         return pos_mat
 
-    def position_expectation(self,evec,dir):
-        r""" 
+    def position_expectation(self, evec, dir):
+        r"""
 
         Returns diagonal matrix elements of the position operator.
         These elements :math:`X_{n n}` can be interpreted as an
@@ -2375,7 +2598,7 @@ somehow changed Cartesian coordinates of orbitals.""")
         direction *dir*.  Generally speaking these centers are *not*
         hybrid Wannier function centers (which are instead
         returned by :func:`pythtb.tb_model.position_hwf`).
-        
+
         See function :func:`pythtb.tb_model.position_matrix` for
         definition of matrix :math:`X`.
 
@@ -2391,14 +2614,14 @@ somehow changed Cartesian coordinates of orbitals.""")
 
         :returns:
           * **pos_exp** -- Diagonal elements of the position operator matrix :math:`X`.
-            Length of this vector is determined by number of bands given in *evec* input 
+            Length of this vector is determined by number of bands given in *evec* input
             array.
 
         Example usage::
 
           # diagonalizes Hamiltonian at some k-points
           (evals, evecs) = my_model.solve_all(k_vec,eig_vectors=True)
-          # computes average position for 3-rd kpoint 
+          # computes average position for 3-rd kpoint
           # and bottom five bands along first coordinate
           pos_exp = my_model.position_expectation(evecs[:5,2], 0)
 
@@ -2410,11 +2633,11 @@ somehow changed Cartesian coordinates of orbitals.""")
         if not self._assume_position_operator_diagonal:
             _offdiag_approximation_warning_and_stop()
 
-        pos_exp=self.position_matrix(evec,dir).diagonal()
-        return np.array(np.real(pos_exp),dtype=float)
+        pos_exp = self.position_matrix(evec, dir).diagonal()
+        return np.array(np.real(pos_exp), dtype=float)
 
-    def position_hwf(self,evec,dir,hwf_evec=False,basis="orbital"):
-        r""" 
+    def position_hwf(self, evec, dir, hwf_evec=False, basis="orbital"):
+        r"""
 
         Returns eigenvalues and optionally eigenvectors of the
         position operator matrix :math:`X` in basis of the orbitals
@@ -2449,8 +2672,8 @@ somehow changed Cartesian coordinates of orbitals.""")
           directions since position operator matrix element in that
           case is not well defined.
 
-        :param hwf_evec: Optional boolean variable.  If set to *True* 
-          this function will return not only eigenvalues but also 
+        :param hwf_evec: Optional boolean variable.  If set to *True*
+          this function will return not only eigenvalues but also
           eigenvectors of :math:`X`. Default value is *False*.
 
         :param basis: Optional parameter. If basis="wavefunction", the hybrid
@@ -2465,7 +2688,7 @@ somehow changed Cartesian coordinates of orbitals.""")
         :returns:
           * **hwfc** -- Eigenvalues of the position operator matrix :math:`X`
             (also called hybrid Wannier function centers).
-            Length of this vector equals number of bands given in *evec* input 
+            Length of this vector equals number of bands given in *evec* input
             array.  Hybrid Wannier function centers are ordered in ascending order.
             Note that in general *n*-th hwfc does not correspond to *n*-th electronic
             state *evec*.
@@ -2474,7 +2697,7 @@ somehow changed Cartesian coordinates of orbitals.""")
             (also called hybrid Wannier functions).  These are returned only if
             parameter *hwf_evec* is set to *True*.
             The shape of this array is [h,x] or [h,x,s] depending on value of *basis*
-            and *nspin*.  If *basis* is "bloch" then x refers to indices of 
+            and *nspin*.  If *basis* is "bloch" then x refers to indices of
             Bloch states *evec*.  If *basis* is "orbital" then *x* (or *x* and *s*)
             correspond to orbital index (or orbital and spin index if *nspin* is 2).
 
@@ -2482,7 +2705,7 @@ somehow changed Cartesian coordinates of orbitals.""")
 
           # diagonalizes Hamiltonian at some k-points
           (evals, evecs) = my_model.solve_all(k_vec,eig_vectors=True)
-          # computes hybrid Wannier centers (and functions) for 3-rd kpoint 
+          # computes hybrid Wannier centers (and functions) for 3-rd kpoint
           # and bottom five bands along first coordinate
           (hwfc, hwf) = my_model.position_hwf(evecs[:5,2], 0, hwf_evec=True, basis="orbital")
 
@@ -2494,48 +2717,271 @@ somehow changed Cartesian coordinates of orbitals.""")
             _offdiag_approximation_warning_and_stop()
 
         # get position matrix
-        pos_mat=self.position_matrix(evec,dir)
+        pos_mat = self.position_matrix(evec, dir)
 
         # diagonalize
         if not hwf_evec:
-            hwfc=np.linalg.eigvalsh(pos_mat)
+            hwfc = np.linalg.eigvalsh(pos_mat)
             # sort eigenvalues and convert to real numbers
-            hwfc=_nicefy_eig(hwfc)
-            return np.array(hwfc,dtype=float)
-        else: # find eigenvalues and eigenvectors
-            (hwfc,hwf)=np.linalg.eigh(pos_mat)
+            hwfc = _nicefy_eig(hwfc)
+            return np.array(hwfc, dtype=float)
+        else:  # find eigenvalues and eigenvectors
+            (hwfc, hwf) = np.linalg.eigh(pos_mat)
             # transpose matrix eig since otherwise it is confusing
             # now eig[i,:] is eigenvector for eval[i]-th eigenvalue
-            hwf=hwf.T
+            hwf = hwf.T
             # sort evectors, eigenvalues and convert to real numbers
-            (hwfc,hwf)=_nicefy_eig(hwfc,hwf)
+            (hwfc, hwf) = _nicefy_eig(hwfc, hwf)
             # convert to right basis
-            if basis.lower().strip() in ["wavefunction","bloch"]:
-                return (hwfc,hwf)
-            elif basis.lower().strip()=="orbital":
-                if self._nspin==1:
-                    ret_hwf=np.zeros((hwf.shape[0],self._norb),dtype=complex)
+            if basis.lower().strip() in ["wavefunction", "bloch"]:
+                return (hwfc, hwf)
+            elif basis.lower().strip() == "orbital":
+                if self._nspin == 1:
+                    ret_hwf = np.zeros((hwf.shape[0], self._norb), dtype=complex)
                     # sum over bloch states to get hwf in orbital basis
                     for i in range(ret_hwf.shape[0]):
-                        ret_hwf[i]=np.dot(hwf[i],evec)
-                    hwf=ret_hwf
+                        ret_hwf[i] = np.dot(hwf[i], evec)
+                    hwf = ret_hwf
                 else:
-                    ret_hwf=np.zeros((hwf.shape[0],self._norb*2),dtype=complex)
+                    ret_hwf = np.zeros((hwf.shape[0], self._norb * 2), dtype=complex)
                     # get rid of spin indices
-                    evec_use=evec.reshape([hwf.shape[0],self._norb*2])
+                    evec_use = evec.reshape([hwf.shape[0], self._norb * 2])
                     # sum over states
                     for i in range(ret_hwf.shape[0]):
-                        ret_hwf[i]=np.dot(hwf[i],evec_use)
+                        ret_hwf[i] = np.dot(hwf[i], evec_use)
                     # restore spin indices
-                    hwf=ret_hwf.reshape([hwf.shape[0],self._norb,2])
-                return (hwfc,hwf)
+                    hwf = ret_hwf.reshape([hwf.shape[0], self._norb, 2])
+                return (hwfc, hwf)
             else:
-                raise Exception("\n\nBasis must be either 'wavefunction', 'bloch', or 'orbital'")
+                raise Exception(
+                    "\n\nBasis must be either 'wavefunction', 'bloch', or 'orbital'"
+                )
+
+    def berry_curvature(self, k_pts, occ_idxs=None, cartesian=False):
+        """
+        Generates the Berry curvature from the velocity operator dH/dk.
+
+        Requires at least two k-space directions.
+        """
+
+        if self._dim_k < 2:
+            raise Exception(
+                """
+                Berry curvature in this context is only used for k-space adiabatic parameters. 
+                Must have dim_k >= 2.
+                """
+            )
+
+        v_k = self.get_velocity(k_pts, cartesian=cartesian)  # (Nk, dim_k, n_orb, n_orb)
+        evals, evecs = self.solve_ham(k_pts, return_eigvecs=True)
+
+        n_eigs = evecs.shape[-2]
+
+        # Identify occupied bands
+        if occ_idxs is None:
+            occ_idxs = np.arange(n_eigs // 2)
+        else:
+            occ_idxs = np.array(occ_idxs)
+
+        # Identify conduction bands as remainder of band indices (assumes gapped)
+        cond_idxs = np.setdiff1d(np.arange(n_eigs), occ_idxs)
+
+        # All pairs of energy differences
+        delta_E = (
+            evals[..., np.newaxis, :] - evals[..., :, np.newaxis]
+        )  # shape (Nk, n_states, n_states)
+        # Divide by energy differences, diagonals are ignored
+        with np.errstate(
+            divide="ignore", invalid="ignore"
+        ):  # Suppress divide by zero warnings
+            inv_delta_E = np.where(delta_E != 0, 1 / delta_E, 0)
+
+        # newaxis for Cartesian direction broadcasting
+        evecs_conj = evecs.conj()[np.newaxis, :, ::]
+        # transpose
+        evecs_T = evecs.transpose(0, 2, 1)[np.newaxis, :, ::]
+        # project vk into energy eignvector basis
+        vk_evecT = np.matmul(v_k, evecs_T)
+        v_k_rot = np.matmul(evecs_conj, vk_evecT)  # (dim_k, n_kpts, n_orb, n_orb)
+
+        # Extract relevant submatrices
+        # top right
+        v_occ_cond = v_k_rot[..., occ_idxs, :][
+            ..., :, cond_idxs
+        ]  # shape (dim_k, Nk, n_occ, n_con)
+        # bottom left
+        v_cond_occ = v_k_rot[..., cond_idxs, :][
+            ..., :, occ_idxs
+        ]  # shape (dim_k, Nk, n_con, n_occ)
+        # top right (bottom left uneeded in Kubo formula)
+        delta_E_occ_cond = inv_delta_E[:, occ_idxs, :][
+            :, :, cond_idxs
+        ]  # shape (Nk, n_con, n_occ)
+
+        # premultiply by energy denominators
+        v_occ_cond = v_occ_cond * delta_E_occ_cond
+        v_cond_occ = v_cond_occ * delta_E_occ_cond.swapaxes(-1, -2)
+
+        # Berry curvature shape: (dim_k, dim_k, n_kpts, n_orb, n_orb)
+        # Where m is conduction indices, and n,l are occupied indices
+        # <unk|v_mu|umk> <umk|v_nu|unk> - <unk|v_nu|umk> <umk|v_mu|ulk> / (Enk - Emk)(Elk - Emk)
+        b_curv = 1j * (
+            np.matmul(v_occ_cond[:, None], v_cond_occ[None, :])
+            - np.matmul(v_occ_cond[None, :], v_cond_occ[:, None])
+        )
+
+        return b_curv
+
+    def chern(self, occ_idxs=None, dirs=(0, 1)):
+        """
+        Computes Chern number for occupied manifold.
+
+        Args:
+            occ_idxs (list, np.ndarray, None):
+                Occupied band indices.
+            dirs (tuple):
+                Indices for reciprocal space directions defining
+                2d surface to integrate Berry flux.
+        """
+        nks = (200,) * self._dim_k
+        k_vals = [np.arange(nk) / nk for nk in nks]  # exlcudes endpoint
+        sq_mesh = np.meshgrid(*k_vals, indexing="ij")
+        flat_mesh = np.stack(sq_mesh, axis=-1).reshape(
+            -1, len(nks)
+        )  # 1D list of k-vectors
+
+        Omega = self.berry_curvature(flat_mesh, occ_idxs=occ_idxs)
+
+        Nk = Omega.shape[2]
+        dk_sq = 1 / Nk
+        Chern = np.sum(np.trace(Omega[dirs], axis1=-1, axis2=-2)) * dk_sq / (2 * np.pi)
+
+        return Chern.real
+
+    def plot_bands(
+        self,
+        k_path,
+        nk=101,
+        k_label=None,
+        proj_orb_idx=None,
+        proj_spin=False,
+        fig=None,
+        ax=None,
+        title=None,
+        scat_size=3,
+        lw=2,
+        lc="b",
+        ls="solid",
+        cmap="bwr",
+        show=False,
+        cbar=True,
+    ):
+        """
+
+        Args:
+            k_path (list): List of high symmetry points to plot bands through
+            k_label (list[str], optional): Labels of high symmetry points. Defaults to None.
+            title (str, optional): _description_. Defaults to None.
+            save_name (str, optional): _description_. Defaults to None.
+            red_lat_idx (list, optional): _description_. Defaults to None.
+            show (bool, optional): _description_. Defaults to False.
+
+        Returns:
+            fig, ax: matplotlib fig and ax
+        """
+        import matplotlib.pyplot as plt
+
+        if fig is None:
+            fig, ax = plt.subplots()
+
+        # generate k-path and labels
+        (k_vec, k_dist, k_node) = self.k_path(k_path, nk, report=False)
+
+        # scattered bands with sublattice color
+        if proj_orb_idx is not None:
+            # diagonalize model on path
+            evals, evecs = self.solve_ham(k_vec, return_eigvecs=True)
+            n_eigs = evals.shape[-1]
+
+            if self._nspin == 1:
+                wt = abs(evecs) ** 2
+                col = np.sum([wt[..., i] for i in proj_orb_idx], axis=0)
+            elif self._nspin == 2:
+                wt = abs(evecs) ** 2
+                col = np.sum([wt[..., i, :] for i in proj_orb_idx], axis=(0, -1))
+
+            for n in range(n_eigs):
+                scat = ax.scatter(
+                    k_dist,
+                    evals[:, n],
+                    c=col[:, n],
+                    cmap=cmap,
+                    marker="o",
+                    s=scat_size,
+                    vmin=0,
+                    vmax=1,
+                    zorder=2,
+                )
+
+            if cbar:
+                cbar = fig.colorbar(scat, ticks=[1, 0], pad=0.01)
+                # cbar.set_ticks([])
+                # cbar.ax.set_yticklabels([r'$B$', r'$A$'], size=12)
+                cbar.ax.set_yticklabels([r"$\psi_B$", r"$\psi_A$"], size=12)
+
+        elif proj_spin:
+            evals, evecs = self.solve_ham(k_vec, return_eigvecs=True)
+            n_eigs = evals.shape[-1]
+
+            assert self._nspin != 1, "Spin needs to be greater than 1."
+
+            wt = abs(evecs) ** 2
+            col = np.sum(wt[..., 1], axis=2)
+
+            for n in range(n_eigs):
+                scat = ax.scatter(
+                    k_dist,
+                    evals[:, n],
+                    c=col[:, n],
+                    cmap=cmap,
+                    marker="o",
+                    s=scat_size,
+                    vmin=0,
+                    vmax=1,
+                    zorder=2,
+                )
+
+            cbar = fig.colorbar(scat, ticks=[1, 0])
+            cbar.ax.set_yticklabels(["spin up", "spin down"], size=12)
+
+        else:
+            evals = self.solve_ham(k_vec, return_eigvecs=False)
+            n_eigs = evals.shape[-1]
+
+            # continuous bands
+            for n in range(n_eigs):
+                ax.plot(k_dist, evals[:, n], c=lc, lw=lw, ls=ls)
+
+        ax.set_xlim(0, k_node[-1])
+        ax.set_xticks(k_node)
+        for n in range(len(k_node)):
+            ax.axvline(x=k_node[n], linewidth=0.5, color="k", zorder=1)
+        if k_label is not None:
+            ax.set_xticklabels(k_label, size=12)
+
+        ax.set_title(title)
+        ax.set_ylabel(r"Energy $E(\mathbf{{k}})$", size=12)
+        ax.yaxis.labelpad = 10
+
+        if show:
+            plt.show()
+
+        return fig, ax
 
 
-#=======================================================================
+# =======================================================================
 class wf_array(object):
-#=======================================================================
+    # =======================================================================
     r"""
 
     This class is used to store and manipulate an array of
@@ -2546,7 +2992,7 @@ class wf_array(object):
     of Bloch bands, a set of hybrid Wannier functions for a
     ribbon or slab, or any other set of wavefunctions that
     are expressed in terms of the underlying basis orbitals.
-    It provides methods that can be used to calculate Berry 
+    It provides methods that can be used to calculate Berry
     phases, Berry curvatures, 1st Chern numbers, etc.
 
     *Regular k-space grid*:
@@ -2625,12 +3071,12 @@ class wf_array(object):
     Example usage::
 
       # Construct wf_array capable of storing an 11x21 array of
-      # wavefunctions      
+      # wavefunctions
       wf = wf_array(tb, [11, 21])
       # populate this wf_array with regular grid of points in
       # Brillouin zone
       wf.solve_on_grid([0.0, 0.0])
-      
+
       # Compute set of eigenvectors at one k-point
       (eval, evec) = tb.solve_one([kx, ky], eig_vectors = True)
       # Store it manually into a specified location in the array
@@ -2639,40 +3085,43 @@ class wf_array(object):
       print(wf[3,4])
 
     """
-    def __init__(self,model,mesh_arr,nsta_arr=None):
+
+    def __init__(self, model, mesh_arr, nsta_arr=None):
         # number of electronic states for each k-point
         if nsta_arr is None:
-            self._nsta_arr=model._nstate  # this = norb*nspin = no. of bands
+            self._nsta_arr = model._nstate  # this = norb*nspin = no. of bands
             # note: 'None' means to use the default, which is all bands!
         else:
             if not _is_int(nsta_arr):
                 raise Exception("\n\nArgument nsta_arr not an integer")
-            self._nsta_arr=nsta_arr         # set by optional argument
+            self._nsta_arr = nsta_arr  # set by optional argument
         # number of spin components
-        self._nspin=model._nspin
+        self._nspin = model._nspin
         # number of orbitals
-        self._norb=model._norb
+        self._norb = model._norb
         # store orbitals from the model
-        self._orb=np.copy(model._orb)
+        self._orb = np.copy(model._orb)
         # store entire model as well
-        self._model=copy.deepcopy(model)
+        self._model = copy.deepcopy(model)
         # store dimension of array of points on which to keep wavefunctions
-        self._mesh_arr=np.array(mesh_arr)        
-        self._dim_arr=len(self._mesh_arr)
+        self._mesh_arr = np.array(mesh_arr)
+        self._dim_arr = len(self._mesh_arr)
         # all dimensions should be 2 or larger, because pbc can be used
-        if True in (self._mesh_arr<=1).tolist():
-            raise Exception("\n\nDimension of wf_array object in each direction must be 2 or larger.")
+        if True in (self._mesh_arr <= 1).tolist():
+            raise Exception(
+                "\n\nDimension of wf_array object in each direction must be 2 or larger."
+            )
         # generate temporary array used later to generate object ._wfs
-        wfs_dim=np.copy(self._mesh_arr)
-        wfs_dim=np.append(wfs_dim,self._nsta_arr)
-        wfs_dim=np.append(wfs_dim,self._norb)
-        if self._nspin==2:
-            wfs_dim=np.append(wfs_dim,self._nspin)            
+        wfs_dim = np.copy(self._mesh_arr)
+        wfs_dim = np.append(wfs_dim, self._nsta_arr)
+        wfs_dim = np.append(wfs_dim, self._norb)
+        if self._nspin == 2:
+            wfs_dim = np.append(wfs_dim, self._nspin)
         # store wavefunctions in the form
         #   _wfs[kx_index,ky_index, ... ,state,orb,spin]
-        self._wfs=np.zeros(wfs_dim,dtype=complex)
+        self._wfs = np.zeros(wfs_dim, dtype=complex)
 
-    def solve_on_grid(self,start_k):
+    def solve_on_grid(self, start_k):
         r"""
 
         Solve a tight-binding model on a regular mesh of k-points covering
@@ -2686,7 +3135,7 @@ class wf_array(object):
         :param start_k: Origin of a regular grid of points in the reciprocal space.
 
         :returns:
-          * **gaps** -- returns minimal direct bandgap between n-th and n+1-th 
+          * **gaps** -- returns minimal direct bandgap between n-th and n+1-th
               band on all the k-points in the mesh.  Note that in the case of band
               crossings one may have to use very dense k-meshes to resolve
               the crossing.
@@ -2699,84 +3148,98 @@ class wf_array(object):
 
         """
         # check dimensionality
-        if self._dim_arr!=self._model._dim_k:
-            raise Exception(\
-                "\n\nIf using solve_on_grid method, dimension of wf_array must equal"\
-                "\ndim_k of the tight-binding model!")
+        if self._dim_arr != self._model._dim_k:
+            raise Exception(
+                "\n\nIf using solve_on_grid method, dimension of wf_array must equal"
+                "\ndim_k of the tight-binding model!"
+            )
 
         # check number of states
-        if self._nsta_arr!=self._model._nstate:
-            raise Exception(\
-                "\n\nWhen initializing this object, you specified nsta_arr to be "+str(self._nsta_arr)+", but"\
-                "\nthis does not match the total number of bands specified in the model,"\
-                "\nwhich was "+str(self._model._nstate)+".  If you wish to use the solve_on_grid method, do"\
-                "\nnot specify the nsta_arr parameter when initializing this object.\n\n")
-        
+        if self._nsta_arr != self._model._nstate:
+            raise Exception(
+                "\n\nWhen initializing this object, you specified nsta_arr to be "
+                + str(self._nsta_arr)
+                + ", but"
+                "\nthis does not match the total number of bands specified in the model,"
+                "\nwhich was "
+                + str(self._model._nstate)
+                + ".  If you wish to use the solve_on_grid method, do"
+                "\nnot specify the nsta_arr parameter when initializing this object.\n\n"
+            )
+
         # store start_k
-        self._start_k=start_k
+        self._start_k = start_k
 
         # to return gaps at all k-points
-        if self._nsta_arr<=1:
-            all_gaps=None # trivial case since there is only one band
+        if self._nsta_arr <= 1:
+            all_gaps = None  # trivial case since there is only one band
         else:
-            gap_dim=np.copy(self._mesh_arr)-1
-            gap_dim=np.append(gap_dim,self._nsta_arr-1)
-            all_gaps=np.zeros(gap_dim,dtype=float)
+            gap_dim = np.copy(self._mesh_arr) - 1
+            gap_dim = np.append(gap_dim, self._nsta_arr - 1)
+            all_gaps = np.zeros(gap_dim, dtype=float)
         #
-        if self._dim_arr==1:
+        if self._dim_arr == 1:
             # don't need to go over the last point because that will be
             # computed in the impose_pbc call
-            for i in range(self._mesh_arr[0]-1):
+            for i in range(self._mesh_arr[0] - 1):
                 # generate a kpoint
-                kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1)]
+                kpt = [start_k[0] + float(i) / float(self._mesh_arr[0] - 1)]
                 # solve at that point
-                (eval,evec)=self._model.solve_ham(kpt,return_eigvecs=True)
+                (eval, evec) = self._model.solve_ham(kpt, return_eigvecs=True)
                 # store wavefunctions
-                self[i]=evec
+                self[i] = evec
                 # store gaps
                 if all_gaps is not None:
-                    all_gaps[i,:]=eval[1:]-eval[:-1]
+                    all_gaps[i, :] = eval[1:] - eval[:-1]
             # impose boundary conditions
-            self.impose_pbc(0,self._model._per[0])
-        elif self._dim_arr==2:
-            for i in range(self._mesh_arr[0]-1):
-                for j in range(self._mesh_arr[1]-1):
-                    kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1),\
-                         start_k[1]+float(j)/float(self._mesh_arr[1]-1)]
-                    (eval,evec)=self._model.solve_ham(kpt,return_eigvecs=True)
-                    self[i,j]=evec
+            self.impose_pbc(0, self._model._per[0])
+        elif self._dim_arr == 2:
+            for i in range(self._mesh_arr[0] - 1):
+                for j in range(self._mesh_arr[1] - 1):
+                    kpt = [
+                        start_k[0] + float(i) / float(self._mesh_arr[0] - 1),
+                        start_k[1] + float(j) / float(self._mesh_arr[1] - 1),
+                    ]
+                    (eval, evec) = self._model.solve_ham(kpt, return_eigvecs=True)
+                    self[i, j] = evec
                     if all_gaps is not None:
-                        all_gaps[i,j,:]=eval[1:]-eval[:-1]
+                        all_gaps[i, j, :] = eval[1:] - eval[:-1]
             for dir in range(2):
-                self.impose_pbc(dir,self._model._per[dir])
-        elif self._dim_arr==3:
-            for i in range(self._mesh_arr[0]-1):
-                for j in range(self._mesh_arr[1]-1):
-                    for k in range(self._mesh_arr[2]-1):
-                        kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1),\
-                             start_k[1]+float(j)/float(self._mesh_arr[1]-1),\
-                             start_k[2]+float(k)/float(self._mesh_arr[2]-1)]
-                        (eval,evec)=self._model.solve_ham(kpt,return_eigvecs=True)
-                        self[i,j,k]=evec
+                self.impose_pbc(dir, self._model._per[dir])
+        elif self._dim_arr == 3:
+            for i in range(self._mesh_arr[0] - 1):
+                for j in range(self._mesh_arr[1] - 1):
+                    for k in range(self._mesh_arr[2] - 1):
+                        kpt = [
+                            start_k[0] + float(i) / float(self._mesh_arr[0] - 1),
+                            start_k[1] + float(j) / float(self._mesh_arr[1] - 1),
+                            start_k[2] + float(k) / float(self._mesh_arr[2] - 1),
+                        ]
+                        (eval, evec) = self._model.solve_ham(kpt, return_eigvecs=True)
+                        self[i, j, k] = evec
                         if all_gaps is not None:
-                            all_gaps[i,j,k,:]=eval[1:]-eval[:-1]
+                            all_gaps[i, j, k, :] = eval[1:] - eval[:-1]
             for dir in range(3):
-                self.impose_pbc(dir,self._model._per[dir])
-        elif self._dim_arr==4:
-            for i in range(self._mesh_arr[0]-1):
-                for j in range(self._mesh_arr[1]-1):
-                    for k in range(self._mesh_arr[2]-1):
-                        for l in range(self._mesh_arr[3]-1):
-                            kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1),\
-                                     start_k[1]+float(j)/float(self._mesh_arr[1]-1),\
-                                     start_k[2]+float(k)/float(self._mesh_arr[2]-1),\
-                                     start_k[3]+float(l)/float(self._mesh_arr[3]-1)]
-                            (eval,evec)=self._model.solve_ham(kpt,return_eigvecs=True)
-                            self[i,j,k,l]=evec
+                self.impose_pbc(dir, self._model._per[dir])
+        elif self._dim_arr == 4:
+            for i in range(self._mesh_arr[0] - 1):
+                for j in range(self._mesh_arr[1] - 1):
+                    for k in range(self._mesh_arr[2] - 1):
+                        for l in range(self._mesh_arr[3] - 1):
+                            kpt = [
+                                start_k[0] + float(i) / float(self._mesh_arr[0] - 1),
+                                start_k[1] + float(j) / float(self._mesh_arr[1] - 1),
+                                start_k[2] + float(k) / float(self._mesh_arr[2] - 1),
+                                start_k[3] + float(l) / float(self._mesh_arr[3] - 1),
+                            ]
+                            (eval, evec) = self._model.solve_ham(
+                                kpt, return_eigvecs=True
+                            )
+                            self[i, j, k, l] = evec
                             if all_gaps is not None:
-                                all_gaps[i,j,k,l,:]=eval[1:]-eval[:-1]
+                                all_gaps[i, j, k, l, :] = eval[1:] - eval[:-1]
             for dir in range(4):
-                self.impose_pbc(dir,self._model._per[dir])
+                self.impose_pbc(dir, self._model._per[dir])
         else:
             raise Exception("\n\nWrong dimensionality!")
 
@@ -2784,8 +3247,8 @@ class wf_array(object):
             return all_gaps.min(axis=tuple(range(self._dim_arr)))
         else:
             return None
-        
-    def solve_on_one_point(self,kpt,mesh_indices):
+
+    def solve_on_one_point(self, kpt, mesh_indices):
         r"""
 
         Solve a tight-binding model on a single k-point and store the eigenvectors
@@ -2813,13 +3276,13 @@ class wf_array(object):
 
         """
 
-        (eval,evec)=self._model.solve_ham(kpt,return_eigvecs=True)
+        (eval, evec) = self._model.solve_ham(kpt, return_eigvecs=True)
         if _is_int(mesh_indices):
-          self._wfs[(mesh_indices,)]=evec
+            self._wfs[(mesh_indices,)] = evec
         else:
-          self._wfs[tuple(mesh_indices)]=evec
+            self._wfs[tuple(mesh_indices)] = evec
 
-    def choose_states(self,subset):
+    def choose_states(self, subset):
         r"""
 
         Create a new *wf_array* object containing a subset of the
@@ -2839,28 +3302,28 @@ class wf_array(object):
         """
 
         # make a full copy of the wf_array
-        wf_new=copy.deepcopy(self)
+        wf_new = copy.deepcopy(self)
 
-        subset=np.array(subset,dtype=int)
-        if subset.ndim!=1:
+        subset = np.array(subset, dtype=int)
+        if subset.ndim != 1:
             raise Exception("\n\nParameter subset must be a one-dimensional array.")
-        
-        wf_new._nsta_arr=subset.shape[0]
 
-        if self._dim_arr==1:
-            wf_new._wfs=wf_new._wfs[:,subset]
-        elif self._dim_arr==2:
-            wf_new._wfs=wf_new._wfs[:,:,subset]
-        elif self._dim_arr==3:
-            wf_new._wfs=wf_new._wfs[:,:,:,subset]
-        elif self._dim_arr==4:
-            wf_new._wfs=wf_new._wfs[:,:,:,:,subset]
+        wf_new._nsta_arr = subset.shape[0]
+
+        if self._dim_arr == 1:
+            wf_new._wfs = wf_new._wfs[:, subset]
+        elif self._dim_arr == 2:
+            wf_new._wfs = wf_new._wfs[:, :, subset]
+        elif self._dim_arr == 3:
+            wf_new._wfs = wf_new._wfs[:, :, :, subset]
+        elif self._dim_arr == 4:
+            wf_new._wfs = wf_new._wfs[:, :, :, :, subset]
         else:
             raise Exception("\n\n_dim_array too large.")
 
-        return(wf_new)
+        return wf_new
 
-    def empty_like(self,nsta_arr=None):
+    def empty_like(self, nsta_arr=None):
         r"""
 
         Create a new empty *wf_array* object based on the original,
@@ -2883,49 +3346,49 @@ class wf_array(object):
         """
 
         # make a full copy of the wf_array
-        wf_new=copy.deepcopy(self)
+        wf_new = copy.deepcopy(self)
 
         if nsta_arr is None:
-            wf_new._wfs=np.empty_like(wf_new._wfs)
+            wf_new._wfs = np.empty_like(wf_new._wfs)
         else:
-            wf_shape=list(wf_new._wfs.shape)
+            wf_shape = list(wf_new._wfs.shape)
             # modify numer of states (after k indices & before orb and spin)
-            wf_shape[self._dim_arr]=nsta_arr
-            wf_new._wfs=np.empty_like(wf_new._wfs,shape=wf_shape)
+            wf_shape[self._dim_arr] = nsta_arr
+            wf_new._wfs = np.empty_like(wf_new._wfs, shape=wf_shape)
 
-        return(wf_new)
+        return wf_new
 
-    def __check_key(self,key):
+    def __check_key(self, key):
         # key is an index list specifying the grid point of interest
         # exception: in 1D, key should simply be an integer
-        if self._dim_arr==1:
+        if self._dim_arr == 1:
             if not _is_int(key):
                 raise TypeError("Key should be an integer!")
-            if key<(-1)*self._mesh_arr[0] or key>=self._mesh_arr[0]:
+            if key < (-1) * self._mesh_arr[0] or key >= self._mesh_arr[0]:
                 raise IndexError("Key outside the range!")
         # do checks for higher dimension
         else:
-            if len(key)!=self._dim_arr:
+            if len(key) != self._dim_arr:
                 raise TypeError("Wrong dimensionality of key!")
-            for i,k in enumerate(key):
+            for i, k in enumerate(key):
                 if not _is_int(k):
                     raise TypeError("Key should be set of integers!")
-                if k<(-1)*self._mesh_arr[i] or k>=self._mesh_arr[i]:
+                if k < (-1) * self._mesh_arr[i] or k >= self._mesh_arr[i]:
                     raise IndexError("Key outside the range!")
 
-    def __getitem__(self,key):
+    def __getitem__(self, key):
         # check that index array 'key' is valid
         self.__check_key(key)
         # return wavefunction
         return self._wfs[key]
-    
-    def __setitem__(self,key,value):
+
+    def __setitem__(self, key, value):
         # check that index array 'key' is valid
         self.__check_key(key)
         # store wavefunction
-        self._wfs[key]=np.array(value,dtype=complex)
+        self._wfs[key] = np.array(value, dtype=complex)
 
-    def impose_pbc(self,mesh_dir,k_dir):
+    def impose_pbc(self, mesh_dir, k_dir):
         r"""
 
         If the *wf_array* object was populated using the
@@ -2952,7 +3415,7 @@ class wf_array(object):
         it is the responsibility of the user. Currently *wf_array*
         does not store the k-vectors on which the model was solved;
         it only stores the eigenvectors (wavefunctions).
-        
+
         :param mesh_dir: Direction of wf_array along which you wish to
           impose periodic boundary conditions.
 
@@ -2971,38 +3434,40 @@ class wf_array(object):
           # direction the k_dir=1 component of the k-vector is increased
           # by one reciprocal lattice vector.  This could happen, for
           # example, if the underlying tb_model is two dimensional but
-          # wf_array is a one-dimensional path along k_y direction.          
+          # wf_array is a one-dimensional path along k_y direction.
           wf.impose_pbc(mesh_dir=0,k_dir=1)
 
         """
 
         if k_dir not in self._model._per:
-            raise Exception("Periodic boundary condition can be specified only along periodic directions!")
+            raise Exception(
+                "Periodic boundary condition can be specified only along periodic directions!"
+            )
 
         # Compute phase factors
-        ffac=np.exp(-2.j*np.pi*self._orb[:,k_dir])
-        if self._nspin==1:
-            phase=ffac
+        ffac = np.exp(-2.0j * np.pi * self._orb[:, k_dir])
+        if self._nspin == 1:
+            phase = ffac
         else:
             # for spinors, same phase multiplies both components
-            phase=np.zeros((self._norb,2),dtype=complex)
-            phase[:,0]=ffac
-            phase[:,1]=ffac
-        
+            phase = np.zeros((self._norb, 2), dtype=complex)
+            phase[:, 0] = ffac
+            phase[:, 1] = ffac
+
         # Copy first eigenvector onto last one, multiplying by phase factors
         # We can use numpy broadcasting since the orbital index is last
-        if mesh_dir==0:
-            self._wfs[-1,...]=self._wfs[0,...]*phase
-        elif mesh_dir==1:
-            self._wfs[:,-1,...]=self._wfs[:,0,...]*phase
-        elif mesh_dir==2:
-            self._wfs[:,:,-1,...]=self._wfs[:,:,0,...]*phase
-        elif mesh_dir==3:
-            self._wfs[:,:,:,-1,...]=self._wfs[:,:,:,0,...]*phase
+        if mesh_dir == 0:
+            self._wfs[-1, ...] = self._wfs[0, ...] * phase
+        elif mesh_dir == 1:
+            self._wfs[:, -1, ...] = self._wfs[:, 0, ...] * phase
+        elif mesh_dir == 2:
+            self._wfs[:, :, -1, ...] = self._wfs[:, :, 0, ...] * phase
+        elif mesh_dir == 3:
+            self._wfs[:, :, :, -1, ...] = self._wfs[:, :, :, 0, ...] * phase
         else:
             raise Exception("\n\nWrong value of mesh_dir.")
 
-    def impose_loop(self,mesh_dir):
+    def impose_loop(self, mesh_dir):
         r"""
 
         If the user knows that the first and last points along the
@@ -3033,14 +3498,14 @@ class wf_array(object):
         """
 
         # Copy first eigenvector onto last one
-        if mesh_dir==0:
-            self._wfs[-1,...]=self._wfs[0,...]
-        elif mesh_dir==1:
-            self._wfs[:,-1,...]=self._wfs[:,0,...]
-        elif mesh_dir==2:
-            self._wfs[:,:,-1,...]=self._wfs[:,:,0,...]
-        elif mesh_dir==3:
-            self._wfs[:,:,:,-1,...]=self._wfs[:,:,:,0,...]
+        if mesh_dir == 0:
+            self._wfs[-1, ...] = self._wfs[0, ...]
+        elif mesh_dir == 1:
+            self._wfs[:, -1, ...] = self._wfs[:, 0, ...]
+        elif mesh_dir == 2:
+            self._wfs[:, :, -1, ...] = self._wfs[:, :, 0, ...]
+        elif mesh_dir == 3:
+            self._wfs[:, :, :, -1, ...] = self._wfs[:, :, :, 0, ...]
         else:
             raise Exception("\n\nWrong value of mesh_dir.")
 
@@ -3051,20 +3516,22 @@ class wf_array(object):
         states to be included, which can optionally be 'All')."""
 
         # Check for special case of parameter occ
-        if type(occ) is str and occ == 'All':
-            occ=np.arange(self._nsta_arr,dtype=int)
+        if type(occ) is str and occ == "All":
+            occ = np.arange(self._nsta_arr, dtype=int)
         else:
-            occ=np.array(occ,dtype=int)
+            occ = np.array(occ, dtype=int)
 
-        if occ.ndim!=1:
-            raise Exception("""\n\nParameter occ must be a one-dimensional array or string "All".""")
-            
+        if occ.ndim != 1:
+            raise Exception(
+                """\n\nParameter occ must be a one-dimensional array or string "All"."""
+            )
+
         # check if model came from w90
-        if self._model._assume_position_operator_diagonal==False:
+        if self._model._assume_position_operator_diagonal == False:
             _offdiag_approximation_warning_and_stop()
         #
-        evec=self._wfs[tuple(key)][occ]
-        return self._model.position_matrix(evec,dir)
+        evec = self._wfs[tuple(key)][occ]
+        return self._model.position_matrix(evec, dir)
 
     def position_expectation(self, key, occ, dir):
         """Similar to :func:`pythtb.tb_model.position_expectation`.  Only
@@ -3073,20 +3540,22 @@ class wf_array(object):
         states to be included, which can optionally be 'All')."""
 
         # Check for special case of parameter occ
-        if type(occ) is str and occ == 'All':
-            occ=np.arange(self._nsta_arr,dtype=int)
+        if type(occ) is str and occ == "All":
+            occ = np.arange(self._nsta_arr, dtype=int)
         else:
-            occ=np.array(occ,dtype=int)
-            
-        if occ.ndim!=1:
-            raise Exception("""\n\nParameter occ must be a one-dimensional array or string "All".""")
-            
+            occ = np.array(occ, dtype=int)
+
+        if occ.ndim != 1:
+            raise Exception(
+                """\n\nParameter occ must be a one-dimensional array or string "All"."""
+            )
+
         # check if model came from w90
-        if self._model._assume_position_operator_diagonal==False:
+        if self._model._assume_position_operator_diagonal == False:
             _offdiag_approximation_warning_and_stop()
         #
-        evec=self._wfs[tuple(key)][occ]
-        return self._model.position_expectation(evec,dir)
+        evec = self._wfs[tuple(key)][occ]
+        return self._model.position_expectation(evec, dir)
 
     def position_hwf(self, key, occ, dir, hwf_evec=False, basis="wavefunction"):
         """Similar to :func:`pythtb.tb_model.position_hwf`, except that
@@ -3099,22 +3568,24 @@ class wf_array(object):
         """
 
         # Check for special case of parameter occ
-        if type(occ) is str and occ == 'All':
-            occ=np.arange(self._nsta_arr,dtype=int)
+        if type(occ) is str and occ == "All":
+            occ = np.arange(self._nsta_arr, dtype=int)
         else:
-            occ=np.array(occ,dtype=int)
+            occ = np.array(occ, dtype=int)
 
-        if occ.ndim!=1:
-            raise Exception("""\n\nParameter occ must be a one-dimensional array or string "All".""")
-            
+        if occ.ndim != 1:
+            raise Exception(
+                """\n\nParameter occ must be a one-dimensional array or string "All"."""
+            )
+
         # check if model came from w90
-        if self._model._assume_position_operator_diagonal==False:
+        if self._model._assume_position_operator_diagonal == False:
             _offdiag_approximation_warning_and_stop()
 
-        evec=self._wfs[tuple(key)][occ]
-        return self._model.position_hwf(evec,dir,hwf_evec,basis)
+        evec = self._wfs[tuple(key)][occ]
+        return self._model.position_hwf(evec, dir, hwf_evec, basis)
 
-    def berry_phase(self,occ="All",dir=None,contin=True,berry_evals=False):
+    def berry_phase(self, occ="All", dir=None, contin=True, berry_evals=False):
         r"""
 
         Computes the Berry phase along a given array direction
@@ -3210,72 +3681,73 @@ class wf_array(object):
         """
 
         # special case requesting all states in the array
-        if (type(occ) is str and occ == 'All') or occ is None:
+        if (type(occ) is str and occ == "All") or occ is None:
             # note that 'None' means 'not specified', not 'no states'
-            occ=np.arange(self._nsta_arr,dtype=int)
+            occ = np.arange(self._nsta_arr, dtype=int)
         else:
-            occ=np.array(occ,dtype=int)
+            occ = np.array(occ, dtype=int)
 
-        if occ.ndim!=1:
-            raise Exception("""\n\nParameter occ must be a one-dimensional array or string "All" or None.""")
+        if occ.ndim != 1:
+            raise Exception(
+                """\n\nParameter occ must be a one-dimensional array or string "All" or None."""
+            )
 
-                    
         # check if model came from w90
-        if self._model._assume_position_operator_diagonal==False:
+        if self._model._assume_position_operator_diagonal == False:
             _offdiag_approximation_warning_and_stop()
 
-        #if dir<0 or dir>self._dim_arr-1:
+        # if dir<0 or dir>self._dim_arr-1:
         #  raise Exception("\n\nDirection key out of range")
         #
         # This could be coded more efficiently, but it is hard-coded for now.
         #
         # 1D case
-        if self._dim_arr==1:
+        if self._dim_arr == 1:
             # pick which wavefunctions to use
-            wf_use=self._wfs[:,occ,:]
+            wf_use = self._wfs[:, occ, :]
             # calculate berry phase
-            ret=_one_berry_loop(wf_use,berry_evals)
+            ret = _one_berry_loop(wf_use, berry_evals)
         # 2D case
-        elif self._dim_arr==2:
+        elif self._dim_arr == 2:
             # choice along which direction you wish to calculate berry phase
-            if dir==0:
-                ret=[]
+            if dir == 0:
+                ret = []
                 for i in range(self._mesh_arr[1]):
-                    wf_use=self._wfs[:,i,:,:][:,occ,:]
-                    ret.append(_one_berry_loop(wf_use,berry_evals))
-            elif dir==1:
-                ret=[]
+                    wf_use = self._wfs[:, i, :, :][:, occ, :]
+                    ret.append(_one_berry_loop(wf_use, berry_evals))
+            elif dir == 1:
+                ret = []
                 for i in range(self._mesh_arr[0]):
-                    wf_use=self._wfs[i,:,:,:][:,occ,:]
-                    ret.append(_one_berry_loop(wf_use,berry_evals))
+                    wf_use = self._wfs[i, :, :, :][:, occ, :]
+                    ret.append(_one_berry_loop(wf_use, berry_evals))
             else:
                 raise Exception("\n\nWrong direction for Berry phase calculation!")
         # 3D case
-        elif self._dim_arr==3:
+        elif self._dim_arr == 3:
             # choice along which direction you wish to calculate berry phase
-            if dir==0:
-                ret=[]
+            if dir == 0:
+                ret = []
                 for i in range(self._mesh_arr[1]):
-                    ret_t=[]
+                    ret_t = []
                     for j in range(self._mesh_arr[2]):
-                        wf_use=self._wfs[:,i,j,:,:][:,occ,:]
-                        ret_t.append(_one_berry_loop(wf_use,berry_evals))
+                        wf_use = self._wfs[:, i, j, :, :][:, occ, :]
+                        ret_t.append(_one_berry_loop(wf_use, berry_evals))
                     ret.append(ret_t)
-            elif dir==1:
-                ret=[]
+            elif dir == 1:
+                ret = []
                 for i in range(self._mesh_arr[0]):
-                    ret_t=[]
+                    ret_t = []
                     for j in range(self._mesh_arr[2]):
-                        wf_use=self._wfs[i,:,j,:,:][:,occ,:]
-                        ret_t.append(_one_berry_loop(wf_use,berry_evals))
+                        wf_use = self._wfs[i, :, j, :, :][:, occ, :]
+                        ret_t.append(_one_berry_loop(wf_use, berry_evals))
                     ret.append(ret_t)
-            elif dir==2:
-                ret=[]
+            elif dir == 2:
+                ret = []
                 for i in range(self._mesh_arr[0]):
-                    ret_t=[]
+                    ret_t = []
                     for j in range(self._mesh_arr[1]):
-                        wf_use=self._wfs[i,j,:,:,:][:,occ,:]
-                        ret_t.append(_one_berry_loop(wf_use,berry_evals))
+                        wf_use = self._wfs[i, j, :, :, :][:, occ, :]
+                        ret_t.append(_one_berry_loop(wf_use, berry_evals))
                     ret.append(ret_t)
             else:
                 raise Exception("\n\nWrong direction for Berry phase calculation!")
@@ -3283,43 +3755,47 @@ class wf_array(object):
             raise Exception("\n\nWrong dimensionality!")
 
         # convert phases to numpy array
-        if self._dim_arr>1 or berry_evals==True:
-            ret=np.array(ret,dtype=float)
+        if self._dim_arr > 1 or berry_evals == True:
+            ret = np.array(ret, dtype=float)
 
         # make phases of eigenvalues continuous
-        if contin==True:
+        if contin == True:
             # iron out 2pi jumps, make the gauge choice such that first phase in the
             # list is fixed, others are then made continuous.
-            if berry_evals==False:
+            if berry_evals == False:
                 # 2D case
-                if self._dim_arr==2:
-                    ret=_one_phase_cont(ret,ret[0])
+                if self._dim_arr == 2:
+                    ret = _one_phase_cont(ret, ret[0])
                 # 3D case
-                elif self._dim_arr==3:
+                elif self._dim_arr == 3:
                     for i in range(ret.shape[1]):
-                        if i==0: clos=ret[0,0]
-                        else: clos=ret[0,i-1]
-                        ret[:,i]=_one_phase_cont(ret[:,i],clos)
-                elif self._dim_arr!=1:
+                        if i == 0:
+                            clos = ret[0, 0]
+                        else:
+                            clos = ret[0, i - 1]
+                        ret[:, i] = _one_phase_cont(ret[:, i], clos)
+                elif self._dim_arr != 1:
                     raise Exception("\n\nWrong dimensionality!")
             # make eigenvalues continuous. This does not take care of band-character
             # at band crossing for example it will just connect pairs that are closest
             # at neighboring points.
             else:
                 # 2D case
-                if self._dim_arr==2:
-                    ret=_array_phases_cont(ret,ret[0,:])
+                if self._dim_arr == 2:
+                    ret = _array_phases_cont(ret, ret[0, :])
                 # 3D case
-                elif self._dim_arr==3:
+                elif self._dim_arr == 3:
                     for i in range(ret.shape[1]):
-                        if i==0: clos=ret[0,0,:]
-                        else: clos=ret[0,i-1,:]
-                        ret[:,i]=_array_phases_cont(ret[:,i],clos)
-                elif self._dim_arr!=1:
+                        if i == 0:
+                            clos = ret[0, 0, :]
+                        else:
+                            clos = ret[0, i - 1, :]
+                        ret[:, i] = _array_phases_cont(ret[:, i], clos)
+                elif self._dim_arr != 1:
                     raise Exception("\n\nWrong dimensionality!")
         return ret
-    
-    def berry_flux(self,occ="All",dirs=None,individual_phases=False):
+
+    def berry_flux(self, occ="All", dirs=None, individual_phases=False):
         r"""
 
         In the case of a 2-dimensional *wf_array* array calculates the
@@ -3363,109 +3839,134 @@ class wf_array(object):
         """
 
         # special case requesting all states in the array
-        if (type(occ) is str and occ == 'All') or occ is None:
+        if (type(occ) is str and occ == "All") or occ is None:
             # note that 'None' means 'not specified', not 'no states'
-            occ=np.arange(self._nsta_arr,dtype=int)
+            occ = np.arange(self._nsta_arr, dtype=int)
         else:
-            occ=np.array(occ,dtype=int)
-            
+            occ = np.array(occ, dtype=int)
+
         # check if model came from w90
-        if self._model._assume_position_operator_diagonal==False:
+        if self._model._assume_position_operator_diagonal == False:
             _offdiag_approximation_warning_and_stop()
 
         # default case is to take first two directions for flux calculation
         if dirs is None:
-            dirs=[0,1]
+            dirs = [0, 1]
 
         # consistency checks
-        if dirs[0]==dirs[1]:
-            raise Exception("Need to specify two different directions for Berry flux calculation.")
-        if dirs[0]>=self._dim_arr or dirs[1]>=self._dim_arr or dirs[0]<0 or dirs[1]<0:
+        if dirs[0] == dirs[1]:
+            raise Exception(
+                "Need to specify two different directions for Berry flux calculation."
+            )
+        if (
+            dirs[0] >= self._dim_arr
+            or dirs[1] >= self._dim_arr
+            or dirs[0] < 0
+            or dirs[1] < 0
+        ):
             raise Exception("Direction for Berry flux calculation out of bounds.")
 
         # 2D case
-        if self._dim_arr==2:
-            # compute the fluxes through all plaquettes on the entire plane 
-            ord=list(range(len(self._wfs.shape)))
+        if self._dim_arr == 2:
+            # compute the fluxes through all plaquettes on the entire plane
+            ord = list(range(len(self._wfs.shape)))
             # select two directions from dirs
-            ord[0]=dirs[0]
-            ord[1]=dirs[1]
-            plane_wfs=self._wfs.transpose(ord)
+            ord[0] = dirs[0]
+            ord[1] = dirs[1]
+            plane_wfs = self._wfs.transpose(ord)
             # take bands of choice
-            plane_wfs=plane_wfs[:,:,occ]
+            plane_wfs = plane_wfs[:, :, occ]
 
             # compute fluxes
-            all_phases=_one_flux_plane(plane_wfs)
+            all_phases = _one_flux_plane(plane_wfs)
 
             # return either total flux or individual phase for each plaquete
-            if individual_phases==False:
+            if individual_phases == False:
                 return all_phases.sum()
             else:
                 return all_phases
 
         # 3D or 4D case
-        elif self._dim_arr in [3,4]:
-            # compute the fluxes through all plaquettes on the entire plane 
-            ord=list(range(len(self._wfs.shape)))
+        elif self._dim_arr in [3, 4]:
+            # compute the fluxes through all plaquettes on the entire plane
+            ord = list(range(len(self._wfs.shape)))
             # select two directions from dirs
-            ord[0]=dirs[0]
-            ord[1]=dirs[1]
+            ord[0] = dirs[0]
+            ord[1] = dirs[1]
 
             # find directions over which we wish to loop
-            ld=list(range(self._dim_arr))
+            ld = list(range(self._dim_arr))
             ld.remove(dirs[0])
             ld.remove(dirs[1])
-            if len(ld)!=self._dim_arr-2:
-                raise Exception("Hm, this should not happen? Inconsistency with the mesh size.")
-            
+            if len(ld) != self._dim_arr - 2:
+                raise Exception(
+                    "Hm, this should not happen? Inconsistency with the mesh size."
+                )
+
             # add remaining indices
-            if self._dim_arr==3:
-                ord[2]=ld[0]
-            if self._dim_arr==4:
-                ord[2]=ld[0]
-                ord[3]=ld[1]
+            if self._dim_arr == 3:
+                ord[2] = ld[0]
+            if self._dim_arr == 4:
+                ord[2] = ld[0]
+                ord[3] = ld[1]
 
             # reorder wavefunctions
-            use_wfs=self._wfs.transpose(ord)
+            use_wfs = self._wfs.transpose(ord)
 
             # loop over the the remaining direction
-            if self._dim_arr==3:
-                slice_phases=np.zeros((self._mesh_arr[ord[2]],self._mesh_arr[dirs[0]]-1,self._mesh_arr[dirs[1]]-1),dtype=float)
+            if self._dim_arr == 3:
+                slice_phases = np.zeros(
+                    (
+                        self._mesh_arr[ord[2]],
+                        self._mesh_arr[dirs[0]] - 1,
+                        self._mesh_arr[dirs[1]] - 1,
+                    ),
+                    dtype=float,
+                )
                 for i in range(self._mesh_arr[ord[2]]):
                     # take a 2d slice
-                    plane_wfs=use_wfs[:,:,i]
+                    plane_wfs = use_wfs[:, :, i]
                     # take bands of choice
-                    plane_wfs=plane_wfs[:,:,occ]
+                    plane_wfs = plane_wfs[:, :, occ]
                     # compute fluxes on the slice
-                    slice_phases[i,:,:]=_one_flux_plane(plane_wfs)
-            elif self._dim_arr==4:
-                slice_phases=np.zeros((self._mesh_arr[ord[2]],self._mesh_arr[ord[3]],self._mesh_arr[dirs[0]]-1,self._mesh_arr[dirs[1]]-1),dtype=float)
+                    slice_phases[i, :, :] = _one_flux_plane(plane_wfs)
+            elif self._dim_arr == 4:
+                slice_phases = np.zeros(
+                    (
+                        self._mesh_arr[ord[2]],
+                        self._mesh_arr[ord[3]],
+                        self._mesh_arr[dirs[0]] - 1,
+                        self._mesh_arr[dirs[1]] - 1,
+                    ),
+                    dtype=float,
+                )
                 for i in range(self._mesh_arr[ord[2]]):
                     for j in range(self._mesh_arr[ord[3]]):
                         # take a 2d slice
-                        plane_wfs=use_wfs[:,:,i,j]
+                        plane_wfs = use_wfs[:, :, i, j]
                         # take bands of choice
-                        plane_wfs=plane_wfs[:,:,occ]
+                        plane_wfs = plane_wfs[:, :, occ]
                         # compute fluxes on the slice
-                        slice_phases[i,j,:,:]=_one_flux_plane(plane_wfs)
+                        slice_phases[i, j, :, :] = _one_flux_plane(plane_wfs)
 
             # return either total flux or individual phase for each plaquete
-            if individual_phases==False:
-                return slice_phases.sum(axis=(-2,-1))
+            if individual_phases == False:
+                return slice_phases.sum(axis=(-2, -1))
             else:
                 return slice_phases
 
         else:
             raise Exception("\n\nWrong dimensionality!")
 
-#=======================================================================
+
+# =======================================================================
 class w90(object):
-#=======================================================================
-    r""" 
+    # =======================================================================
+    r"""
 
     This class of the PythTB package imports tight-binding model
     parameters from an output of a `Wannier90
-    <http://www.wannier.org>`_ code. 
+    <http://www.wannier.org>`_ code.
 
     The `Wannier90 <http://www.wannier.org>`_ code is a
     post-processing tool that takes as an input electron wavefunctions
@@ -3484,7 +3985,7 @@ class w90(object):
     - *prefix*\_centres.xyz
     - *prefix*\_band.kpt (optional)
     - *prefix*\_band.dat (optional)
-    
+
     The first file (*prefix*.win) is an input file to Wannier90 itself. This
     file is needed so that PythTB can read in the unit cell vectors.
 
@@ -3528,7 +4029,7 @@ class w90(object):
       printed in .wout file) is not more than 20% larger than the
       total spread at the end of the minimization procedure.  If those
       spreads differ by much more than 20% user needs to specify
-      better initial projection functions.  
+      better initial projection functions.
 
       In addition, please note that the interpolation is valid only
       within the frozen energy window of the disentanglement
@@ -3557,7 +4058,7 @@ class w90(object):
     the tarball::
 
         tar -zxf wannier90_example.tar.gz
- 
+
     and then run the following :ref:`script <w90_quick>` in the same
     folder.
 
@@ -3581,130 +4082,137 @@ class w90(object):
 
     """
 
-    def __init__(self,path,prefix):
+    def __init__(self, path, prefix):
         # store path and prefix
-        self.path=path
-        self.prefix=prefix
+        self.path = path
+        self.prefix = prefix
 
         # read in lattice_vectors
-        f=open(self.path+"/"+self.prefix+".win","r")
-        ln=f.readlines()
+        f = open(self.path + "/" + self.prefix + ".win", "r")
+        ln = f.readlines()
         f.close()
         # get lattice vector
-        self.lat=np.zeros((3,3),dtype=float)
-        found=False
+        self.lat = np.zeros((3, 3), dtype=float)
+        found = False
         for i in range(len(ln)):
-            sp=ln[i].split()
-            if len(sp)>=2:
-                if sp[0].lower()=="begin" and sp[1].lower()=="unit_cell_cart":
+            sp = ln[i].split()
+            if len(sp) >= 2:
+                if sp[0].lower() == "begin" and sp[1].lower() == "unit_cell_cart":
                     # get units right
-                    if ln[i+1].strip().lower()=="bohr":
-                        pref=0.5291772108
-                        skip=1
-                    elif ln[i+1].strip().lower() in ["ang","angstrom"]:
-                        pref=1.0
-                        skip=1
+                    if ln[i + 1].strip().lower() == "bohr":
+                        pref = 0.5291772108
+                        skip = 1
+                    elif ln[i + 1].strip().lower() in ["ang", "angstrom"]:
+                        pref = 1.0
+                        skip = 1
                     else:
-                        pref=1.0
-                        skip=0
+                        pref = 1.0
+                        skip = 0
                     # now get vectors
                     for j in range(3):
-                        sp=ln[i+skip+1+j].split()
+                        sp = ln[i + skip + 1 + j].split()
                         for k in range(3):
-                            self.lat[j,k]=float(sp[k])*pref
-                    found=True
+                            self.lat[j, k] = float(sp[k]) * pref
+                    found = True
                     break
-        if found==False:
+        if found == False:
             raise Exception("Unable to find unit_cell_cart block in the .win file.")
 
         # read in hamiltonian matrix, in eV
-        f=open(self.path+"/"+self.prefix+"_hr.dat","r")
-        ln=f.readlines()
+        f = open(self.path + "/" + self.prefix + "_hr.dat", "r")
+        ln = f.readlines()
         f.close()
         #
         # get number of wannier functions
-        self.num_wan=int(ln[1])
+        self.num_wan = int(ln[1])
         # get number of Wigner-Seitz points
-        num_ws=int(ln[2])
+        num_ws = int(ln[2])
         # get degenereacies of Wigner-Seitz points
-        deg_ws=[]
-        for j in range(3,len(ln)):
-            sp=ln[j].split()
+        deg_ws = []
+        for j in range(3, len(ln)):
+            sp = ln[j].split()
             for s in sp:
                 deg_ws.append(int(s))
-            if len(deg_ws)==num_ws:
-                last_j=j
+            if len(deg_ws) == num_ws:
+                last_j = j
                 break
-            if len(deg_ws)>num_ws:
+            if len(deg_ws) > num_ws:
                 raise Exception("Too many degeneracies for WS points!")
-        deg_ws=np.array(deg_ws,dtype=int)
+        deg_ws = np.array(deg_ws, dtype=int)
         # now read in matrix elements
         # Convention used in w90 is to write out:
         # R1, R2, R3, i, j, ham_r(i,j,R)
         # where ham_r(i,j,R) corresponds to matrix element < i | H | j+R >
-        self.ham_r={} # format is ham_r[(R1,R2,R3)]["h"][i,j] for < i | H | j+R >
-        ind_R=0 # which R vector in line is this?
-        for j in range(last_j+1,len(ln)):
-            sp=ln[j].split()
+        self.ham_r = {}  # format is ham_r[(R1,R2,R3)]["h"][i,j] for < i | H | j+R >
+        ind_R = 0  # which R vector in line is this?
+        for j in range(last_j + 1, len(ln)):
+            sp = ln[j].split()
             # get reduced lattice vector components
-            ham_R1=int(sp[0])
-            ham_R2=int(sp[1])
-            ham_R3=int(sp[2])
+            ham_R1 = int(sp[0])
+            ham_R2 = int(sp[1])
+            ham_R3 = int(sp[2])
             # get Wannier indices
-            ham_i=int(sp[3])-1
-            ham_j=int(sp[4])-1
+            ham_i = int(sp[3]) - 1
+            ham_j = int(sp[4]) - 1
             # get matrix element
-            ham_val=float(sp[5])+1.0j*float(sp[6])
+            ham_val = float(sp[5]) + 1.0j * float(sp[6])
             # store stuff, for each R store hamiltonian and degeneracy
-            ham_key=(ham_R1,ham_R2,ham_R3)
-            if (ham_key in self.ham_r)==False:
-                self.ham_r[ham_key]={
-                    "h":np.zeros((self.num_wan,self.num_wan),dtype=complex),
-                    "deg":deg_ws[ind_R]
-                    }
-                ind_R+=1
-            self.ham_r[ham_key]["h"][ham_i,ham_j]=ham_val
+            ham_key = (ham_R1, ham_R2, ham_R3)
+            if (ham_key in self.ham_r) == False:
+                self.ham_r[ham_key] = {
+                    "h": np.zeros((self.num_wan, self.num_wan), dtype=complex),
+                    "deg": deg_ws[ind_R],
+                }
+                ind_R += 1
+            self.ham_r[ham_key]["h"][ham_i, ham_j] = ham_val
 
         # check if for every non-zero R there is also -R
         for R in self.ham_r:
-            if not (R[0]==0 and R[1]==0 and R[2]==0):
-                found_pair=False
+            if not (R[0] == 0 and R[1] == 0 and R[2] == 0):
+                found_pair = False
                 for P in self.ham_r:
-                    if not (R[0]==0 and R[1]==0 and R[2]==0):
+                    if not (R[0] == 0 and R[1] == 0 and R[2] == 0):
                         # check if they are opposite
-                        if R[0]==-P[0] and R[1]==-P[1] and R[2]==-P[2]: 
-                            if found_pair==True:
+                        if R[0] == -P[0] and R[1] == -P[1] and R[2] == -P[2]:
+                            if found_pair == True:
                                 raise Exception("Found duplicate negative R!")
-                            found_pair=True
-                if found_pair==False:
-                    raise Exception("Did not find negative R for R = "+R+"!")
+                            found_pair = True
+                if found_pair == False:
+                    raise Exception("Did not find negative R for R = " + R + "!")
 
         # read in wannier centers
-        f=open(self.path+"/"+self.prefix+"_centres.xyz","r")
-        ln=f.readlines()
+        f = open(self.path + "/" + self.prefix + "_centres.xyz", "r")
+        ln = f.readlines()
         f.close()
         # Wannier centers in Cartesian, Angstroms
-        xyz_cen=[]
-        for i in range(2,2+self.num_wan):
-            sp=ln[i].split()
-            if sp[0]=="X":
-                tmp=[]
+        xyz_cen = []
+        for i in range(2, 2 + self.num_wan):
+            sp = ln[i].split()
+            if sp[0] == "X":
+                tmp = []
                 for j in range(3):
-                    tmp.append(float(sp[j+1]))
+                    tmp.append(float(sp[j + 1]))
                 xyz_cen.append(tmp)
             else:
                 raise Exception("Inconsistency in the centres file.")
-        self.xyz_cen=np.array(xyz_cen,dtype=float)
+        self.xyz_cen = np.array(xyz_cen, dtype=float)
         # get orbital positions in reduced coordinates
-        self.red_cen=_cart_to_red((self.lat[0],self.lat[1],self.lat[2]),self.xyz_cen)
+        self.red_cen = _cart_to_red(
+            (self.lat[0], self.lat[1], self.lat[2]), self.xyz_cen
+        )
 
-
-    def model(self,zero_energy=0.0,min_hopping_norm=None,max_distance=None,ignorable_imaginary_part=None):
+    def model(
+        self,
+        zero_energy=0.0,
+        min_hopping_norm=None,
+        max_distance=None,
+        ignorable_imaginary_part=None,
+    ):
         """
 
         This function returns :class:`pythtb.tb_model` object that can
         be used to interpolate the band structure at arbitrary
-        k-point, analyze the wavefunction character, etc.  
+        k-point, analyze the wavefunction character, etc.
 
         The tight-binding basis orbitals in the returned object are
         maximally localized Wannier functions as computed by
@@ -3728,7 +4236,7 @@ class w90(object):
         Locations of the orbitals in the returned
         :class:`pythtb.tb_model` object are equal to the centers of
         the Wannier functions computed by Wannier90.
-        
+
         :param zero_energy: Sets the zero of the energy in the band
           structure.  This value is typically set to the Fermi level
           computed by the density-functional code (or to the top of the
@@ -3739,7 +4247,7 @@ class w90(object):
           in the returned tight-binding model.  This parameters is
           specified in electron-volts.  By default all terms regardless
           of their norm are included.
-        
+
         :param max_distance: Hopping terms from site *i* to site *j+R* will
           be ignored if the distance from orbital *i* to *j+R* is larger
           than *max_distance*.  This parameter is given in Angstroms.
@@ -3754,7 +4262,7 @@ class w90(object):
         :returns:
            * **tb** --  The object of type :class:`pythtb.tb_model` that can be used to
                interpolate Wannier90 band structure to an arbitrary k-point as well
-               as to analyze the character of the wavefunctions.  Please note 
+               as to analyze the character of the wavefunctions.  Please note
 
         Example usage::
 
@@ -3764,82 +4272,85 @@ class w90(object):
           # simplified model that contains only hopping terms above 0.01 eV
           my_model_simple=silicon.model(min_hopping_norm=0.01)
           my_model_simple.display()
-        
-        """    
+
+        """
 
         # make the model object
-        tb=tb_model(3,3,self.lat,self.red_cen)
+        tb = tb_model(3, 3, self.lat, self.red_cen)
 
         # remember that this model was computed from w90
-        tb._assume_position_operator_diagonal=False
+        tb._assume_position_operator_diagonal = False
 
         # add onsite energies
-        onsite=np.zeros(self.num_wan,dtype=float)
+        onsite = np.zeros(self.num_wan, dtype=float)
         for i in range(self.num_wan):
-            tmp_ham=self.ham_r[(0,0,0)]["h"][i,i]/float(self.ham_r[(0,0,0)]["deg"])
-            onsite[i]=tmp_ham.real
-            if np.abs(tmp_ham.imag)>1.0E-9:
+            tmp_ham = self.ham_r[(0, 0, 0)]["h"][i, i] / float(
+                self.ham_r[(0, 0, 0)]["deg"]
+            )
+            onsite[i] = tmp_ham.real
+            if np.abs(tmp_ham.imag) > 1.0e-9:
                 raise Exception("Onsite terms should be real!")
-        tb.set_onsite(onsite-zero_energy)
+        tb.set_onsite(onsite - zero_energy)
 
         # add hopping terms
         for R in self.ham_r:
             # avoid double counting
-            use_this_R=True
+            use_this_R = True
             # avoid onsite terms
-            if R[0]==0 and R[1]==0 and R[2]==0:
-                avoid_diagonal=True
+            if R[0] == 0 and R[1] == 0 and R[2] == 0:
+                avoid_diagonal = True
             else:
-                avoid_diagonal=False
+                avoid_diagonal = False
                 # avoid taking both R and -R
-                if R[0]!=0:
-                    if R[0]<0:
-                        use_this_R=False
+                if R[0] != 0:
+                    if R[0] < 0:
+                        use_this_R = False
                 else:
-                    if R[1]!=0:
-                        if R[1]<0:
-                            use_this_R=False
+                    if R[1] != 0:
+                        if R[1] < 0:
+                            use_this_R = False
                     else:
-                        if R[2]<0:
-                            use_this_R=False
+                        if R[2] < 0:
+                            use_this_R = False
             # get R vector
-            vecR=_red_to_cart((self.lat[0],self.lat[1],self.lat[2]),[R])[0]
+            vecR = _red_to_cart((self.lat[0], self.lat[1], self.lat[2]), [R])[0]
             # scan through unique R
-            if use_this_R==True:
+            if use_this_R == True:
                 for i in range(self.num_wan):
-                    vec_i=self.xyz_cen[i]
+                    vec_i = self.xyz_cen[i]
                     for j in range(self.num_wan):
-                        vec_j=self.xyz_cen[j]
+                        vec_j = self.xyz_cen[j]
                         # get distance between orbitals
-                        dist_ijR=np.sqrt(np.dot(-vec_i+vec_j+vecR,
-                                                -vec_i+vec_j+vecR))
+                        dist_ijR = np.sqrt(
+                            np.dot(-vec_i + vec_j + vecR, -vec_i + vec_j + vecR)
+                        )
                         # to prevent double counting
-                        if not (avoid_diagonal==True and j<=i):
-                            
+                        if not (avoid_diagonal == True and j <= i):
+
                             # only if distance between orbitals is small enough
                             if max_distance is not None:
-                                if dist_ijR>max_distance:
+                                if dist_ijR > max_distance:
                                     continue
 
                             # divide the matrix element from w90 with the degeneracy
-                            tmp_ham=self.ham_r[R]["h"][i,j]/float(self.ham_r[R]["deg"])
+                            tmp_ham = self.ham_r[R]["h"][i, j] / float(
+                                self.ham_r[R]["deg"]
+                            )
 
                             # only if big enough matrix element
                             if min_hopping_norm is not None:
-                                if np.abs(tmp_ham)<min_hopping_norm:
+                                if np.abs(tmp_ham) < min_hopping_norm:
                                     continue
 
                             # remove imaginary part if needed
                             if ignorable_imaginary_part is not None:
-                                if np.abs(tmp_ham.imag)<ignorable_imaginary_part:
-                                    tmp_ham=tmp_ham.real+0.0j
+                                if np.abs(tmp_ham.imag) < ignorable_imaginary_part:
+                                    tmp_ham = tmp_ham.real + 0.0j
 
                             # set the hopping term
-                            tb.set_hop(tmp_ham,i,j,list(R))
+                            tb.set_hop(tmp_ham, i, j, list(R))
 
         return tb
-
-
 
     def dist_hop(self):
         """
@@ -3869,38 +4380,43 @@ class w90(object):
           ax.scatter(dist,np.log(np.abs(ham)))
           fig.savefig("localization.pdf")
 
-        """    
+        """
 
-        ret_ham=[]
-        ret_dist=[]
+        ret_ham = []
+        ret_dist = []
         for R in self.ham_r:
             # treat diagonal terms differently
-            if R[0]==0 and R[1]==0 and R[2]==0:
-                avoid_diagonal=True
+            if R[0] == 0 and R[1] == 0 and R[2] == 0:
+                avoid_diagonal = True
             else:
-                avoid_diagonal=False
+                avoid_diagonal = False
 
             # get R vector
-            vecR=_red_to_cart((self.lat[0],self.lat[1],self.lat[2]),[R])[0]
+            vecR = _red_to_cart((self.lat[0], self.lat[1], self.lat[2]), [R])[0]
             for i in range(self.num_wan):
-                vec_i=self.xyz_cen[i]
+                vec_i = self.xyz_cen[i]
                 for j in range(self.num_wan):
-                    vec_j=self.xyz_cen[j]
+                    vec_j = self.xyz_cen[j]
                     # diagonal terms
-                    if not (avoid_diagonal==True and i==j):
-                        
+                    if not (avoid_diagonal == True and i == j):
+
                         # divide the matrix element from w90 with the degeneracy
-                        ret_ham.append(self.ham_r[R]["h"][i,j]/float(self.ham_r[R]["deg"]))
+                        ret_ham.append(
+                            self.ham_r[R]["h"][i, j] / float(self.ham_r[R]["deg"])
+                        )
 
                         # get distance between orbitals
-                        ret_dist.append(np.sqrt(np.dot(-vec_i+vec_j+vecR,-vec_i+vec_j+vecR)))
+                        ret_dist.append(
+                            np.sqrt(
+                                np.dot(-vec_i + vec_j + vecR, -vec_i + vec_j + vecR)
+                            )
+                        )
 
-        return (np.array(ret_dist),np.array(ret_ham))
+        return (np.array(ret_dist), np.array(ret_ham))
 
-
-    def shells(self,num_digits=2):
+    def shells(self, num_digits=2):
         """
-        
+
         This is one of the diagnostic tools that can be used to help
         in determining *max_distance* parameter in
         :func:`pythtb.w90.model` function call.
@@ -3916,30 +4432,30 @@ class w90(object):
           # prints on screen all shells
           print(silicon.shells())
 
-        """    
+        """
 
-        shells=[]
+        shells = []
         for R in self.ham_r:
             # get R vector
-            vecR=_red_to_cart((self.lat[0],self.lat[1],self.lat[2]),[R])[0]
+            vecR = _red_to_cart((self.lat[0], self.lat[1], self.lat[2]), [R])[0]
             for i in range(self.num_wan):
-                vec_i=self.xyz_cen[i]
+                vec_i = self.xyz_cen[i]
                 for j in range(self.num_wan):
-                    vec_j=self.xyz_cen[j]
+                    vec_j = self.xyz_cen[j]
                     # get distance between orbitals
-                    dist_ijR=np.sqrt(np.dot(-vec_i+vec_j+vecR,
-                                             -vec_i+vec_j+vecR))
+                    dist_ijR = np.sqrt(
+                        np.dot(-vec_i + vec_j + vecR, -vec_i + vec_j + vecR)
+                    )
                     # round it up
-                    shells.append(round(dist_ijR,num_digits))
+                    shells.append(round(dist_ijR, num_digits))
 
         # remove duplicates and sort
-        shells=np.sort(list(set(shells)))
+        shells = np.sort(list(set(shells)))
 
         return shells
 
-
     def w90_bands_consistency(self):
-        """ 
+        """
 
         This function reads in band structure as interpolated by
         Wannier90.  Please note that this is not the same as the band
@@ -3967,7 +4483,7 @@ class w90(object):
         contains the *kpoint_path* block.
 
         :returns:
-        
+
           * **kpts** -- k-points in reduced coordinates used in the
             interpolation in Wannier90 code.  The format of *kpts* is
             the same as the one used by the input to
@@ -3986,10 +4502,10 @@ class w90(object):
 
           # solve simplified model on the same k-path as in wannier90
           evals=my_model.solve_all(w90_kpt)
-          
+
           # plot comparison of the two
           import matplotlib.pyplot as plt
-          fig, ax = plt.subplots() 
+          fig, ax = plt.subplots()
           for i in range(evals.shape[0]):
               ax.plot(range(evals.shape[1]),evals[i],"r-",zorder=-50)
           for i in range(w90_evals.shape[0]):
@@ -3999,45 +4515,50 @@ class w90(object):
         """
 
         # read in kpoints in reduced coordinates
-        kpts=np.loadtxt(self.path+"/"+self.prefix+"_band.kpt",skiprows=1)
+        kpts = np.loadtxt(self.path + "/" + self.prefix + "_band.kpt", skiprows=1)
         # ignore weights
-        kpts=kpts[:,:3]
+        kpts = kpts[:, :3]
 
         # read in energies
-        ene=np.loadtxt(self.path+"/"+self.prefix+"_band.dat")
+        ene = np.loadtxt(self.path + "/" + self.prefix + "_band.dat")
         # ignore kpath distance
-        ene=ene[:,1]
-        # correct shape 
-        ene=ene.reshape((self.num_wan,kpts.shape[0]))
+        ene = ene[:, 1]
+        # correct shape
+        ene = ene.reshape((self.num_wan, kpts.shape[0]))
 
-        return (kpts,ene)
+        return (kpts, ene)
 
-#=======================================================================
+
+# =======================================================================
 # Begin internal definitions
-#=======================================================================
+# =======================================================================
 
-def _nicefy_eig(eval,eig=None):
+
+def _nicefy_eig(eval, eig=None):
     "Sort eigenvaules and eigenvectors, if given, and convert to real numbers"
     # first take only real parts of the eigenvalues
-    eval=np.array(eval.real,dtype=float)
+    eval = np.array(eval.real, dtype=float)
     # sort energies
-    args=eval.argsort()
-    eval=eval[args]
+    args = eval.argsort()
+    eval = eval[args]
     if eig is not None:
-        eig=eig[args]
-        return (eval,eig)
+        eig = eig[args]
+        return (eval, eig)
     return eval
 
+
 # for nice justified printout
-def _nice_float(x,just,rnd):
-    return str(round(x,rnd)).rjust(just)
-    
-def _wf_dpr(wf1,wf2):
+def _nice_float(x, just, rnd):
+    return str(round(x, rnd)).rjust(just)
+
+
+def _wf_dpr(wf1, wf2):
     """calculate dot product between two wavefunctions.
     wf1 and wf2 are of the form [orbital,spin]"""
-    return np.dot(wf1.flatten().conjugate(),wf2.flatten())
+    return np.dot(wf1.flatten().conjugate(), wf2.flatten())
 
-def _one_berry_loop(wf,berry_evals=False):
+
+def _one_berry_loop(wf, berry_evals=False):
     """Do one Berry phase calculation (also returns a product of M
     matrices).  Always returns numbers between -pi and pi.  wf has
     format [kpnt,band,orbital,spin] and kpnt has to be one dimensional.
@@ -4047,121 +4568,128 @@ def _one_berry_loop(wf,berry_evals=False):
     individual states, these corresponds to 1d hybrid Wannier
     function centers. Otherwise just return one number, Berry phase."""
     # number of occupied states
-    nocc=wf.shape[1]
+    nocc = wf.shape[1]
     # temporary matrices
-    prd=np.identity(nocc,dtype=complex)
-    ovr=np.zeros([nocc,nocc],dtype=complex)
+    prd = np.identity(nocc, dtype=complex)
+    ovr = np.zeros([nocc, nocc], dtype=complex)
     # go over all pairs of k-points, assuming that last point is overcounted!
-    for i in range(wf.shape[0]-1):
+    for i in range(wf.shape[0] - 1):
         # generate overlap matrix, go over all bands
         for j in range(nocc):
             for k in range(nocc):
-                ovr[j,k]=_wf_dpr(wf[i,j,:],wf[i+1,k,:])
+                ovr[j, k] = _wf_dpr(wf[i, j, :], wf[i + 1, k, :])
         # only find Berry phase
-        if berry_evals==False:
+        if berry_evals == False:
             # multiply overlap matrices
-            prd=np.dot(prd,ovr)
+            prd = np.dot(prd, ovr)
         # also find phases of individual eigenvalues
         else:
             # cleanup matrices with SVD then take product
-            matU,sing,matV=np.linalg.svd(ovr)
-            prd=np.dot(prd,np.dot(matU,matV))
+            matU, sing, matV = np.linalg.svd(ovr)
+            prd = np.dot(prd, np.dot(matU, matV))
     # calculate Berry phase
-    if berry_evals==False:
-        det=np.linalg.det(prd)
-        pha=(-1.0)*np.angle(det)
+    if berry_evals == False:
+        det = np.linalg.det(prd)
+        pha = (-1.0) * np.angle(det)
         return pha
     # calculate phases of all eigenvalues
     else:
-        evals=np.linalg.eigvals(prd)
-        eval_pha=(-1.0)*np.angle(evals)
+        evals = np.linalg.eigvals(prd)
+        eval_pha = (-1.0) * np.angle(evals)
         # sort these numbers as well
-        eval_pha=np.sort(eval_pha)
+        eval_pha = np.sort(eval_pha)
         return eval_pha
+
 
 def _one_flux_plane(wfs2d):
     "Compute fluxes on a two-dimensional plane of states."
     # size of the mesh
-    nk0=wfs2d.shape[0]
-    nk1=wfs2d.shape[1]
+    nk0 = wfs2d.shape[0]
+    nk1 = wfs2d.shape[1]
     # number of bands (will compute flux of all bands taken together)
-    nbnd=wfs2d.shape[2]
+    nbnd = wfs2d.shape[2]
 
     # here store flux through each plaquette of the mesh
-    all_phases=np.zeros((nk0-1,nk1-1),dtype=float)
+    all_phases = np.zeros((nk0 - 1, nk1 - 1), dtype=float)
 
     # go over all plaquettes
-    for i in range(nk0-1):
-        for j in range(nk1-1):
+    for i in range(nk0 - 1):
+        for j in range(nk1 - 1):
             # generate a small loop made out of four pieces
-            wf_use=[]
-            wf_use.append(wfs2d[i,j])
-            wf_use.append(wfs2d[i+1,j])
-            wf_use.append(wfs2d[i+1,j+1])
-            wf_use.append(wfs2d[i,j+1])
-            wf_use.append(wfs2d[i,j])
-            wf_use=np.array(wf_use,dtype=complex)
+            wf_use = []
+            wf_use.append(wfs2d[i, j])
+            wf_use.append(wfs2d[i + 1, j])
+            wf_use.append(wfs2d[i + 1, j + 1])
+            wf_use.append(wfs2d[i, j + 1])
+            wf_use.append(wfs2d[i, j])
+            wf_use = np.array(wf_use, dtype=complex)
             # calculate phase around one plaquette
-            all_phases[i,j]=_one_berry_loop(wf_use)
+            all_phases[i, j] = _one_berry_loop(wf_use)
 
     return all_phases
 
-def no_2pi(x,clos):
+
+def no_2pi(x, clos):
     "Make x as close to clos by adding or removing 2pi"
-    while abs(clos-x)>np.pi:
-        if clos-x>np.pi:
-            x+=2.0*np.pi
-        elif clos-x<-1.0*np.pi:
-            x-=2.0*np.pi
+    while abs(clos - x) > np.pi:
+        if clos - x > np.pi:
+            x += 2.0 * np.pi
+        elif clos - x < -1.0 * np.pi:
+            x -= 2.0 * np.pi
     return x
 
-def _one_phase_cont(pha,clos):
+
+def _one_phase_cont(pha, clos):
     """Reads in 1d array of numbers *pha* and makes sure that they are
     continuous, i.e., that there are no jumps of 2pi. First number is
     made as close to *clos* as possible."""
-    ret=np.copy(pha)
+    ret = np.copy(pha)
     # go through entire list and "iron out" 2pi jumps
     for i in range(len(ret)):
         # which number to compare to
-        if i==0: cmpr=clos
-        else: cmpr=ret[i-1]
+        if i == 0:
+            cmpr = clos
+        else:
+            cmpr = ret[i - 1]
         # make sure there are no 2pi jumps
-        ret[i]=no_2pi(ret[i],cmpr)
+        ret[i] = no_2pi(ret[i], cmpr)
     return ret
 
-def _array_phases_cont(arr_pha,clos):
+
+def _array_phases_cont(arr_pha, clos):
     """Reads in 2d array of phases *arr_pha* and makes sure that they
     are continuous along first index, i.e., that there are no jumps of
     2pi. First array of phasese is made as close to *clos* as
     possible."""
-    ret=np.zeros_like(arr_pha)
+    ret = np.zeros_like(arr_pha)
     # go over all points
     for i in range(arr_pha.shape[0]):
         # which phases to compare to
-        if i==0: cmpr=clos
-        else: cmpr=ret[i-1,:]
+        if i == 0:
+            cmpr = clos
+        else:
+            cmpr = ret[i - 1, :]
         # remember which indices are still available to be matched
-        avail=list(range(arr_pha.shape[1]))
+        avail = list(range(arr_pha.shape[1]))
         # go over all phases in cmpr[:]
         for j in range(cmpr.shape[0]):
             # minimal distance between pairs
-            min_dist=1.0E10
+            min_dist = 1.0e10
             # closest index
-            best_k=None
+            best_k = None
             # go over each phase in arr_pha[i,:]
             for k in avail:
-                cur_dist=np.abs(np.exp(1.0j*cmpr[j])-np.exp(1.0j*arr_pha[i,k]))
-                if cur_dist<=min_dist:
-                    min_dist=cur_dist
-                    best_k=k
+                cur_dist = np.abs(np.exp(1.0j * cmpr[j]) - np.exp(1.0j * arr_pha[i, k]))
+                if cur_dist <= min_dist:
+                    min_dist = cur_dist
+                    best_k = k
             # remove this index from being possible pair later
             avail.pop(avail.index(best_k))
             # store phase in correct place
-            ret[i,j]=arr_pha[i,best_k]
+            ret[i, j] = arr_pha[i, best_k]
             # make sure there are no 2pi jumps
-            ret[i,j]=no_2pi(ret[i,j],cmpr[j])
+            ret[i, j] = no_2pi(ret[i, j], cmpr[j])
     return ret
-
 
 
 def _cart_to_red(tmp, cart):
@@ -4169,28 +4697,32 @@ def _cart_to_red(tmp, cart):
     (a1, a2, a3) = tmp
     # matrix with lattice vectors
     cnv = np.array([a1, a2, a3])
-    cnv = cnv.T # transpose
-    cnv = np.linalg.inv(cnv) # inverse
+    cnv = cnv.T  # transpose
+    cnv = np.linalg.inv(cnv)  # inverse
     # reduced coordinates
-    red=np.zeros_like(cart,dtype=float)
+    red = np.zeros_like(cart, dtype=float)
     for i in range(0, len(cart)):
-        red[i]=np.dot(cnv,cart[i])
+        red[i] = np.dot(cnv, cart[i])
     return red
 
-def _red_to_cart(tmp,red):
+
+def _red_to_cart(tmp, red):
     "Convert reduced to cartesian vectors."
-    (a1,a2,a3)=tmp
+    (a1, a2, a3) = tmp
     # cartesian coordinates
-    cart=np.zeros_like(red,dtype=float)
-    for i in range(0,len(cart)):
-        cart[i,:]=a1*red[i][0]+a2*red[i][1]+a3*red[i][2]
+    cart = np.zeros_like(red, dtype=float)
+    for i in range(0, len(cart)):
+        cart[i, :] = a1 * red[i][0] + a2 * red[i][1] + a3 * red[i][2]
     return cart
+
 
 def _is_int(a):
     return np.issubdtype(type(a), np.integer)
 
+
 def _offdiag_approximation_warning_and_stop():
-    raise Exception("""
+    raise Exception(
+        """
 
 ----------------------------------------------------------------------
 
@@ -4211,4 +4743,5 @@ def _offdiag_approximation_warning_and_stop():
 
 ----------------------------------------------------------------------
 
-""")
+"""
+    )
