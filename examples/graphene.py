@@ -31,7 +31,7 @@ my_model.set_hop(t, 1, 0, [ 1, 0])
 my_model.set_hop(t, 1, 0, [ 0, 1])
 
 # print tight-binding model
-my_model.display()
+my_model.report()
     
 # generate list of k-points following a segmented path in the BZ
 # list of nodes (high-symmetry points) that will be connected

@@ -6,8 +6,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from __future__ import print_function
-from pythtb import * # import TB model class
+from pythtb import * 
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -49,9 +48,11 @@ wf_kpt_lambda=wf_array(my_model,[path_steps,num_kpt])
 for i_lambda in range(path_steps):
     lmbd=all_lambda[i_lambda]
     my_model=set_model(t,delta,lmbd)
-    (eval,evec)=my_model.solve_all(k_vec,eig_vectors=True)
+    print(my_model)
+    (eval,evec)=my_model.solve_ham(k_vec,return_eigvecs=True)
+    print(evec.shape)
     for i_kpt in range(num_kpt):
-        wf_kpt_lambda[i_lambda,i_kpt]=evec[:,i_kpt,:]
+        wf_kpt_lambda[i_lambda,i_kpt] = evec[i_kpt]
 
 # compute integrated curvature
 print("Chern numbers for rising fillings")
@@ -87,11 +88,11 @@ for i_lambda in range(path_steps):
     # construct and solve model
     my_model=set_model(t,delta,lmbd)
     ch_model=my_model.cut_piece(num_cells,0)
-    (eval,evec)=ch_model.solve_all(eig_vectors=True)
+    (eval,evec)=ch_model.solve_ham(return_eigvecs=True)
 
     # save eigenvalues
-    ch_eval[:,i_lambda]=eval
-    ch_xexp[:,i_lambda]=ch_model.position_expectation(evec,0)
+    ch_eval[:,i_lambda] = eval
+    ch_xexp[:,i_lambda] = ch_model.position_expectation(evec,0)
 
 # plot eigenvalues vs. lambda
 # symbol size is reduced for states localized near left end
@@ -119,5 +120,6 @@ ax.set_ylabel("Energy")
 ax.set_xlim(0.,1.)
 fig.tight_layout()
 fig.savefig("3site_endstates.pdf")
+plt.show()
 
 print('Done.\n')

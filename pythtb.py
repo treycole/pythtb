@@ -29,7 +29,7 @@ import copy # for deepcopying
 import logging
 
 # Configure logging at the top of the file
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
@@ -1086,7 +1086,7 @@ class tb_model(object):
             else:
                 raise ValueError("Invalid spin value.")
         else:
-            if self.dim_k != 0:
+            if self._dim_k != 0:
                 raise Exception("Must provide a list of k-vectors for the Bloch Hamiltonian of extended systems.")
             else: # finite sample
                 if self._nspin == 1:
@@ -1115,7 +1115,7 @@ class tb_model(object):
                 amp = np.array(hopping[0], dtype=complex)
 
             # phase factor for periodic directions
-            if self._dim_k > 0:
+            if self._dim_k != 0:
                 ind_R = np.array(hopping[3], dtype=float)
 
                 # Compute delta_r for periodic directions
@@ -1134,28 +1134,33 @@ class tb_model(object):
 
             if self._nspin == 1:
                 ham[..., i, j] += amp 
-                ham[..., j, i] += amp.conj()
+                ham[..., j, i] += amp.conjugate()
             elif self._nspin == 2:
                 ham[..., i, :, j, :] += amp
-                ham[..., j, :, i, :] += np.swapaxes(amp.conj(), -1, -2)        
+                ham[..., j, :, i, :] += np.swapaxes(amp.conjugate(), -1, -2)        
 
         return ham
 
     def _sol_ham(self, ham, return_eigvecs=False):
         """Solves Hamiltonian and returns eigenvectors, eigenvalues"""
 
-        # ham will be shape (Nk, n_orb, n_orb), (Nk, n_orb, n_spin, n_orb, n_spin)
+        # shape(ham): (Nk, n_orb, n_orb), (Nk, n_orb, n_spin, n_orb, n_spin)
         # or in finite cases (n_orb, n_orb), (n_orb, n_spin, n_orb, n_spin)
-
-        # flatten spin
+        # flatten spin axes
         if ham.ndim == 2*self._nspin + 1:
             # have k points
             new_shape = (ham.shape[0],) + (self._nspin*self._norb, self._nspin*self._norb)
-            shape_evecs = (ham.shape[0],) + (self._nspin*self._norb, self._norb, self._nspin)
+            if self._nspin == 1:
+                shape_evecs = (ham.shape[0],) + (self._norb, self._norb)
+            elif self._nspin == 2:
+                shape_evecs = (ham.shape[0],) + (self._nspin*self._norb, self._norb, self._nspin)
         elif ham.ndim == 2*self._nspin:
             # must be a finite sample, no k-points
             new_shape = (self._nspin*self._norb, self._nspin*self._norb)
-            shape_evecs = (self._nspin*self._norb, self._norb, self._nspin)
+            if self._nspin == 1:
+                shape_evecs = (self._norb, self._norb)
+            elif self._nspin == 2:
+                shape_evecs = (self._nspin*self._norb, self._norb, self._nspin)
         else:
             raise ValueError("Hamiltonian has wrong shape.")
         
@@ -1173,10 +1178,6 @@ class tb_model(object):
             # now eig[i,:] is eigenvector for eval[i]-th eigenvalue
             evec = evec.swapaxes(-1,-2)
             evec = evec.reshape(*shape_evecs) 
-           
-            # reshape eigenvectors if doing a spinful calculation
-            if self._nspin == 2:
-                new_shape = (ham.shape[0],) + (self._nstate, self._norb, 2)
                 
             return eval, evec
 
@@ -1283,31 +1284,6 @@ class tb_model(object):
                     eigvals = eigvals[0]
             return eigvals
 
-    # def solve_one(self, k_point=None, return_eigvecs=False):
-    #     r"""
-
-    #     Similar to :func:`pythtb.tb_model.solve_all` but solves tight-binding
-    #     model for only one k-vector.
-
-    #     """
-
-    #     # if not 0-dim case
-    #     if k_point is not None:
-    #         k_point = np.array(k_point)
-    #         if k_point.ndim != 1 or k_point.shape[0] != self._dim_k:
-    #             raise ValueError("k_point must be a single dimensional array of shape dim_k.")
-            
-    #         if return_eigvecs:
-    #             eigvals, eigvecs = self.solve_all(k_point, return_eigvecs=return_eigvecs)
-    #             return eigvals[0], eigvecs[0]
-    #         else:
-    #             eigvals = self.solve_all(k_point, return_eigvecs=return_eigvecs)
-    #             return eigvals[0]
-                
-    #     else:
-    #         # do the same as solve_all
-    #         return self.solve_all(return_eigvecs=return_eigvecs)
-
     def cut_piece(self,num,fin_dir,glue_edgs=False):
         r"""
         Constructs a (d-1)-dimensional tight-binding model out of a
@@ -1395,7 +1371,7 @@ class tb_model(object):
         fin_model._assume_position_operator_diagonal = self._assume_position_operator_diagonal
 
         # now put all onsite terms for the finite model
-        fin_model.set_onsite(onsite, mode="reset")
+        fin_model.set_onsite(onsite, mode="set")
 
         # put all hopping terms
         for c in range(num): # go over all cells in finite direction
@@ -2311,8 +2287,8 @@ somehow changed Cartesian coordinates of orbitals.""")
                 pos_mat[i,j]=np.dot(evec_use[i].conj(),pos_use*evec_use[j])
 
         # make sure matrix is hermitian
-        if np.max(pos_mat-pos_mat.T.conj())>1.0E-9:
-            raise ValueError("\n\n Position matrix is not hermitian?!")
+        if not np.allclose(pos_mat, pos_mat.T.conj()):
+            raise ValueError("Position matrix is not hermitian?!")
 
         return pos_mat
 
