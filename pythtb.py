@@ -645,7 +645,7 @@ class tb_model(object):
                 raise ValueError(
                     "Length of input ind_R vector must equal dim_r, even if dim_k < dim_r."
                 )
-        else:
+        elif ind_R is not None:
             raise TypeError(
                 "ind_R is not of correct type. Should be array-type or integer."
             )
@@ -942,30 +942,32 @@ class tb_model(object):
         # plot dotted bounding lines to unit cell
         ends = np.array(ends)
 
-        # top shifted line
-        start = ends[0]
-        end = ends[0] + ends[1]
-        ax.plot(
-            [start[0], end[0]],
-            [start[1], end[1]],
-            ls="--",
-            lw=1,
-            color="b",
-            zorder=0,
-            alpha=0.5,
-        )
+        # if 2d cell
+        if ends.shape[0] > 1:
+            # top shifted line
+            start = ends[0]
+            end = ends[0] + ends[1]
+            ax.plot(
+                [start[0], end[0]],
+                [start[1], end[1]],
+                ls="--",
+                lw=1,
+                color="b",
+                zorder=0,
+                alpha=0.5,
+            )
 
-        # right shifted line
-        start = ends[1]
-        ax.plot(
-            [start[0], end[0]],
-            [start[1], end[1]],
-            ls="--",
-            lw=1,
-            color="b",
-            zorder=0,
-            alpha=0.5,
-        )
+            # right shifted line
+            start = ends[1]
+            ax.plot(
+                [start[0], end[0]],
+                [start[1], end[1]],
+                ls="--",
+                lw=1,
+                color="b",
+                zorder=0,
+                alpha=0.5,
+            )
 
         # Draw orbitals: home-cell orbitals in red
         orb_coords = []
@@ -1019,31 +1021,36 @@ class tb_model(object):
 
         if draw_hoppings:
             for h_idx, h in enumerate(self._hoppings):
+                amp = h[0]
+                i_orb = h[1]
+                j_orb = h[2]
+
+                r_vec = None
+                intracell = True
+                if self._dim_k != 0 and len(h) == 4:
+                    r_vec = h[3]
+                    intracell = np.all(r_vec == 0)
+
                 for shift in range(2):  # draw both i->j+R and i-R->j hop
-                    # Determine starting and ending orbital positions
-                    amp = h[0]
-
-                    i_orb = h[1]
-                    j_orb = h[2]
-
                     pos_i = to_cart(self._orb[i_orb])
                     pos_j = to_cart(self._orb[j_orb])
-
-                    if self._dim_k != 0 and len(h) == 4:
+                    
+                    # Determine starting and ending orbital positions
+                    if r_vec is not None:
                         # Adjust pos_j with lattice translation if provided
                         if shift == 0:
                             # i->j+R
-                            pos_j += np.dot(h[3], self._lat)
-                        else:
+                            pos_j += np.dot(r_vec, self._lat)
+                        elif shift == 1:
                             # i-R->j
-                            pos_i -= np.dot(h[3], self._lat)
+                            pos_i -= np.dot(r_vec, self._lat)
 
                     p_i = proj(pos_i)
                     p_j = proj(pos_j)
 
                     # plot neighboring cell orbital
                     # ensure we don't plot orbital in unit cell again (if no translation)
-                    if not np.all(h[3] == 0):
+                    if not intracell:
                         # ensure we only scatter orbitals once
                         if p_j not in hopping_coords and shift == 0:
                             ax.scatter(
@@ -1052,7 +1059,7 @@ class tb_model(object):
                                 color=cmap(h[2]),
                                 s=50,
                                 zorder=1,
-                                alpha=1,
+                                alpha=0.5,
                             )
                         if p_i not in hopping_coords and shift == 1:
                             ax.scatter(
@@ -1061,11 +1068,11 @@ class tb_model(object):
                                 color=cmap(h[1]),
                                 s=50,
                                 zorder=1,
-                                alpha=1,
+                                alpha=0.5,
                             )
 
                     # Don't want to plot connecting arrows within unit cell twice
-                    if np.all(h[3] == 0) and shift == 1:
+                    if intracell and shift == 1:
                         # Arrow connects orbitals within cell, so shift = 1 is same
                         # conditions as shift = 2 (same arrows)
                         continue
@@ -1076,7 +1083,7 @@ class tb_model(object):
                         p_j,
                         connectionstyle="arc3,rad=0.08",
                         arrowstyle="->",
-                        mutation_scale=10,
+                        mutation_scale=15,
                         color="green",
                         lw=1.3,
                         alpha=arrow_alphas[h_idx],
@@ -1090,7 +1097,7 @@ class tb_model(object):
                         p_i,
                         connectionstyle="arc3,rad=0.08",
                         arrowstyle="->",
-                        mutation_scale=10,
+                        mutation_scale=15,
                         color="green",
                         lw=1.3,
                         alpha=arrow_alphas[h_idx],
@@ -1145,8 +1152,8 @@ class tb_model(object):
             ax.set_ylabel(f"Cartesian coordinate {dir_second}")
         else:
             ax.set_ylabel("")
-        ax.legend(loc="upper right", fontsize=10)
-        plt.tight_layout()
+        # ax.legend(loc="upper right", fontsize=10)
+        # plt.tight_layout()
 
         return fig, ax
 
@@ -2091,6 +2098,7 @@ somehow changed Cartesian coordinates of orbitals."""
             return sc_tb
         else:
             return (sc_tb, sc_vec)
+        
 
     def _shift_to_home(self, to_home_suppress_warning=False):
         """Shifts orbital coordinates (along periodic directions) to the home
@@ -2757,7 +2765,7 @@ somehow changed Cartesian coordinates of orbitals."""
                     "\n\nBasis must be either 'wavefunction', 'bloch', or 'orbital'"
                 )
 
-    def berry_curvature(self, k_pts, occ_idxs=None, cartesian=False):
+    def berry_curvature(self, k_pts, occ_idxs=None, dirs='all', cartesian=False, abelian=True):
         """
         Generates the Berry curvature from the velocity operator dH/dk.
 
@@ -2830,7 +2838,12 @@ somehow changed Cartesian coordinates of orbitals."""
             - np.matmul(v_occ_cond[None, :], v_cond_occ[:, None])
         )
 
-        return b_curv
+        if abelian:
+            b_curv = np.trace(b_curv, axis1=-1, axis2=-2) 
+        if dirs=='all':
+            return b_curv
+        else:
+            return b_curv[dirs]
 
     def chern(self, occ_idxs=None, dirs=(0, 1)):
         """
