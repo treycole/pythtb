@@ -170,13 +170,13 @@ class tb_model(object):
 
         # Dimensionality of real space
         if not isinstance(dim_r, int):
-            raise ValueError("Argument dim_r must be an integer")
+            raise TypeError("Argument dim_r must be an integer")
         if dim_r > 4:
             raise ValueError("Argument dim_r must be less than 4.")
 
         # Dimensionality of k-space 
         if not isinstance(dim_k, int):
-            raise ValueError("Argument dim_k must be an integer.")
+            raise TypeError("Argument dim_k must be an integer.")
         if dim_k > dim_r:
             raise ValueError("Argument dim_k must be less than dim_r.")
         
@@ -190,22 +190,20 @@ class tb_model(object):
         if lat is None or (isinstance(lat, str) and lat == 'unit'):
             self._lat = np.identity(dim_r, float)
             logger.info("Lattice vectors not specified. Using identity matrix.")
-        else:
-            assert isinstance(lat, (list, np.ndarray)), \
-                "Lattice vectors must be a list or numpy array."
-            if isinstance(lat, list):
-                lat = np.array(lat, dtype=float)
+        elif isinstance(lat, (list, np.ndarray)):
+            lat = np.array(lat, dtype=float)
             if lat.shape != (dim_r, dim_r):
                 raise ValueError("Wrong lat array dimensions. Must have shape (dim_r, dim_r).")
-            
             self._lat = lat
+        else:
+            raise TypeError("Lattice vectors must be a list or numpy array.")
 
         # check that volume is not zero and that have right handed system
         if dim_r > 0:
             det_lat = np.linalg.det(self._lat)
             if det_lat < 0:
                 raise ValueError("Lattice vectors need to form right handed system.")
-            if det_lat < 1e-6:
+            if det_lat < 1e-10:
                 raise ValueError("Volume of unit cell is zero.")
             
         # Initialize orbitals defined in reduced coordinates
@@ -220,15 +218,17 @@ class tb_model(object):
             self._norb = orb
             self._orb = np.zeros((orb, dim_r))
             logger.info(f"Orbital positions is an integer. Assuming {orb} orbitals at the origin")
-        else:
+        elif isinstance(lat, (list, np.ndarray)):
             orb = np.array(orb, dtype=float)
             if orb.ndim != 2:
-                raise ValueError("Orbtial array must have two axes.")
+                raise ValueError("Orbtial array must have two axes; the first for orbital, the second for reduced unit values.")
             if orb.shape[1] != dim_r:
                 raise Exception("Number of components along second axes of ortbital array must match real space dimension.")
-            
             self._orb = orb # orbtial vectors
             self._norb = orb.shape[0] # number of orbitals
+        else:
+            raise TypeError("Orbital vectors must be array-type, 'bravais', or an integer.")
+          
 
         # Specifying which dimensions are periodic.        
         if per is None:
@@ -248,7 +248,7 @@ class tb_model(object):
         # Number of electronic states at each k-point
         self._nstate = self._norb*self._nspin
 
-        # by default, assume model did not come from w90 object and that
+        # By default, assume model did not come from w90 object and that
         # position operator is diagonal
         self._assume_position_operator_diagonal = True
         
@@ -288,11 +288,11 @@ class tb_model(object):
         """
         output = []
         header = (
-            "---------------------------------------\n"
-            "       Tight-binding model report      \n"
-            "---------------------------------------\n"
-            f"k-space dimension           = {self._dim_k}\n"
+            "----------------------------------------\n"
+            "       Tight-binding model report       \n"
+            "----------------------------------------\n"
             f"r-space dimension           = {self._dim_r}\n"
+            f"k-space dimension           = {self._dim_k}\n"
             f"number of spin components   = {self._nspin}\n"
             f"periodic directions         = {self._per}\n"
             f"number of orbitals          = {self._norb}\n"
@@ -346,29 +346,55 @@ class tb_model(object):
             hop_from = hopping[1]
             hop_to = hopping[2]
 
+            pos_i = np.dot(self._orb[hopping[1]], self._lat)
+            pos_j = np.dot(self._orb[hopping[2]], self._lat)
+
             out_str = f"  | pos({hop_from:^1}) - pos({hop_to:^1}"
+
             if len(hopping)==4:
+                pos_j += np.dot(hopping[3], self._lat)
+
                 out_str += " + ["
-                for j,v in enumerate(hopping[3]):
-                    out_str += f"{v:^5.1f}"
+                for j, Rv in enumerate(hopping[3]):
+                    out_str += f"{Rv:^5.1f}"
                     if j != len(hopping[3])-1:
                         out_str += ", "
                     else:
-                        out_str+= "]"
-            out_str += ") | " 
+                        out_str += "]"
 
-            pos_i = np.dot(self._orb[hopping[1]], self._lat)
-            pos_j = np.dot(self._orb[hopping[2]], self._lat)
-            if len(hopping) == 4:
-                pos_j += np.dot(hopping[3], self._lat)
             distance = np.linalg.norm(pos_j - pos_i)
-            out_str += f"= {distance:^7.3f}"
+
+            out_str += f") | = {distance:^7.3f}"
             output.append(out_str)
 
         if show:
             print("\n".join(output))
         else:
             return "\n".join(output)
+        
+
+    def get_num_orbitals(self):
+        "Returns number of orbitals in the model."
+        return self._norb
+
+    def get_orb(self, cartesian=False):
+        """
+        Returns orbitals in format [orbital, coordinate.]
+
+        Arg: cartesian (bool)
+            Returns orbital vectors in Cartesian units.
+        """
+        if cartesian:
+            return self._orb.copy() @ self._lat
+        else:
+            return self._orb.copy()
+
+    def get_lat(self):
+        """
+        Returns lattice vectors in format [vector, coordinate].
+        Vectors are in Cartesian units.
+        """
+        return self._lat.copy()
 
 
     def set_onsite(self, onsite_en, ind_i=None, mode="set"):
@@ -470,7 +496,9 @@ class tb_model(object):
         else:
             raise ValueError("Mode should be either 'set' or 'add'.")
         
-    def set_hop(self,hop_amp,ind_i,ind_j,ind_R=None,mode="set",allow_conjugate_pair=False):
+    def set_hop(
+            self, hop_amp, ind_i, ind_j, ind_R=None, mode="set", allow_conjugate_pair=False
+            ):
         r"""
         
         Defines hopping parameters between tight-binding orbitals. In
@@ -538,27 +566,13 @@ class tb_model(object):
 
         :param mode: Similar to parameter *mode* in function *set_onsite*. 
           Speficies way in which parameter *hop_amp* is
-          used. It can either set value of hopping term from scratch,
-          reset it, or add to it.
+          used. It can either set or reset the value of hopping term,
+          or add to it.
 
           * "set" -- Default value. Hopping term is set to value of
-            *hop_amp* parameter. One can use "set" for each triplet of
-            *ind_i*, *ind_j*, *ind_R* only once.
+            *hop_amp* parameter. Overwrites previous set value.
 
-          * "reset" -- Specifies on-site energy to given value. This
-            function can be called multiple times for the same triplet
-            *ind_i*, *ind_j*, *ind_R*.
-
-          * "add" -- Adds to the previous value of hopping term This
-            function can be called multiple times for the same triplet
-            *ind_i*, *ind_j*, *ind_R*.
-
-          If *set_hop* was ever called with *allow_conjugate_pair* set
-          to True, then it is possible that user has specified both
-          :math:`i \rightarrow j+R` and conjugate pair :math:`j
-          \rightarrow i-R`.  In this case, "set", "reset", and "add"
-          parameters will treat triplet *ind_i*, *ind_j*, *ind_R* and
-          conjugate triplet *ind_j*, *ind_i*, *-ind_R* as distinct.
+          * "add" -- Adds to the previous value of hopping term.
 
         :param allow_conjugate_pair: Default value is *False*. If set
           to *True* code will allow user to specify hopping
@@ -573,7 +587,7 @@ class tb_model(object):
           # unit cell and third orbital in neigbouring unit cell.
           tb.set_hop(0.3+0.4j, 0, 2, [0, 1])
           # change value of this hopping
-          tb.set_hop(0.1+0.2j, 0, 2, [0, 1], mode="reset")
+          tb.set_hop(0.1+0.2j, 0, 2, [0, 1], mode="set")
           # add to previous value (after this function call below,
           # hopping term amplitude is 100.1+0.2j)
           tb.set_hop(100.0, 0, 2, [0, 1], mode="add")
@@ -590,24 +604,29 @@ class tb_model(object):
             raise ValueError("Index ind_j is not within range of number of orbitals.") 
         
         # if necessary convert from integer to array
-        if self._dim_k == 1 and isinstance(ind_R, (int, np.integer)):
+        if isinstance(ind_R, (int, np.integer)):
+            if self._dim_k != 1:
+                raise ValueError("If dim_k is not 1, should not use integer for ind_R. Instead use list.")
             tmpR = np.zeros(self._dim_r, dtype=int)
             tmpR[self._per] = ind_R
             ind_R = tmpR
         # check length of ind_R
-        elif self._dim_k != 0:
-            if len(ind_R) != self._dim_r:
-                raise ValueError("Length of input ind_R vector must equal dim_r, even if dim_k < dim_r.")
+        elif isinstance(ind_R, (np.ndarray, list)):
             ind_R = np.array(ind_R)
+            if ind_R.shape != (self._dim_r,):
+                raise ValueError("Length of input ind_R vector must equal dim_r, even if dim_k < dim_r.")
+        else:
+            raise TypeError("ind_R is not of correct type. Should be array-type or integer.")
+
               
         # Do not allow onsite hoppings to be specified here 
         if ind_i == ind_j:
             # not extended
             if self._dim_k == 0:
-                raise ValueError("Do not use set_hop for onsite terms. Use set_onsite instead!")
+                raise ValueError("Do not use set_hop for onsite terms. Use set_onsite instead.")
             # hopping within unit cell
-            elif bool(np.all(ind_R == 0)):
-                raise ValueError("Do not use set_hop for onsite terms. Use set_onsite instead!")
+            elif ind_R is not None and bool(np.all(ind_R == 0)):
+                raise ValueError("Do not use set_hop for onsite terms. Use set_onsite instead.")
 
         # make sure that if <i|H|j+R> is specified that <j|H|i-R> is not!
         if not allow_conjugate_pair:
@@ -615,12 +634,12 @@ class tb_model(object):
                 if ind_i == h[2] and ind_j == h[1]:
                     if self._dim_k == 0:
                         raise ValueError(\
-                            """\n
+                           f"""\n
                             Following matrix element was already implicitely specified:
-                            i="""+str(ind_i)+" j="+str(ind_j)+"""
+                            i={ind_i}, j={ind_j}.
                             Remember, specifying <i|H|j> automatically specifies <j|H|i>.  For
                             consistency, specify all hoppings for a given bond in the same
-                            direction.  (Or, alternatively, see the documentation on the
+                            direction. Alternatively, see the documentation on the
                             'allow_conjugate_pair' flag.)
                             """)
                     elif np.all(ind_R[self._per]==(-1)*np.array(h[3])[self._per]):
@@ -662,7 +681,6 @@ class tb_model(object):
                 logger.warning(
                     f"Hopping for {ind_i} -> {ind_j} + {ind_R} was already set to {self._hoppings[use_index][0]}. "
                     f"Resetting to {hop_amp}.")
-                # raise Exception("\n\nHopping energy for this site was already specified! Use mode=\"reset\" or mode=\"add\".")
                 self._hoppings[use_index] = new_hop
             else:
                 self._hoppings.append(new_hop)
@@ -675,16 +693,19 @@ class tb_model(object):
             raise ValueError("Wrong value of mode parameter. Should be either `set` or `add`.")
 
     def _val_to_block(self, val):
-        """If nspin=2 then returns a 2 by 2 matrix from the input
-        parameters. If only one real number is given in the input then
-        assume that this is the diagonal term. If array with four
-        elements is given then first one is the diagonal term, and
-        other three are Zeeman field direction. If given a 2 by 2
-        matrix, just return it.  If nspin=1 then just returns val."""
+        """
+        If nspin=2 then returns a 2 by 2 matrix from the input parameters. 
+        If only one real number is given in the input then  assume that this is multiplied by the identity. 
+        If array with up to four elements is given then these are multiplied by the Pauli matrices
+        at each respective index. 
+        If given a 2 by 2  matrix, just return it.  
+        
+        If nspin=1 then just returns val.
+        """
         # spinless case
         if self._nspin == 1:
             if not isinstance(val, (int, np.integer, float, complex)):
-                raise ValueError("Onsite energy for a given orbital must be an integer or float in spinless case.")
+                raise TypeError("Onsite energy for a given orbital must be an integer or float in spinless case.")
             return val
         # spinful case
         elif self._nspin == 2:
@@ -699,9 +720,15 @@ class tb_model(object):
                 val = [val]
 
             use_val = np.array(val)
+
+            # already
             if use_val.ndim == 2:
+                if not (use_val.shape[0] == 2 and use_val.shape[1] == 2):
+                    raise ValueError("val should be a 2x2 array, list of up to 4 numbers, or number.")
                 return use_val
             elif use_val.ndim == 1:
+                if use_val.shape[0] > 4:
+                    raise ValueError("val should be a 2x2 array, list of up to 4 numbers, or number.")
                 return sum([val * paulis[i] for i, val in enumerate(use_val)])
             elif use_val.ndim == 0:
                 return val * paulis[0]
@@ -801,8 +828,6 @@ class tb_model(object):
         import matplotlib.cm as cm
         cmap = plt.get_cmap('viridis', self._norb)
 
-        # Use a modern style for better aesthetics
-        # plt.style.use('ggplot')
         fig, ax = plt.subplots(figsize=(8, 8))
 
         # Projection function: projects a vector onto the 2D plane
@@ -857,7 +882,6 @@ class tb_model(object):
         start = ends[1]
         ax.plot([start[0], end[0]], [start[1], end[1]], ls='--', lw=1, color='b', zorder=0, alpha=0.5)
         
-
         # Draw orbitals: home-cell orbitals in red
         orb_coords = []
         for i in range(self._norb):
@@ -924,6 +948,8 @@ class tb_model(object):
 
                     # Don't want to plot connecting arrows within unit cell twice
                     if np.all(h[3] == 0) and shift == 1:
+                        # Arrow connects orbitals within cell, so shift = 1 is same
+                        # conditions as shift = 2 (same arrows)
                         continue
                     
                     # First arrow: p_i -> p_j
@@ -950,42 +976,6 @@ class tb_model(object):
 
                     hopping_coords.append(p_i)
                     hopping_coords.append(p_j)
-
-                    # # Annotate the midpoint with the magnitude of the hopping
-                    # mid_line = ((p_i[0] + p_j[0]) / 2, (p_i[1] + p_j[1]) / 2)
-
-                    # dx, dy = p_j[0] - p_i[0], p_j[1] - p_i[1]
-                    # length = np.hypot(dx, dy)
-                    # if length == 0:
-                    #     length = 1.0  # avoid division by zero
-                    # perp = (-dy/length, dx/length)
-
-                    # # Compute two midpoints, shifted in opposite directions along the perpendicular.
-                    # mid1 = (mid_line[0] + 0.12 * perp[0],
-                    #         mid_line[1] + 0.12 * perp[1])
-                    # mid2 = (mid_line[0] - 0.12 * perp[0],
-                    #         mid_line[1] - 0.12 * perp[1])
-                    
-                    # if self._nspin == 1 and annotate_hoppings:
-                    #      # For spinless case, simply annotate with the numerical value.
-                    #     amp_str = f"{amp.real:.4f}" if abs(amp.imag)<1e-10 else f"{amp:.3f}"
-                    #     # ax.annotate(f"$t_{{{j_orb},{i_orb}}} = {amp_str}$", xy=mid1, xycoords='data',
-                    #     #             fontsize=10, ha='center', va='center',
-                    #     #             bbox=dict(boxstyle='round,pad=0.2', fc='g', ec='none', alpha=0.1), zorder=2)
-                    #     ax.annotate(f"$t_{{{i_orb},{j_orb}}} = {amp_str}$", xy=mid2, xycoords='data',
-                    #                 fontsize=10, ha='center', va='center',
-                    #                 bbox=dict(boxstyle='round,pad=0.2', fc='lightgreen', ec='none', alpha=0.3), zorder=5)
-                        
-                    # elif self._nspin == 2 and annotate_hoppings:
-                    #     label_t = _decompose_pauli_matrix(amp)
-                    #     # label_t_conj = _decompose_pauli_matrix(np.conjugate(amp))
-                    #     # ax.annotate(f"$t_{{{j_orb},{i_orb}}} = {label_t_conj}$", xy=mid1, xycoords='data',
-                    #     #             fontsize=10, ha='center', va='center',
-                    #     #             bbox=dict(boxstyle='round,pad=0.2', fc='g', ec='none', alpha=0.1), zorder=2)
-                    #     ax.annotate(f"$t_{{{i_orb},{j_orb}}} = {label_t}$", xy=mid2, xycoords='data',
-                    #                 fontsize=10, ha='center', va='center',
-                    #                 bbox=dict(boxstyle='round,pad=0.2', fc='lightgreen', ec='none', alpha=0.3), zorder=5)
-
 
         # If eigenstate is provided, overlay eigenstate information on the orbitals
         if eig_dr is not None:
@@ -1028,20 +1018,6 @@ class tb_model(object):
 
         return fig, ax  
 
-    def get_num_orbitals(self):
-        "Returns number of orbitals in the model."
-        return self._norb
-
-    def get_orb(self, cartesian=False):
-        "Returns reduced coordinates of orbitals in format [orbital,coordinate.]"
-        if cartesian:
-            return self._orb.copy() @ self._lat
-        else:
-            return self._orb.copy()
-
-    def get_lat(self):
-        "Returns lattice vectors in format [vector,coordinate]."
-        return self._lat.copy()
 
     def _gen_ham(self, k_pts=None):
         """
@@ -1071,7 +1047,7 @@ class tb_model(object):
                         # Reshape to (1, dim_k)
                         k_arr = k_arr[None, :]
             else:
-                raise ValueError("k_pts should be a list or numpy array, or possibly a number for 1d k-space.")
+                raise TypeError("k_pts should be a list or numpy array, or possibly a number for 1d k-space.")
             
             # check that k-vector is of corect size
             if k_arr.ndim != 2 or k_arr.shape[-1] != self._dim_k:
