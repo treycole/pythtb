@@ -203,7 +203,7 @@ class tb_model(object):
             det_lat = np.linalg.det(self._lat)
             if det_lat < 0:
                 raise ValueError("Lattice vectors need to form right handed system.")
-            if det_lat < 1e-10:
+            elif det_lat < 1e-10:
                 raise ValueError("Volume of unit cell is zero.")
             
         # Initialize orbitals defined in reduced coordinates
@@ -229,7 +229,6 @@ class tb_model(object):
         else:
             raise TypeError("Orbital vectors must be array-type, 'bravais', or an integer.")
           
-
         # Specifying which dimensions are periodic.        
         if per is None:
             logger.info("Periodic directions not specified. Using the first dim_k directions.")
@@ -395,7 +394,11 @@ class tb_model(object):
         Vectors are in Cartesian units.
         """
         return self._lat.copy()
-
+    
+    def get_recip_lat(self):
+        A_per = self._lat[np.array(self._per), :][:, np.array(self._per)]  # shape (dim_k, dim_k)
+        b = 2 * np.pi * np.linalg.inv(A_per).T
+        return b
 
     def set_onsite(self, onsite_en, ind_i=None, mode="set"):
         r"""        
@@ -1016,10 +1019,105 @@ class tb_model(object):
         ax.legend(loc="upper right", fontsize=10)
         plt.tight_layout()
 
-        return fig, ax  
+        return fig, ax 
+    
+
+    def get_velocity(self, k_pts, Cartesian=False):
+        """
+        Generate the velocity operator using commutator v_k = d/dk H_k for an array of k-points.
+        
+        Parameters:
+            model: Tight-binding model instance.
+            k_pts: Array of k-points in reduced coordinates, shape (n_kpts, dim_k).
+        
+        Returns:
+            vel: Velocity operators at each k-point, shape (dim_k, n_kpts, n_orb, n_orb).
+        """
+
+        dim_k = self.dim_k
+
+        if k_pts is not None:
+            # if kpnt is just a number then convert it to an array
+            if isinstance(k_pts, (int, np.integer, float)):
+                if self.dim_k != 1:
+                    raise ValueError("k_pts should be a 2D array of shape (n_kpts, dim_k).")
+                k_arr = np.array([[k_pts]])
+            elif isinstance(k_pts, (list, np.ndarray)):
+                k_arr = np.array(k_pts)
+                if k_arr.ndim == 1:
+                    if k_arr.shape[0] != self._dim_k:
+                        return ValueError("If 'k_pts' is a single k-point, it must be of shape dim_k.")
+                    else:
+                        # Reshape to (1, dim_k)
+                        k_arr = k_arr[None, :]
+            else:
+                raise TypeError("k_pts should be a list or numpy array, or possibly a number for 1d k-space.")
+            
+            # check that k-vector is of corect size
+            if k_arr.ndim != 2 or k_arr.shape[-1] != self._dim_k:
+                raise ValueError("k_arr should be a 2D array of shape (n_kpts, dim_k).")
+            
+            n_kpts = k_arr.shape[0]
+
+            if self._nspin == 1:
+                vel = np.zeros((dim_k, n_kpts, self._norb, self._norb), dtype=complex)
+            elif self._nspin == 2:
+                vel = np.zeros((dim_k, n_kpts, self._norb, 2, self._norb, 2), dtype=complex)
+            else:
+                raise ValueError("Invalid spin value.")
+            
+        else:
+            raise TypeError("k_pts should not be None for velocity operator.")
+        
+        # Lattice vectors in Cartesian coordinates for the periodic directions.       
+        for hopping in self._hoppings:
+            if self._nspin == 1:
+                amp = complex(hopping[0])
+            elif self._nspin == 2:
+                amp = np.array(hopping[0], dtype=complex)
+
+            i = hopping[1]
+            j = hopping[2]
+            ind_R = np.array(hopping[3], dtype=float)
+
+            # Compute the displacement in real space (including orbital offsets)
+            delta_r = ind_R + self._orb[j, :] - self._orb[i, :]  # Shape: (dim_r,)
+            # Keep only the periodic (reduced) components
+            delta_r_per = delta_r[np.array(self._per)]  # Shape: (dim_k,)
+
+            # Compute phase factors for all k-points
+            phase = np.exp(1j * 2 * np.pi * k_pts @ delta_r_per)  # Shape: (n_kpts,)
+
+            if Cartesian:
+                deriv = 1j * delta_r_per @ self.get_lat()[self._per, :]  # Cartesian derivative (x, y, z)
+            else:
+                deriv = 1j * 2 * np.pi * delta_r_per  # d/dkappa (k1, k2, k3)
+
+            # Using numpy broadcasting, combines into 2 axes, multiplying together
+            deriv = deriv[:, np.newaxis] * phase[np.newaxis, :] # shape: (dim_k, n_kpts)
+
+            # Compute the amplitude for all k-points and components
+            if self._nspin == 2:
+                amp_k = (
+                    deriv[:, :, np.newaxis, np.newaxis] * 
+                    amp[np.newaxis, np.newaxis, :, :] 
+                    )
+                # Shape: (dim_k, n_kpts, n_spin, n_spin)
+            elif self._nspin == 1: 
+                amp_k =  amp * deriv # Shape: (dim_k, n_kpts)
+
+            # Update velocity operator
+            if self._nspin == 1:
+                vel[..., i, j] += amp_k 
+                vel[..., j, i] += np.conj(amp_k)
+            elif self._nspin == 2:
+                vel[..., i, :, j, :] += amp_k
+                vel[..., j, :, i, :] += np.swapaxes(amp_k.conjugate(), -1, -2)
+
+        return vel 
 
 
-    def _gen_ham(self, k_pts=None):
+    def get_ham(self, k_pts=None):
         """
         Generate Bloch Hamiltonian for an array of k-points and varying parameters
 
@@ -1103,7 +1201,6 @@ class tb_model(object):
                 
                 # Compute the amplitude for all k-points and components
                 if self._nspin == 2:        
-                    # Compute the amplitude for all k-points and components
                     amp = phase[:, None, None] * amp  # Shape: (n_kpts, n_spin, n_spin)
                 else: 
                     amp *= phase  # Shape: (n_kpts,)
@@ -1259,6 +1356,7 @@ class tb_model(object):
                 if eigvals.shape[0] == 1:
                     eigvals = eigvals[0]
             return eigvals
+        
 
     def cut_piece(self,num,fin_dir,glue_edgs=False):
         r"""
