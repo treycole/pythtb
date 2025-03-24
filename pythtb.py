@@ -2680,7 +2680,7 @@ class wf_array(object):
                 # generate a kpoint
                 kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1)]
                 # solve at that point
-                (eval,evec)=self._model.solve_one(kpt,return_eigvecs=True)
+                (eval,evec)=self._model.solve_ham(kpt,return_eigvecs=True)
                 # store wavefunctions
                 self[i]=evec
                 # store gaps
@@ -2693,7 +2693,7 @@ class wf_array(object):
                 for j in range(self._mesh_arr[1]-1):
                     kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1),\
                          start_k[1]+float(j)/float(self._mesh_arr[1]-1)]
-                    (eval,evec)=self._model.solve_one(kpt,return_eigvecs=True)
+                    (eval,evec)=self._model.solve_ham(kpt,return_eigvecs=True)
                     self[i,j]=evec
                     if all_gaps is not None:
                         all_gaps[i,j,:]=eval[1:]-eval[:-1]
@@ -2706,7 +2706,7 @@ class wf_array(object):
                         kpt=[start_k[0]+float(i)/float(self._mesh_arr[0]-1),\
                              start_k[1]+float(j)/float(self._mesh_arr[1]-1),\
                              start_k[2]+float(k)/float(self._mesh_arr[2]-1)]
-                        (eval,evec)=self._model.solve_one(kpt,return_eigvecs=True)
+                        (eval,evec)=self._model.solve_ham(kpt,return_eigvecs=True)
                         self[i,j,k]=evec
                         if all_gaps is not None:
                             all_gaps[i,j,k,:]=eval[1:]-eval[:-1]
@@ -2721,7 +2721,7 @@ class wf_array(object):
                                      start_k[1]+float(j)/float(self._mesh_arr[1]-1),\
                                      start_k[2]+float(k)/float(self._mesh_arr[2]-1),\
                                      start_k[3]+float(l)/float(self._mesh_arr[3]-1)]
-                            (eval,evec)=self._model.solve_one(kpt,return_eigvecs=True)
+                            (eval,evec)=self._model.solve_ham(kpt,return_eigvecs=True)
                             self[i,j,k,l]=evec
                             if all_gaps is not None:
                                 all_gaps[i,j,k,l,:]=eval[1:]-eval[:-1]
@@ -2763,7 +2763,7 @@ class wf_array(object):
 
         """
 
-        (eval,evec)=self._model.solve_one(kpt,return_eigvecs=True)
+        (eval,evec)=self._model.solve_ham(kpt,return_eigvecs=True)
         if _is_int(mesh_indices):
           self._wfs[(mesh_indices,)]=evec
         else:
