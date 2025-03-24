@@ -9,7 +9,6 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from __future__ import print_function
 from pythtb import * # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
@@ -55,15 +54,15 @@ ribbon_model=my_model.cut_piece(len_1, fin_dir=1, glue_edgs=False)
 k_label=[r"$0$",r"$\pi$", r"$2\pi$"]
 
 # solve ribbon model to get eigenvalues and eigenvectors
-(rib_eval,rib_evec)=ribbon_model.solve_all(k_vec,eig_vectors=True)
+(rib_eval,rib_evec)=ribbon_model.solve_ham(k_vec,return_eigvecs=True)
 # shift bands so that the fermi level is at zero energy
 rib_eval-=efermi
 
 # find k-points at which number of states below the Fermi level changes
 jump_k=[]
-for i in range(rib_eval.shape[1]-1):
-  nocc_i =np.sum(rib_eval[:,i]<0.0)
-  nocc_ip=np.sum(rib_eval[:,i+1]<0.0)
+for i in range(rib_eval.shape[0]-1):
+  nocc_i =np.sum(rib_eval[i,:]<0.0)
+  nocc_ip=np.sum(rib_eval[i+1, :]<0.0)
   if nocc_i!=nocc_ip:
     jump_k.append(i)
 
@@ -72,16 +71,16 @@ for i in range(rib_eval.shape[1]-1):
 fig, (ax1, ax2) = plt.subplots(2,1,figsize=(3.7,4.5))
 
 # plot bandstructure of the ribbon
-for n in range(rib_eval.shape[0]):
-  ax1.plot(k_dist,rib_eval[n,:],c='k', zorder=-50)
+for n in range(rib_eval.shape[1]):
+  ax1.plot(k_dist,rib_eval[:, n],c='k', zorder=-50)
 
 # color bands according to expectation value of y operator (red=top, blue=bottom)
-for i in range(rib_evec.shape[1]):
+for i in range(rib_evec.shape[0]):
   # get expectation value of the position operator for states at i-th kpoint
-  pos_exp=ribbon_model.position_expectation(rib_evec[:,i],dir=1)
+  pos_exp=ribbon_model.position_expectation(rib_evec[i,:],dir=1)
 
   # plot states according to the expectation value
-  s=ax1.scatter([k_vec[i]]*rib_eval.shape[0], rib_eval[:,i], c=pos_exp, s=7,
+  s=ax1.scatter([k_vec[i]]*rib_eval.shape[1], rib_eval[i,:], c=pos_exp, s=7,
                 marker='o', cmap="coolwarm", edgecolors='none', vmin=0.0, vmax=float(len_1), zorder=-100)
 
 # color scale
@@ -109,9 +108,9 @@ for j in range(-1,len_1+1):
     ax2.plot(k_vec,float(j)+phi_1/(2.0*np.pi),'k-',zorder=-50)
 
 # plot finite centers of ribbon along direction 1
-for i in range(rib_evec.shape[1]):
+for i in range(rib_evec.shape[0]):
   # get occupied states only (those below Fermi level)
-  occ_evec=rib_evec[rib_eval[:,i]<0.0,i]
+  occ_evec=rib_evec[i, rib_eval[i,:]<0.0]
   # get centers of hybrid wannier functions
   hwfc=ribbon_model.position_hwf(occ_evec,1)
   # plot centers
@@ -134,6 +133,7 @@ for ax in [ax1,ax2]:
 
 fig.tight_layout()
 fig.savefig("haldane_hwf.pdf")
+plt.show()
 
 print('Done.\n')
 

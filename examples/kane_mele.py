@@ -6,7 +6,6 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pytb.txt)
 
-from __future__ import print_function
 from pythtb import * # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
@@ -84,12 +83,12 @@ for top_index in ["even","odd"]:
   
   # solve for eigenenergies of hamiltonian on
   # the set of k-points from above
-  evals=my_model.solve_all(k_vec)
+  evals=my_model.solve_ham(k_vec)
   # plot bands
-  ax1.plot(k_dist,evals[0])
-  ax1.plot(k_dist,evals[1])
-  ax1.plot(k_dist,evals[2])
-  ax1.plot(k_dist,evals[3])
+  ax1.plot(k_dist,evals[:, 0])
+  ax1.plot(k_dist,evals[:, 1])
+  ax1.plot(k_dist,evals[:,2])
+  ax1.plot(k_dist,evals[:,3])
   ax1.set_title("Kane-Mele: "+top_index+" phase")
   ax1.set_xticks(k_node)
   ax1.set_xticklabels(label)
@@ -135,6 +134,9 @@ for top_index in ["even","odd"]:
 
   fig.tight_layout()
   fig.savefig("kane_mele_"+top_index+".pdf")
+
+  plt.show()
+  
 
 print('Done.\n')
 

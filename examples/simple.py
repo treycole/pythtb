@@ -19,11 +19,11 @@ my_model.set_hop(-1., 0, 0, [1])
 k_label=[r"$0$",r"$\pi$", r"$2\pi$"]
 
 # solve model
-evals=my_model.solve_all(k_vec)
+evals=my_model.solve_ham(k_vec)
 
 # plot band structure
 fig, ax = plt.subplots()
-ax.plot(k_dist,evals[0])
+ax.plot(k_dist,evals[:,0])
 ax.set_title("1D chain band structure")
 ax.set_xlabel("Path in k-space")
 ax.set_ylabel("Band energy")
@@ -34,3 +34,4 @@ for n in range(len(k_node)):
   ax.axvline(x=k_node[n], linewidth=0.5, color='k')
 fig.tight_layout()
 fig.savefig("simple_band.pdf")
+plt.show()

@@ -6,7 +6,6 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from __future__ import print_function
 from pythtb import * # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
@@ -44,10 +43,11 @@ ax.set_xlabel("x coordinate")
 ax.set_ylabel("y coordinate")
 fig.tight_layout()
 fig.savefig("supercell_vis.pdf")
+plt.show()
 
 # compute the band structure in the entire band
 (k_vec,k_dist,k_node)=slab_model.k_path('full',100)
-evals=slab_model.solve_all(k_vec)
+evals=slab_model.solve_ham(k_vec)
 
 # plotting of band structure
 print('Plotting bandstructure...')
@@ -55,8 +55,8 @@ print('Plotting bandstructure...')
 # First make a figure object
 fig, ax = plt.subplots()
 # plot all bands
-for i in range(evals.shape[0]):
-    ax.plot(k_dist,evals[i],"k-")
+for i in range(evals.shape[1]):
+    ax.plot(k_dist,evals[:,i],"k-")
 # zoom in close to the zero energy
 ax.set_xlim(k_dist[0],k_dist[-1])
 ax.set_ylim(-1.0,1.0)
@@ -69,5 +69,6 @@ ax.set_xticklabels((r'$0$',r'$\pi$',r'$2\pi$'))
 # make an PDF figure of a plot
 fig.tight_layout()
 fig.savefig("supercell_band.pdf")
+plt.show()
 
 print('Done.\n')

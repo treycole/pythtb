@@ -1,11 +1,9 @@
 #!/usr/bin/env python
-from __future__ import print_function # python3 style print
 
 # Construct and compute Berry phases of hybrid Wannier functions
 # for a simple slab model
 
 from pythtb import * # import TB model class
-
 import matplotlib.pyplot as plt
 
 # set up model on bcc motif (CsCl structure)
@@ -50,10 +48,10 @@ kpts=[]
 for kx in k_1d:
   for ky in k_1d:
     kpts.append([kx,ky])
-evals=slab_model.solve_all(kpts)
+evals=slab_model.solve_ham(kpts)
 # delta > 0, so there are nl valence and nl-1 conduction bands
-e_vb=evals[:nl,:]
-e_cb=evals[nl+1:,:]
+e_vb=evals[:, :nl]
+e_cb=evals[:, nl+1:]
 
 print("VB min,max = %6.3f , %6.3f"%(np.min(e_vb),np.max(e_vb)))
 print("CB min,max = %6.3f , %6.3f"%(np.min(e_cb),np.max(e_cb)))
@@ -120,3 +118,4 @@ plt.xlabel("Layer index of hybrid Wannier band")
 plt.ylabel(r"Contribution to $P_x$")
 fig.tight_layout()
 fig.savefig("cubic_slab_hwf.pdf")
+plt.show()

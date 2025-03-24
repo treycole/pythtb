@@ -5,7 +5,6 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from __future__ import print_function
 from pythtb import * # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
@@ -40,7 +39,7 @@ my_model.set_hop(t2c, 0, 0, [ 1,-1])
 my_model.set_hop(t2c, 0, 0, [ 0, 1])
 
 # print tight-binding model
-my_model.display()
+print(my_model)
 
 # generate list of k-points following a segmented path in the BZ
 # list of nodes (high-symmetry points) that will be connected
@@ -59,7 +58,7 @@ label=(r'$\Gamma $',r'$K$', r'$M$', r'$K^\prime$', r'$\Gamma $')
 #   k_node: horizontal axis position of each original node
 
 # obtain eigenvalues to be plotted
-evals=my_model.solve_all(k_vec)
+evals=my_model.solve_ham(k_vec)
 
 # figure for bandstructure
 
@@ -79,13 +78,14 @@ ax.set_xlabel("Path in k-space")
 ax.set_ylabel("Band energy")
 
 # plot first band
-ax.plot(k_dist,evals[0])
+ax.plot(k_dist,evals[:,0])
 # plot second band
-ax.plot(k_dist,evals[1])
+ax.plot(k_dist,evals[:,1])
 
 # make an PDF figure of a plot
 fig.tight_layout()
 fig.savefig("haldane_band.pdf")
+plt.show()
 
 print()
 print('---------------------------------------')
@@ -101,7 +101,7 @@ for i in range(kmesh):
     for j in range(kmesh):
         kpts.append([float(i)/float(kmesh),float(j)/float(kmesh)])
 # solve the model on this mesh
-evals=my_model.solve_all(kpts)
+evals=my_model.solve_ham(kpts)
 # flatten completely the matrix
 evals=evals.flatten()
 
@@ -119,5 +119,6 @@ ax.set_ylabel("Number of states")
 # make an PDF figure of a plot
 fig.tight_layout()
 fig.savefig("haldane_dos.pdf")
+plt.show()
 
 print('Done.\n')
