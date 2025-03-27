@@ -49,6 +49,7 @@
 - `LICENSE`
 - This `CHANGELOG`
 - `pyproject.toml`
+- `CONTRIBUTING`
 
 ### Removed 
 - Support for Python <3.10 (see [SPEC-0](https://scientific-python.org/specs/spec-0000/))
