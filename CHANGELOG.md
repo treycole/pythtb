@@ -1,6 +1,6 @@
 ## [2.0.0]
 
-### Development Level
+### Development Level improvements
 
 #### `tb_model.__init__`
 - Cleaned up and simplified the code for readability
@@ -13,9 +13,10 @@
 - In an interactive shell, this is what Python reports as a representation for the object.
 - Shows the `rdim`, `kdim`, and `nspin`
 
-### User level
+### User-level improvements
 
 #### `tb_model.__str__`
+- String representation of `tb_model`
 - `print(tb_model)` shows the former `display` (now `report`)
 - `print(tb_model)` has same effect as `tb_model.report()`
 #### `tb_model.get_orb`
@@ -24,7 +25,7 @@
 - Simplified and shortened code
 - Used `np.array2string` with custom formatter for aligning and centering
 - Specify cartesian or reduced units
-- changed capitalization, centered header
+- Changed capitalization, centered header
 #### `tb_model.set_onsite`
 - Only keeping 'set' and 'add' for simplicity
 #### `tb_model.visualize`
@@ -45,3 +46,6 @@
 	- spin=2: (Nk, n_state, n_orb, n_spin)
 	- If finite, no k axis: (n_state, ...)
 - Checks if k_pts is a single point, and if so, it adjusts the shape accordingly and reproduces the former `solve_one`
+
+### Removed 
+- Support for Python <3.10 (see [SPEC-0](https://scientific-python.org/specs/spec-0000/))
