@@ -1,6 +1,6 @@
 # PythTB
 
-PythTB is a software package providing a Python implementation of the
+`PythTB` is a software package providing a Python implementation of the
 tight-binding approximation. It can be used to construct and solve
 tight-binding models of the electronic structure of systems of
 arbitrary dimensionality (crystals, slabs, ribbons, clusters, etc.),
