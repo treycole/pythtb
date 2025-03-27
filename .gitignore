@@ -145,7 +145,6 @@ auto
 # xindy
 *.xdy
 
-
 # Temporary files
 .DS_Store
 *~
@@ -166,7 +165,6 @@ docs/build/
 .virtual_documents/
 
 # hatch-vcs
-pymablock/_version.py
 dist/
 
 # VS Code
@@ -176,7 +174,5 @@ dist/
 exports/
 _build/
 
-# pixi environments
-.pixi
 *.egg-info
 .DS_Store
