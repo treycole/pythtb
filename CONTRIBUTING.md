@@ -1,6 +1,6 @@
-# Contributing to pythtb
+# Contributing to `pythTB`
 
-Thank you for your interest in contributing to **pythtb**! Your contributions help us improve the project for all users. Please review the following guidelines before submitting your changes.
+Thank you for your interest in contributing to `pythTB`! Your contributions help us improve the project for all users. Please review the following guidelines before submitting your changes.
 
 ## Code Quality and Design
 
