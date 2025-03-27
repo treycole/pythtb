@@ -1,6 +1,6 @@
 ## [2.0.0]
 
-### Development Level improvements
+### Improvements
 
 #### `tb_model.__init__`
 - Cleaned up and simplified the code for readability
@@ -12,8 +12,6 @@
 #### `tb_model.__repr__`
 - In an interactive shell, this is what Python reports as a representation for the object.
 - Shows the `rdim`, `kdim`, and `nspin`
-
-### User-level improvements
 
 #### `tb_model.__str__`
 - String representation of `tb_model`
@@ -46,6 +44,11 @@
 	- spin=2: (Nk, n_state, n_orb, n_spin)
 	- If finite, no k axis: (n_state, ...)
 - Checks if k_pts is a single point, and if so, it adjusts the shape accordingly and reproduces the former `solve_one`
+
+### Added
+- `LICENSE`
+- This `CHANGELOG`
+- `pyproject.toml`
 
 ### Removed 
 - Support for Python <3.10 (see [SPEC-0](https://scientific-python.org/specs/spec-0000/))
