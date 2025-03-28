@@ -176,3 +176,6 @@ _build/
 
 *.egg-info
 .DS_Store
+
+*.egg-info/
+dev
