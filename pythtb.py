@@ -764,7 +764,7 @@ class tb_model(object):
 
             paulis = [sigma_0, sigma_x, sigma_y, sigma_z]
 
-            if isinstance(val, (int, np.integer)):
+            if isinstance(val, (int, np.integer, float)):
                 val = [val]
 
             use_val = np.array(val)
@@ -787,7 +787,7 @@ class tb_model(object):
             else:
                 raise ValueError(
                     "Onsite energy has incorrect dimensions. "
-                    "Must either be an integer, list, or 2x2 matrix for spinful calculation."
+                    "Must either be a number, list, or could be a 2x2 matrix for spinful calculation."
                 )
 
     def visualize(
@@ -1250,16 +1250,15 @@ class tb_model(object):
                     * amp[np.newaxis, np.newaxis, :, :]
                 )
                 # Shape: (dim_k, n_kpts, n_spin, n_spin)
+
+                vel[..., i, :, j, :] += amp_k
+                vel[..., j, :, i, :] += np.swapaxes(amp_k.conjugate(), -1, -2)
+
             elif self._nspin == 1:
                 amp_k = amp * deriv  # Shape: (dim_k, n_kpts)
 
-            # Update velocity operator
-            if self._nspin == 1:
                 vel[..., i, j] += amp_k
                 vel[..., j, i] += np.conj(amp_k)
-            elif self._nspin == 2:
-                vel[..., i, :, j, :] += amp_k
-                vel[..., j, :, i, :] += np.swapaxes(amp_k.conjugate(), -1, -2)
 
         return vel
 
@@ -2730,16 +2729,12 @@ somehow changed Cartesian coordinates of orbitals."""
         # diagonalize
         if not hwf_evec:
             hwfc = np.linalg.eigvalsh(pos_mat)
-            # sort eigenvalues and convert to real numbers
-            hwfc = _nicefy_eig(hwfc)
-            return np.array(hwfc, dtype=float)
+            return hwfc
         else:  # find eigenvalues and eigenvectors
             (hwfc, hwf) = np.linalg.eigh(pos_mat)
             # transpose matrix eig since otherwise it is confusing
             # now eig[i,:] is eigenvector for eval[i]-th eigenvalue
             hwf = hwf.T
-            # sort evectors, eigenvalues and convert to real numbers
-            (hwfc, hwf) = _nicefy_eig(hwfc, hwf)
             # convert to right basis
             if basis.lower().strip() in ["wavefunction", "bloch"]:
                 return (hwfc, hwf)
@@ -2832,7 +2827,7 @@ somehow changed Cartesian coordinates of orbitals."""
 
         # Berry curvature shape: (dim_k, dim_k, n_kpts, n_orb, n_orb)
         # Where m is conduction indices, and n,l are occupied indices
-        # <unk|v_mu|umk> <umk|v_nu|unk> - <unk|v_nu|umk> <umk|v_mu|ulk> / (Enk - Emk)(Elk - Emk)
+        # <unk|v_mu|umk> <umk|v_nu|ulk> - <unk|v_nu|umk> <umk|v_mu|ulk> / (Enk - Emk)(Elk - Emk)
         b_curv = 1j * (
             np.matmul(v_occ_cond[:, None], v_cond_occ[None, :])
             - np.matmul(v_occ_cond[None, :], v_cond_occ[:, None])
@@ -2940,13 +2935,14 @@ somehow changed Cartesian coordinates of orbitals."""
                 cbar = fig.colorbar(scat, ticks=[1, 0], pad=0.01)
                 # cbar.set_ticks([])
                 # cbar.ax.set_yticklabels([r'$B$', r'$A$'], size=12)
-                cbar.ax.set_yticklabels([r"$\psi_B$", r"$\psi_A$"], size=12)
+                cbar.ax.set_yticklabels([r"$ |\langle \psi_{nk} | \phi_B \rangle |^2$", r"$|\langle \psi_{nk} | \phi_A \rangle |^2$"], size=12)
 
         elif proj_spin:
             evals, evecs = self.solve_ham(k_vec, return_eigvecs=True)
             n_eigs = evals.shape[-1]
 
-            assert self._nspin != 1, "Spin needs to be greater than 1."
+            if self._nspin <= 1:
+                raise ValueError("Spin needs to be greater than 1 for projecting spin.")
 
             wt = abs(evecs) ** 2
             col = np.sum(wt[..., 1], axis=2)
@@ -2965,7 +2961,7 @@ somehow changed Cartesian coordinates of orbitals."""
                 )
 
             cbar = fig.colorbar(scat, ticks=[1, 0])
-            cbar.ax.set_yticklabels(["spin up", "spin down"], size=12)
+            cbar.ax.set_yticklabels([r"$ |\langle \psi_{nk} | \phi_{\uparrow} \rangle |^2$", r"$|\langle \psi_{nk} | \phi_{\downarrow} \rangle |^2$"], size=12)
 
         else:
             evals = self.solve_ham(k_vec, return_eigvecs=False)
