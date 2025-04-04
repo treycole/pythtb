@@ -8,3 +8,23 @@ and is rich with features for computing Berry phases and related
 properties. For more details, please see:
 
    http://www.physics.rutgers.edu/pythtb/
+
+## Installation Instructions
+
+To install the latest version of PythTB simply type in terminal:
+
+```
+  pip install pythtb --upgrade
+```
+
+If you don't have root access try installing PythTB into your home 
+folder by executing:
+
+```
+pip install pythtb --upgrade --user
+```
+
+Alternatively, you can follow instructions on the [documentation website]( http://www.physics.rutgers.edu/pythtb/install.html) to install without pip.
+
+
+PythTB is compatible with Python >= 3.11. While earlier versions may work, we will not provide support for anything before this Python release.
