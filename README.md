@@ -26,5 +26,6 @@ pip install pythtb --upgrade --user
 
 Alternatively, you can follow instructions on the [documentation website]( http://www.physics.rutgers.edu/pythtb/install.html) to install without pip.
 
+## Dependencies
 
 PythTB is compatible with Python >= 3.11. While earlier versions may work, we will not provide support for anything before this Python release.
