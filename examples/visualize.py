@@ -30,7 +30,7 @@ my_model.set_hop(t, 1, 0, [1, 0])
 my_model.set_hop(t, 1, 0, [0, 1])
 
 # visualize infinite model
-(fig, ax) = my_model.visualize(0, 1)
+(fig, ax) = my_model.visualize()
 ax.set_title("Graphene, bulk")
 ax.set_xlabel("x coordinate")
 ax.set_ylabel("y coordinate")
@@ -42,7 +42,7 @@ plt.show()
 # cutout finite model along direction 0
 cut_one = my_model.cut_piece(8, 0, glue_edgs=False)
 
-(fig, ax) = cut_one.visualize(0, 1)
+(fig, ax) = cut_one.visualize()
 ax.set_title("Graphene, ribbon")
 ax.set_xlabel("x coordinate")
 ax.set_ylabel("y coordinate")
@@ -54,7 +54,7 @@ plt.show()
 # cutout finite model along direction 1 as well
 cut_two = cut_one.cut_piece(8, 1, glue_edgs=False)
 
-(fig, ax) = cut_two.visualize(0, 1)
+(fig, ax) = cut_two.visualize()
 ax.set_title("Graphene, finite")
 ax.set_xlabel("x coordinate")
 ax.set_ylabel("y coordinate")
