@@ -34,7 +34,27 @@ logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
-def _decompose_pauli_matrix(M, precision=3):
+def _fmt_num(x, precision=3):
+    # If the imaginary part is negligible, print as a real number.
+    if abs(x.imag) < 1e-10:
+        if x.real == 1:
+            return ""
+        elif x.real == -1:
+            return "-"
+        else:
+            return f"{x.real:.{precision}g}"
+    elif abs(x.real) < 1e-10:
+        if x.imag == 1:
+            return "i"
+        elif x.imag == -1:
+            return "-i"
+        else:
+            return f"{x.imag:.{precision}g}i"
+    else:
+        return f"({x:.{precision}g})"
+    
+
+def pauli_decompose(M):
     """
     Decompose a 2x2 matrix M in terms of the Pauli matrices.
 
@@ -67,31 +87,86 @@ def _decompose_pauli_matrix(M, precision=3):
     a2 = 0.5 * np.trace(np.dot(M, sigma_y))
     a3 = 0.5 * np.trace(np.dot(M, sigma_z))
 
-    # Helper to format each coefficient.
-    def fmt(x):
-        # If the imaginary part is negligible, print as a real number.
-        if abs(x.imag) < 1e-10:
-            return f"{x.real:.{precision}g}"
-        else:
-            return f"({x:.{precision}g})"
+    return [a0, a1, a2, a3]
+
+
+def _pauli_decompose_str(M, precision=3):
+
+    a0, a1, a2, a3 = pauli_decompose(M)
 
     # Build a list of terms, including only those with non-negligible coefficients.
     terms = []
     if abs(a0) > 1e-10:
-        terms.append(f"{fmt(a0)} \sigma_0")
+        terms.append(f"{_fmt_num(a0, precision=precision)} \sigma_0")
     if abs(a1) > 1e-10:
-        terms.append(f"{fmt(a1)} \sigma_x")
+        terms.append(f"{_fmt_num(a1=precision)} \sigma_x")
     if abs(a2) > 1e-10:
-        terms.append(f"{fmt(a2)} \sigma_y")
+        terms.append(f"{_fmt_num(a2=precision)} \sigma_y")
     if abs(a3) > 1e-10:
-        terms.append(f"{fmt(a3)} \sigma_z")
+        terms.append(f"{_fmt_num(a3=precision)} \sigma_z")
 
     # If all coefficients are zero, return "0".
     if not terms:
         return "0"
 
-    # Join the terms with " + " (note: you might later post-process to handle negative signs nicely).
-    return " + ".join(terms)
+    return " + ".join(terms).replace("+ -", "- ")
+
+def _pauli_decompose_unicode(M, precision=3):
+    """
+    Decompose a 2x2 matrix M in terms of the Pauli matrices and return
+    a Unicode string representation.
+
+    That is, find coefficients a0, a1, a2, a3 such that:
+    
+        M = a0 * I + a1 * σₓ + a2 * σᵧ + a3 * σᶻ
+
+    Parameters:
+        M (array-like): A 2x2 matrix.
+        precision (int): Number of significant digits for the coefficients.
+
+    Returns:
+        str: A Unicode string representing the decomposition.
+    """
+    # Use your existing function to get the coefficients
+    a0, a1, a2, a3 = pauli_decompose(M)
+
+    def fmt(x):
+        # If the imaginary part is negligible, print as a real number.
+        if abs(x.imag) < 1e-10:
+            if x.real == 1:
+                return ""
+            elif x.real == -1:
+                return "-"
+            else:
+                return f"{x.real:.{precision}g}"
+        elif abs(x.real) < 1e-10:
+            if x.imag == 1:
+                return "i"
+            elif x.imag == -1:
+                return "-i"
+            else:
+                return f"{x.imag:.{precision}g}i"
+        else:
+            return f"({x:.{precision}g})"
+
+    # Build a list of terms, using Unicode symbols.
+    terms = []
+    if abs(a0) > 1e-10:
+        terms.append(f"{fmt(a0)} 𝟙")
+    if abs(a1) > 1e-10:
+        # Using Unicode subscript x (ₓ, U+2093)
+        terms.append(f"{fmt(a1)} σ_x")
+    if abs(a2) > 1e-10:
+        # For y, using a common Unicode modifier letter for small y: ᵧ (U+1D67)
+        terms.append(f"{fmt(a2)} σ_y")
+    if abs(a3) > 1e-10:
+        # For z, using a Unicode modifier letter small z: ᶻ (U+1D5B)
+        terms.append(f"{fmt(a3)} σ_z")
+        
+    if not terms:
+        return "0"
+    
+    return " + ".join(terms).replace("+ -", "- ")
 
 
 class tb_model(object):
@@ -792,8 +867,7 @@ class tb_model(object):
 
     def visualize(
         self,
-        dir_first,
-        dir_second=None,
+        proj_plane=None,
         eig_dr=None,
         draw_hoppings=True,
         annotate_onsite_en=False,
@@ -891,8 +965,12 @@ class tb_model(object):
 
         # Projection function: projects a vector onto the 2D plane
         def proj(v):
-            coord_x = v[dir_first]
-            coord_y = v[dir_second] if dir_second is not None else 0.0
+            if proj_plane is not None:
+                coord_x = v[proj_plane[0]]
+                coord_y = v[proj_plane[1]]
+            else:
+                coord_x = v[0]
+                coord_y = v[1]
             return [coord_x, coord_y]
 
         # Convert reduced coordinates to Cartesian coordinates
@@ -980,7 +1058,7 @@ class tb_model(object):
 
             # For spinful case, annotate orbital with onsite decomposition.
             if self._nspin == 2 and annotate_onsite_en:
-                onsite_str = _decompose_pauli_matrix(self._site_energies[i])
+                onsite_str = _pauli_decompose_str(self._site_energies[i])
                 ax.annotate(
                     f"$\Delta_{{{i}}} = {onsite_str}$",
                     xy=p,
@@ -1014,7 +1092,8 @@ class tb_model(object):
         # maximum magnitudes of hopping strengths
         mags = [np.amax(abs(hop[0])) for hop in self._hoppings]
         biggest_hop = np.amax(mags)
-        arrow_alphas = mags / biggest_hop  # transparency propto hopping strength
+        # transparency propto hopping strength
+        arrow_alphas = mags / biggest_hop if biggest_hop !=0 else np.ones(len(mags))
         arrow_alphas = (
             0.3 + 0.7 * arrow_alphas**2
         )  # nonlinear mapping for greater visual difference
@@ -1147,15 +1226,350 @@ class tb_model(object):
 
         # Final plot adjustments
         ax.set_aspect("equal")
-        ax.set_xlabel(f"Cartesian coordinate {dir_first}")
-        if dir_second is not None:
-            ax.set_ylabel(f"Cartesian coordinate {dir_second}")
+        if proj_plane is not None:
+            ax.set_xlabel(f"Cartesian coordinate {proj_plane[0]}")
+            ax.set_ylabel(f"Cartesian coordinate {proj_plane[1]}")
         else:
-            ax.set_ylabel("")
+            ax.set_xlabel(f"Cartesian coordinate {0}")
+            ax.set_ylabel(f"Cartesian coordinate {1}")
+
         # ax.legend(loc="upper right", fontsize=10)
         # plt.tight_layout()
 
         return fig, ax
+
+
+    def visualize_3d(
+        self,
+        eig_dr=None,
+        draw_hoppings=True,
+        ph_color="black",
+        ):
+        r"""
+        Visualize a 3D tight-binding model using Plotly.
+
+        This function creates an interactive 3D plot of your tight-binding model,
+        showing the unit-cell origin, lattice vectors (with arrowheads), orbitals,
+        hopping lines, and (optionally) an eigenstate overlay with marker sizes
+        proportional to amplitude and colors reflecting the phase.
+
+        :param eig_dr: Optional eigenstate (1D array of complex numbers) to display.
+        :param draw_hoppings: Whether to draw hopping lines between orbitals.
+        :param annotate_onsite_en: Whether to annotate orbitals with onsite energies.
+        :param ph_color: Coloring scheme for eigenstate phases (e.g. "black", "red-blue", "wheel").
+
+        :returns:
+        * **fig** -- A Plotly Figure object.
+        """
+        import plotly.graph_objects as go
+        import matplotlib.cm as cm
+        import matplotlib.colors as mcolors
+
+        # Helper: Convert reduced coordinates to Cartesian coordinates.
+        def to_cart(red):
+            return np.dot(red, self._lat)
+
+        # Container for all Plotly traces.
+        traces = []
+        all_coords = []
+
+        # --- Draw Origin ---
+        origin = np.array([0.0, 0.0, 0.0])
+        
+        all_coords.append(origin)
+
+        # --- Draw Lattice Vectors ---
+        # We assume self._per is an iterable of indices for lattice vectors.
+        lattice_traces = []
+        for i in self._per:
+            start = origin
+            end = np.array(self._lat[i])
+            # Line for the lattice vector.
+            lattice_traces.append(
+                go.Scatter3d(
+                    x=[start[0], end[0]],
+                    y=[start[1], end[1]],
+                    z=[start[2], end[2]],
+                    mode="lines",
+                    line=dict(color="blue", width=4),
+                    showlegend=False,
+                    hoverinfo="none",
+                )
+            )
+            # Add a cone to simulate an arrowhead.
+            direction = end - start
+            norm = np.linalg.norm(direction)
+            if norm > 0:
+                direction_unit = direction / norm
+                lattice_traces.append(
+                    go.Cone(
+                        x=[end[0]],
+                        y=[end[1]],
+                        z=[end[2]],
+                        u=[direction_unit[0]],
+                        v=[direction_unit[1]],
+                        w=[direction_unit[2]],
+                        anchor="tip",
+                        sizemode="absolute",
+                        sizeref=0.2,  
+                        showscale=False,
+                        colorscale=[[0, "blue"], [1, "blue"]],
+                        name=f"a{i}",
+                    )
+                )
+            # Add a text annotation (using a text scatter) at the end.
+            lattice_traces.append(
+                go.Scatter3d(
+                    x=[end[0]],
+                    y=[end[1]],
+                    z=[end[2]],
+                    mode="text",
+                    # text=[fr"$\vec{{a}}_{i}$"],
+                    text=[f"a{i}"],
+                    textposition="top center",
+                    textfont=dict(color="blue", size=12),
+                    showlegend=False,
+                    hoverinfo="none",
+                )
+            )
+            all_coords.append(end)
+        traces.extend(lattice_traces)
+
+        # --- Draw Orbitals ---
+        orb_x, orb_y, orb_z = [], [], []
+        orb_text = []
+        orb_marker_colors = []
+        onsite_labels = []
+        cmap_orb = cm.get_cmap("viridis", self._norb)
+        for i in range(self._norb):
+            if self._nspin == 2:
+                onsite_str = _pauli_decompose_unicode(self._site_energies[i])
+                onsite_label = fr"{onsite_str}"
+            else:
+                onsite_label = fr"{self._site_energies[i]:.2f}"
+            onsite_labels.append(onsite_label)
+            pos = to_cart(self._orb[i])
+            orb_x.append(pos[0])
+            orb_y.append(pos[1])
+            orb_z.append(pos[2])
+            orb_text.append(f"Orbital {i}")
+            # Convert RGBA to hex.
+            orb_marker_colors.append(mcolors.to_hex(cmap_orb(i)))
+            all_coords.append(pos)
+            traces.append(
+                go.Scatter3d(
+                    x=[pos[0]],
+                    y=[pos[1]],
+                    z=[pos[2]],
+                    mode="markers",
+                    marker=dict(color=orb_marker_colors[i], size=10),
+                    text=[fr"Orbital {i}, Onsite Energy = {onsite_label}"],
+                    hoverinfo="text",
+                    name=f"Orbital {i}"
+                )
+            )
+
+        # --- Draw Hopping Terms ---
+        if draw_hoppings:
+            hopping_traces = []
+            # Compute hopping strengths for opacity.
+            mags = [np.amax(np.abs(hop[0])) for hop in self._hoppings]
+            biggest_hop = np.amax(mags) if mags else 1.0
+            arrow_alphas = np.array(mags) / biggest_hop if biggest_hop != 0 else np.ones(len(mags))
+            arrow_alphas = 0.3 + 0.7 * arrow_alphas**2  # Non-linear mapping.
+            for h_idx, h in enumerate(self._hoppings):
+                amp = h[0]
+                i_orb = h[1]
+                j_orb = h[2]
+                r_vec = None
+                intracell = True
+
+                if self._dim_k != 0 and len(h) == 4:
+                    r_vec = h[3]
+                    intracell = np.all(np.array(r_vec) == 0)
+
+                # Draw hopping for both directions.
+                for shift in range(2):
+                    pos_i = to_cart(self._orb[i_orb])
+                    pos_j = to_cart(self._orb[j_orb])
+                    if r_vec is not None:
+                        if shift == 0:
+                            pos_j = pos_j + np.dot(r_vec, self._lat)
+                        elif shift == 1:
+                            pos_i = pos_i - np.dot(r_vec, self._lat)
+
+                    if not intracell:
+                        # ensure we only scatter orbitals once
+                        traces.append(
+                            go.Scatter3d(
+                                x=[pos_i[0]],
+                                y=[pos_i[1]],
+                                z=[pos_i[2]],
+                                mode="markers",
+                                marker=dict(color=orb_marker_colors[i_orb], size=8),
+                                name="",
+                                showlegend=False,
+                                text=[f"Orbital {i_orb}, \n Onsite Energy: {onsite_labels[i_orb]}"],
+                                hoverinfo="text"
+                            )
+                        )
+
+                        traces.append(
+                            go.Scatter3d(
+                                x=[pos_j[0]],
+                                y=[pos_j[1]],
+                                z=[pos_j[2]],
+                                mode="markers",
+                                marker=dict(color=orb_marker_colors[j_orb], size=8),
+                                name="", 
+                                showlegend=False,
+                                text=[fr"Orbital {j_orb}, onsite energy: {onsite_labels[j_orb]}"],
+                                hoverinfo="text",
+                            )
+                        )
+                    
+
+                    # Don't want to plot connecting arrows within unit cell twice
+                    if intracell and shift == 1:
+                        # Arrow connects orbitals to home cell, so shift = 1 is same
+                        # conditions as shift = 2 (same arrows)
+                        continue
+
+                    if self._nspin == 2:
+                        amp_str = _pauli_decompose_unicode(amp)
+                    else:
+                        amp_str = f"{amp:.2f}"
+
+                    if r_vec is not None:
+                        r_vec_str = np.array2string(r_vec, precision=2, separator=", ")
+                        r_vec_str = r_vec_str.replace("\n", "")
+                        r_vec_str = r_vec_str.replace(" ", "")
+                        hop_str = f"Hopping {i_orb} --> {j_orb} + {r_vec} = {amp_str}"
+                    else:
+                        hop_str = f"Hopping {i_orb} --> {j_orb} = {amp_str}"
+
+                    hopping_traces.append(
+                        go.Scatter3d(
+                            x=[pos_i[0], pos_j[0]],
+                            y=[pos_i[1], pos_j[1]],
+                            z=[pos_i[2], pos_j[2]],
+                            mode="lines",
+                            line=dict(
+                                color="green",
+                                width=3,
+                            ),
+                            opacity=arrow_alphas[h_idx],
+                            text=hop_str,
+                            showlegend=False,
+                            hoverinfo="text",
+                        )
+                    )
+                    all_coords.append(pos_i)
+                    all_coords.append(pos_j)
+            traces.extend(hopping_traces)
+
+        # --- Overlay Eigenstate if Provided ---
+        if eig_dr is not None:
+            eigen_x, eigen_y, eigen_z = [], [], []
+            eigen_marker_sizes = []
+            eigen_marker_colors = []
+            cmap_phase = cm.get_cmap("hsv")
+            for i in range(self._norb):
+                pos = to_cart(self._orb[i])
+                eigen_x.append(pos[0])
+                eigen_y.append(pos[1])
+                eigen_z.append(pos[2])
+                amp = np.abs(eig_dr[i]) ** 2  # amplitude ∝ probability density.
+                eigen_marker_sizes.append(10 * amp)  # Scale factor for visibility.
+                phase = np.angle(eig_dr[i])
+                eigen_marker_colors.append(mcolors.to_hex(cmap_phase((phase + np.pi) / (2 * np.pi))))
+            traces.append(
+                go.Scatter3d(
+                    x=eigen_x,
+                    y=eigen_y,
+                    z=eigen_z,
+                    mode="markers",
+                    marker=dict(
+                        color=eigen_marker_colors,
+                        size=eigen_marker_sizes,
+                        symbol="circle",
+                        line=dict(color="black", width=1),
+                    ),
+                    name="Eigenstate",
+                )
+            )
+
+        # --- Determine Axis Limits ---
+        all_coords = np.array(all_coords)
+        min_x, max_x = np.min(all_coords[:, 0]), np.max(all_coords[:, 0])
+        min_y, max_y = np.min(all_coords[:, 1]), np.max(all_coords[:, 1])
+        min_z, max_z = np.min(all_coords[:, 2]), np.max(all_coords[:, 2])
+        pad_x = 0.1 * (max_x - min_x if max_x != min_x else 1)
+        pad_y = 0.1 * (max_y - min_y if max_y != min_y else 1)
+        pad_z = 0.1 * (max_z - min_z if max_z != min_z else 1)
+
+        layout = go.Layout(
+            scene=dict(
+                xaxis=dict(range=[min_x - pad_x, max_x + pad_x], title="X"),
+                yaxis=dict(range=[min_y - pad_y, max_y + pad_y], title="Y"),
+                zaxis=dict(range=[min_z - pad_z, max_z + pad_z], title="Z"),
+                aspectmode="data",
+            ),
+            margin=dict(l=0, r=0, b=0, t=0),
+        )
+
+        fig = go.Figure(data=traces, layout=layout)
+        # info_text = (
+        # "<b>Model Information:</b><br>" +
+        # "Lattice vectors:<br>" + f"{np.array2string(self._lat, precision=3, separator=', ')}<br><br>" +
+        # "Orbital vectors:<br>" + f"{np.array2string(self._orb, precision=3, separator=', ')}<br><br>" +
+        # f"Number of spins: {self._nspin}"
+        # )
+
+        def get_pretty_model_info_str():
+            lines = []
+            lines.append("<b>Tight-Binding Model Information</b><br>")
+            lines.append("<br>")
+            lines.append("<b>Lattice Vectors:</b><br>")
+            for i, vec in enumerate(self._lat):
+                lines.append(f"a_{i} = {np.array2string(vec, precision=3, separator=', ')}<br>")
+            lines.append("<br>")
+            lines.append("<b>Orbital Vectors:</b><br>")
+            for i, orb in enumerate(self._orb):
+                lines.append(f"Orbital {i} = {np.array2string(orb, precision=3, separator=', ')}<br>")
+            lines.append("<br>")
+            lines.append(f"<b>Number of Spins:</b> {self._nspin}")
+            return "".join(lines)
+        
+        report_text = get_pretty_model_info_str()
+
+        # 3) Add an annotation. We’ll place it in the upper-left corner (x=0.01, y=0.99).
+        fig.add_annotation(
+            text=report_text,
+            xref="paper",
+            yref="paper",
+            x=0.01,
+            y=0.99,
+            showarrow=False,
+            align="left",
+            font=dict(family="Courier New, monospace", size=12, color="black"),
+            bordercolor="black",
+            borderwidth=1,
+            borderpad=5,
+            bgcolor="white",
+        )
+
+        # fig.add_annotation(
+        #     text=info_text,
+        #     xref="paper", yref="paper",
+        #     x=0.01, y=0.99,
+        #     align="left",
+        #     bordercolor="black",
+        #     borderwidth=1,
+        #     bgcolor="rgba(255,255,255,0.8)",
+        #     showarrow=False,
+        # )
+        return fig
 
     def get_velocity(self, k_pts, cartesian=False):
         """
