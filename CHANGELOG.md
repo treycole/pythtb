@@ -76,3 +76,4 @@
 
 ### Removed 
 - Support for Python <3.10 (see [SPEC-0](https://scientific-python.org/specs/spec-0000/))
+- `setup.py` is deprecated. Recommended to use `pyproject.toml`.
