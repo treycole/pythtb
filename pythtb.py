@@ -1564,7 +1564,7 @@ class tb_model(object):
         Returns:
             vel: Velocity operators at each k-point, shape (dim_k, n_kpts, n_orb, n_orb).
         """
-        dim_k = self.dim_k
+        dim_k = self._dim_k
 
         if k_pts is not None:
             # if kpnt is just a number then convert it to an array
