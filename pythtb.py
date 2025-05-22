@@ -23,7 +23,6 @@ __version__ = "2.0.0"
 # PythTB is availabe at http://www.physics.rutgers.edu/pythtb/
 
 import numpy as np  # numerics for matrices
-import sympy as sp  # for symbolic math
 import sys  # for exiting
 import copy  # for deepcopying
 import logging
@@ -695,7 +694,6 @@ class tb_model(object):
 
         """
         #### Prechecks and formatting ####
-
         if self._dim_k != 0 and (ind_R is None):
             raise ValueError("Must specify ind_R when we have a periodic direction.")
         # make sure ind_i and ind_j are not out of scope
@@ -864,14 +862,14 @@ class tb_model(object):
                     "Onsite energy has incorrect dimensions. "
                     "Must either be a number, list, or could be a 2x2 matrix for spinful calculation."
                 )
-
+            
+    #TODO: Add hoverable hopping and onsite terms
     def visualize(
         self,
         proj_plane=None,
         eig_dr=None,
         draw_hoppings=True,
         annotate_onsite_en=False,
-        annotate_hoppings=False,
         ph_color="black",
     ):
         r"""
@@ -1369,7 +1367,7 @@ class tb_model(object):
                 )
             )
 
-        # --- Draw Hopping Terms ---
+        # Draw hopping terms ---
         if draw_hoppings:
             hopping_traces = []
             # Compute hopping strengths for opacity.
@@ -1468,7 +1466,7 @@ class tb_model(object):
                     all_coords.append(pos_j)
             traces.extend(hopping_traces)
 
-        # --- Overlay Eigenstate if Provided ---
+        # Overlay eigenstate if provided
         if eig_dr is not None:
             eigen_x, eigen_y, eigen_z = [], [], []
             eigen_marker_sizes = []
@@ -1479,8 +1477,8 @@ class tb_model(object):
                 eigen_x.append(pos[0])
                 eigen_y.append(pos[1])
                 eigen_z.append(pos[2])
-                amp = np.abs(eig_dr[i]) ** 2  # amplitude ∝ probability density.
-                eigen_marker_sizes.append(10 * amp)  # Scale factor for visibility.
+                amp = np.abs(eig_dr[i]) ** 2  # amplitude propto probability density.
+                eigen_marker_sizes.append(10 * amp)  # Scale factor for magnitude.
                 phase = np.angle(eig_dr[i])
                 eigen_marker_colors.append(mcolors.to_hex(cmap_phase((phase + np.pi) / (2 * np.pi))))
             traces.append(
@@ -1519,12 +1517,6 @@ class tb_model(object):
         )
 
         fig = go.Figure(data=traces, layout=layout)
-        # info_text = (
-        # "<b>Model Information:</b><br>" +
-        # "Lattice vectors:<br>" + f"{np.array2string(self._lat, precision=3, separator=', ')}<br><br>" +
-        # "Orbital vectors:<br>" + f"{np.array2string(self._orb, precision=3, separator=', ')}<br><br>" +
-        # f"Number of spins: {self._nspin}"
-        # )
 
         def get_pretty_model_info_str():
             lines = []
@@ -1559,16 +1551,6 @@ class tb_model(object):
             bgcolor="white",
         )
 
-        # fig.add_annotation(
-        #     text=info_text,
-        #     xref="paper", yref="paper",
-        #     x=0.01, y=0.99,
-        #     align="left",
-        #     bordercolor="black",
-        #     borderwidth=1,
-        #     bgcolor="rgba(255,255,255,0.8)",
-        #     showarrow=False,
-        # )
         return fig
 
     def get_velocity(self, k_pts, cartesian=False):
@@ -1582,13 +1564,12 @@ class tb_model(object):
         Returns:
             vel: Velocity operators at each k-point, shape (dim_k, n_kpts, n_orb, n_orb).
         """
-
-        dim_k = self._dim_k
+        dim_k = self.dim_k
 
         if k_pts is not None:
             # if kpnt is just a number then convert it to an array
             if isinstance(k_pts, (int, np.integer, float)):
-                if self.dim_k != 1:
+                if dim_k != 1:
                     raise ValueError(
                         "k_pts should be a 2D array of shape (n_kpts, dim_k)."
                     )
@@ -1596,7 +1577,7 @@ class tb_model(object):
             elif isinstance(k_pts, (list, np.ndarray)):
                 k_arr = np.array(k_pts)
                 if k_arr.ndim == 1:
-                    if k_arr.shape[0] != self._dim_k:
+                    if k_arr.shape[0] != dim_k:
                         return ValueError(
                             "If 'k_pts' is a single k-point, it must be of shape dim_k."
                         )
@@ -1609,70 +1590,62 @@ class tb_model(object):
                 )
 
             # check that k-vector is of corect size
-            if k_arr.ndim != 2 or k_arr.shape[-1] != self._dim_k:
+            if k_arr.ndim != 2 or k_arr.shape[-1] != dim_k:
                 raise ValueError("k_arr should be a 2D array of shape (n_kpts, dim_k).")
-
-            n_kpts = k_arr.shape[0]
-
-            if self._nspin == 1:
-                vel = np.zeros((dim_k, n_kpts, self._norb, self._norb), dtype=complex)
-            elif self._nspin == 2:
-                vel = np.zeros(
-                    (dim_k, n_kpts, self._norb, 2, self._norb, 2), dtype=complex
-                )
-            else:
-                raise ValueError("Invalid spin value.")
-
         else:
             raise TypeError("k_pts should not be None for velocity operator.")
+        
+        norb = self._norb
+        nspin = self._nspin
+        per = np.asarray(self._per)
+        orb_red = np.asarray(self._orb)           # shape (norb, dim_r)
+        hoppings = self._hoppings
+        
+        i_indices = np.array([h[1] for h in hoppings])
+        j_indices = np.array([h[2] for h in hoppings])
+        amps = np.array([h[0] for h in hoppings], dtype=complex)
 
-        # Lattice vectors in Cartesian coordinates for the periodic directions.
-        for hopping in self._hoppings:
-            if self._nspin == 1:
-                amp = complex(hopping[0])
-            elif self._nspin == 2:
-                amp = np.array(hopping[0], dtype=complex)
+        # Precompute delta_r for all hoppings
+        orb_i = orb_red[i_indices]  # Shape: (n_hoppings, dim_r)
+        orb_j = orb_red[j_indices]  # Shape: (n_hoppings, dim_r)
 
-            i = hopping[1]
-            j = hopping[2]
-            ind_R = np.array(hopping[3], dtype=float)
+        ind_Rs = np.array([h[3] for h in hoppings], dtype=float)
 
-            # Compute the displacement in real space (including orbital offsets)
-            delta_r = ind_R + self._orb[j, :] - self._orb[i, :]  # Shape: (dim_r,)
-            # Keep only the periodic (reduced) components
-            delta_r_per = delta_r[np.array(self._per)]  # Shape: (dim_k,)
+        delta_r = ind_Rs - orb_i + orb_j  # Shape: (n_hoppings, dim_r)
+        delta_r_per = delta_r[:, per]  # Shape: (n_hoppings, dim_k)
 
-            # Compute phase factors for all k-points
-            phase = np.exp(1j * 2 * np.pi * k_pts @ delta_r_per)  # Shape: (n_kpts,)
+        # # Compute phase factors for all k-points and hoppings
+        k_dot_r = k_arr @ delta_r_per.T  # Shape: (n_kpts, n_hoppings)
+        phases = np.exp(1j * 2 * np.pi * k_dot_r)  # Shape: (n_kpts, n_hoppings)
+        if cartesian:
+            deriv_phase = (
+                1j * delta_r_per @ self.get_lat()[self._per, :]
+            ).T[:, None, :] * phases[None, ...]
+        else:
+            deriv_phase = (1j * 2 * np.pi * delta_r_per).T[:, None, :] * phases[None, ...]
 
-            if cartesian:
-                deriv = (
-                    1j * delta_r_per @ self.get_lat()[self._per, :]
-                )  # Cartesian derivative (x, y, z)
-            else:
-                deriv = 1j * 2 * np.pi * delta_r_per  # d/dkappa (k1, k2, k3)
+        n_hops = len(hoppings)
+        if nspin == 1:
+            T_f = np.zeros((n_hops, norb, norb), complex)
+            T_r = np.zeros((n_hops, norb, norb), complex)
+            idx  = np.arange(n_hops)
+            T_f[idx, i_indices, j_indices] = amps
+            T_r[idx, j_indices, i_indices] = amps.conj()
 
-            # Using numpy broadcasting, combines into 2 axes, multiplying together
-            deriv = (
-                deriv[:, np.newaxis] * phase[np.newaxis, :]
-            )  # shape: (dim_k, n_kpts)
+        else:
+            # spinful: each amp is a 2×2 block
+            T_f = np.zeros((n_hops, norb, 2, norb, 2), complex)
+            T_r = np.zeros_like(T_f)
+            for h in range(n_hops):
+                T_f[h, i_indices[h], :, j_indices[h], :] = amps[h]
+                T_r[h, j_indices[h], :, i_indices[h], :] = amps[h].conj().T
 
-            # Compute the amplitude for all k-points and components
-            if self._nspin == 2:
-                amp_k = (
-                    deriv[:, :, np.newaxis, np.newaxis]
-                    * amp[np.newaxis, np.newaxis, :, :]
-                )
-                # Shape: (dim_k, n_kpts, n_spin, n_spin)
-
-                vel[..., i, :, j, :] += amp_k
-                vel[..., j, :, i, :] += np.swapaxes(amp_k.conjugate(), -1, -2)
-
-            elif self._nspin == 1:
-                amp_k = amp * deriv  # Shape: (dim_k, n_kpts)
-
-                vel[..., i, j] += amp_k
-                vel[..., j, i] += np.conj(amp_k)
+        # compute forward contribution into vel array
+        vel = np.tensordot(deriv_phase, T_f, axes=([2],[0]))
+        # compute reverse contribution in temporary buffer
+        temp = np.tensordot(deriv_phase.conj(), T_r, axes=([2],[0]))
+        # add in-place to avoid extra allocation
+        np.add(vel, temp, out=vel)
 
         return vel
 
@@ -1688,22 +1661,26 @@ class tb_model(object):
         Args:
             k_pts (array-like, optional): Array of k-points in reduced coordinates
         """
+        # Cache invariant data to avoid repeated conversions
+        dim_k = self.dim_k
+        norb = self._norb
+        nspin = self._nspin
+        per = np.asarray(self._per)
+        orb_red = np.asarray(self._orb)           # shape (norb, dim_r)
+        site_energies = np.asarray(self._site_energies)
+        hoppings = self._hoppings
 
         if k_pts is not None:
             # if kpnt is just a number then convert it to an array
             if isinstance(k_pts, (int, np.integer, float)):
-                if self.dim_k != 1:
-                    raise ValueError(
-                        "k_pts should be a 2D array of shape (n_kpts, dim_k)."
-                    )
+                if dim_k != 1:
+                    raise ValueError("k_pts should be a 2D array of shape (n_kpts, dim_k).")
                 k_arr = np.array([[k_pts]])
             elif isinstance(k_pts, (list, np.ndarray)):
-                k_arr = np.array(k_pts)
+                k_arr = np.asarray(k_pts)
                 if k_arr.ndim == 1:
-                    if k_arr.shape[0] != self._dim_k:
-                        return ValueError(
-                            "If 'k_pts' is a single k-point, it must be of shape dim_k."
-                        )
+                    if k_arr.shape[0] != dim_k:
+                        return ValueError("If 'k_pts' is a single k-point, it must be of shape dim_k.")
                     else:
                         # Reshape to (1, dim_k)
                         k_arr = k_arr[None, :]
@@ -1713,71 +1690,86 @@ class tb_model(object):
                 )
 
             # check that k-vector is of corect size
-            if k_arr.ndim != 2 or k_arr.shape[-1] != self._dim_k:
+            if k_arr.ndim != 2 or k_arr.shape[-1] != dim_k:
                 raise ValueError("k_arr should be a 2D array of shape (n_kpts, dim_k).")
 
             n_kpts = k_arr.shape[0]
-
-            if self._nspin == 1:
-                ham = np.zeros((n_kpts, self._norb, self._norb), dtype=complex)
-            elif self._nspin == 2:
-                ham = np.zeros((n_kpts, self._norb, 2, self._norb, 2), dtype=complex)
+            if nspin == 1:
+                ham = np.zeros((n_kpts, norb, norb), dtype=complex)
+            elif nspin == 2:
+                ham = np.zeros((n_kpts, norb, 2, norb, 2), dtype=complex)
             else:
                 raise ValueError("Invalid spin value.")
         else:
-            if self._dim_k != 0:
+            if dim_k != 0:
                 raise Exception(
                     "Must provide a list of k-vectors for the Bloch Hamiltonian of extended systems."
                 )
             else:  # finite sample
-                if self._nspin == 1:
-                    ham = np.zeros((self._norb, self._norb), dtype=complex)
-                elif self._nspin == 2:
-                    ham = np.zeros((self._norb, 2, self._norb, 2), dtype=complex)
+                if nspin == 1:
+                    ham = np.zeros((norb, norb), dtype=complex)
+                elif nspin == 2:
+                    ham = np.zeros((norb, 2, norb, 2), dtype=complex)
                 else:
                     raise ValueError("Invalid spin value.")
 
+        # # fill diagonal elements with onsite energies
+        # orb_idxs = np.arange(norb)
+        # for orb in orb_idxs:
+        #     if nspin == 1:
+        #         ham[..., orb, orb] = site_energies[orb]
+        #     elif nspin == 2:
+        #         ham[..., orb, :, orb, :] = site_energies[orb]
+
+        i_indices = np.array([h[1] for h in hoppings])
+        j_indices = np.array([h[2] for h in hoppings])
+        amps = np.array([h[0] for h in hoppings], dtype=complex)
+
+        # Precompute delta_r for all hoppings
+        orb_i = orb_red[i_indices]  # Shape: (n_hoppings, dim_r)
+        orb_j = orb_red[j_indices]  # Shape: (n_hoppings, dim_r)
+
+        if dim_k != 0:
+            ind_Rs = np.array([h[3] for h in hoppings], dtype=float)
+
+            delta_r = ind_Rs - orb_i + orb_j  # Shape: (n_hoppings, dim_r)
+            delta_r_per = delta_r[:, per]  # Shape: (n_hoppings, dim_k)
+
+            # Compute phase factors for all k-points and hoppings
+            k_dot_r = k_arr @ delta_r_per.T  # Shape: (n_kpts, n_hoppings)
+            phases = np.exp(1j * 2 * np.pi * k_dot_r)  # Shape: (n_kpts, n_hoppings)
+
+        n_hops = len(hoppings)
+        if nspin == 1:
+            T_f = np.zeros((n_hops, norb, norb), complex)
+            T_r = np.zeros((n_hops, norb, norb), complex)
+            idx  = np.arange(n_hops)
+            T_f[idx, i_indices, j_indices] = amps
+            T_r[idx, j_indices, i_indices] = amps.conj()
+        else:
+            # spinful: each amp is a 2×2 block
+            T_f = np.zeros((n_hops, norb, 2, norb, 2), complex)
+            T_r = np.zeros_like(T_f)
+            for h in range(n_hops):
+                T_f[h, i_indices[h], :, j_indices[h], :] = amps[h]
+                T_r[h, j_indices[h], :, i_indices[h], :] = amps[h].conj().T
+
+        if dim_k != 0:
+            ham = np.tensordot(phases, T_f, axes=([1],[0]))  
+            ham_hc = np.tensordot(phases.conj(), T_r, axes=([1],[0]))
+            np.add(ham, ham_hc, out=ham)
+        else:
+            ham = np.sum(T_f, axis=0)
+            ham_hc = np.sum(T_r, axis=0)
+            np.add(ham, ham_hc, out=ham)
+
         # fill diagonal elements with onsite energies
-        orb_idxs = np.arange(self._norb)
+        orb_idxs = np.arange(norb)
         for orb in orb_idxs:
-            if self._nspin == 1:
-                ham[..., orb, orb] = self._site_energies[orb]
-            elif self._nspin == 2:
-                ham[..., orb, :, orb, :] = self._site_energies[orb]
-
-        # Loop over all hoppings
-        for hopping in self._hoppings:
-            i = hopping[1]
-            j = hopping[2]
-
-            if self._nspin == 1:
-                amp = complex(hopping[0])
-            elif self._nspin == 2:
-                amp = np.array(hopping[0], dtype=complex)
-
-            # phase factor for periodic directions
-            if self._dim_k != 0:
-                ind_R = np.array(hopping[3], dtype=float)
-
-                # Compute delta_r for periodic directions
-                delta_r = ind_R - self._orb[i, :] + self._orb[j, :]  # Shape: (dim_r,)
-                delta_r_per = delta_r[np.array(self._per)]  # Shape: (dim_k,)
-
-                # Compute phase factors for all k-points
-                phase = np.exp(1j * 2 * np.pi * k_arr @ delta_r_per)  # Shape: (n_kpts,)
-
-                # Compute the amplitude for all k-points and components
-                if self._nspin == 2:
-                    amp = phase[:, None, None] * amp  # Shape: (n_kpts, n_spin, n_spin)
-                else:
-                    amp *= phase  # Shape: (n_kpts,)
-
-            if self._nspin == 1:
-                ham[..., i, j] += amp
-                ham[..., j, i] += amp.conjugate()
-            elif self._nspin == 2:
-                ham[..., i, :, j, :] += amp
-                ham[..., j, :, i, :] += np.swapaxes(amp.conjugate(), -1, -2)
+            if nspin == 1:
+                ham[..., orb, orb] += site_energies[orb]
+            elif nspin == 2:
+                ham[..., orb, :, orb, :] += site_energies[orb]
 
         return ham
 
@@ -1926,6 +1918,7 @@ class tb_model(object):
             return eigvals, eigvecs
         else:
             eigvals = self._sol_ham(Ham, return_eigvecs=return_eigvecs)
+
             if self._dim_k != 0:
                 if eigvals.ndim != 2:
                     raise ValueError("Wrong shape of eigvals")
@@ -3174,7 +3167,7 @@ somehow changed Cartesian coordinates of orbitals."""
                     "\n\nBasis must be either 'wavefunction', 'bloch', or 'orbital'"
                 )
 
-    def berry_curvature(self, k_pts, occ_idxs=None, dirs='all', cartesian=False, abelian=True):
+    def berry_curvature(self, k_pts, evals = None, evecs = None, occ_idxs=None, dirs='all', cartesian=False, abelian=True):
         """
         Generates the Berry curvature from the velocity operator dH/dk.
 
@@ -3190,8 +3183,12 @@ somehow changed Cartesian coordinates of orbitals."""
             )
 
         v_k = self.get_velocity(k_pts, cartesian=cartesian)  # (Nk, dim_k, n_orb, n_orb)
-        evals, evecs = self.solve_ham(k_pts, return_eigvecs=True)
+        new_shape = (v_k.shape[:2]) + (self._nstate, self._nstate)
+        v_k = v_k.reshape(*new_shape)
 
+        if evals is None or evecs is None:
+            evals, evecs = self.solve_ham(k_pts, return_eigvecs=True, keep_spin_ax=False)
+    
         n_eigs = evecs.shape[-2]
 
         # Identify occupied bands
@@ -3214,26 +3211,20 @@ somehow changed Cartesian coordinates of orbitals."""
             inv_delta_E = np.where(delta_E != 0, 1 / delta_E, 0)
 
         # newaxis for Cartesian direction broadcasting
-        evecs_conj = evecs.conj()[np.newaxis, :, ::]
+        evecs_conj = evecs.conj()[np.newaxis, :, :, :]
         # transpose
-        evecs_T = evecs.transpose(0, 2, 1)[np.newaxis, :, ::]
+        evecs_T = evecs.transpose(0, 2, 1)[np.newaxis, :, :, :]
         # project vk into energy eignvector basis
         vk_evecT = np.matmul(v_k, evecs_T)
         v_k_rot = np.matmul(evecs_conj, vk_evecT)  # (dim_k, n_kpts, n_orb, n_orb)
 
         # Extract relevant submatrices
         # top right
-        v_occ_cond = v_k_rot[..., occ_idxs, :][
-            ..., :, cond_idxs
-        ]  # shape (dim_k, Nk, n_occ, n_con)
+        v_occ_cond = v_k_rot[..., occ_idxs, :][..., :, cond_idxs]  # shape (dim_k, Nk, n_occ, n_con)
         # bottom left
-        v_cond_occ = v_k_rot[..., cond_idxs, :][
-            ..., :, occ_idxs
-        ]  # shape (dim_k, Nk, n_con, n_occ)
+        v_cond_occ = v_k_rot[..., cond_idxs, :][..., :, occ_idxs]  # shape (dim_k, Nk, n_con, n_occ)
         # top right (bottom left uneeded in Kubo formula)
-        delta_E_occ_cond = inv_delta_E[:, occ_idxs, :][
-            :, :, cond_idxs
-        ]  # shape (Nk, n_con, n_occ)
+        delta_E_occ_cond = inv_delta_E[:, occ_idxs, :][:, :, cond_idxs]  # shape (Nk, n_con, n_occ)
 
         # premultiply by energy denominators
         v_occ_cond = v_occ_cond * delta_E_occ_cond
@@ -3265,8 +3256,8 @@ somehow changed Cartesian coordinates of orbitals."""
                 Indices for reciprocal space directions defining
                 2d surface to integrate Berry flux.
         """
-        nks = (200,) * self._dim_k
-        k_vals = [np.arange(nk) / nk for nk in nks]  # exlcudes endpoint
+        nks = (50,) * self._dim_k
+        k_vals = [np.linspace(0, 1, nk, endpoint=False) for nk in nks]   # exlcudes endpoint
         sq_mesh = np.meshgrid(*k_vals, indexing="ij")
         flat_mesh = np.stack(sq_mesh, axis=-1).reshape(
             -1, len(nks)
@@ -3276,7 +3267,7 @@ somehow changed Cartesian coordinates of orbitals."""
 
         Nk = Omega.shape[2]
         dk_sq = 1 / Nk
-        Chern = np.sum(np.trace(Omega[dirs], axis1=-1, axis2=-2)) * dk_sq / (2 * np.pi)
+        Chern = np.sum(Omega[dirs]) * dk_sq / (2 * np.pi)
 
         return Chern.real
 
@@ -3608,7 +3599,7 @@ class wf_array(object):
                 # generate a kpoint
                 kpt = [start_k[0] + float(i) / float(self._mesh_arr[0] - 1)]
                 # solve at that point
-                (eval, evec) = self._model.solve_ham(kpt, return_eigvecs=True)
+                (eval, evec) = self._model.solve_ham([kpt], return_eigvecs=True)
                 # store wavefunctions
                 self[i] = evec
                 # store gaps
@@ -3623,7 +3614,9 @@ class wf_array(object):
                         start_k[0] + float(i) / float(self._mesh_arr[0] - 1),
                         start_k[1] + float(j) / float(self._mesh_arr[1] - 1),
                     ]
-                    (eval, evec) = self._model.solve_ham(kpt, return_eigvecs=True)
+                    (eval, evec) = self._model.solve_ham([kpt], return_eigvecs=True)
+                    # print(eval.shape)
+
                     self[i, j] = evec
                     if all_gaps is not None:
                         all_gaps[i, j, :] = eval[1:] - eval[:-1]
@@ -3638,10 +3631,10 @@ class wf_array(object):
                             start_k[1] + float(j) / float(self._mesh_arr[1] - 1),
                             start_k[2] + float(k) / float(self._mesh_arr[2] - 1),
                         ]
-                        (eval, evec) = self._model.solve_ham(kpt, return_eigvecs=True)
+                        (eval, evec) = self._model.solve_ham([kpt], return_eigvecs=True)
                         self[i, j, k] = evec
                         if all_gaps is not None:
-                            all_gaps[i, j, k, :] = eval[1:] - eval[:-1]
+                            all_gaps[i, j, k, :] = eval[:, 1:] - eval[:, :-1]
             for dir in range(3):
                 self.impose_pbc(dir, self._model._per[dir])
         elif self._dim_arr == 4:
