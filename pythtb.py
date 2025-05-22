@@ -1662,7 +1662,7 @@ class tb_model(object):
             k_pts (array-like, optional): Array of k-points in reduced coordinates
         """
         # Cache invariant data to avoid repeated conversions
-        dim_k = self.dim_k
+        dim_k = self._dim_k
         norb = self._norb
         nspin = self._nspin
         per = np.asarray(self._per)
@@ -1712,14 +1712,6 @@ class tb_model(object):
                     ham = np.zeros((norb, 2, norb, 2), dtype=complex)
                 else:
                     raise ValueError("Invalid spin value.")
-
-        # # fill diagonal elements with onsite energies
-        # orb_idxs = np.arange(norb)
-        # for orb in orb_idxs:
-        #     if nspin == 1:
-        #         ham[..., orb, orb] = site_energies[orb]
-        #     elif nspin == 2:
-        #         ham[..., orb, :, orb, :] = site_energies[orb]
 
         i_indices = np.array([h[1] for h in hoppings])
         j_indices = np.array([h[2] for h in hoppings])
