@@ -1,4 +1,4 @@
-from pythtb import *
+from pythtb.pythtb import *
 
 # lattice vectors and orbital positions
 lat=[[1.0, 0.0], [0.5, np.sqrt(3.0)/2.0]]

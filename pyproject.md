@@ -29,5 +29,6 @@ urls = {
   "Download" = "http://www.physics.rutgers.edu/pythtb"
 }
 
-[tool.setuptools]
-py-modules = ["pythtb"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pythtb*"]

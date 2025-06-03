@@ -1,40 +1,17 @@
 from __future__ import print_function
-
-# PythTB python tight binding module.
-# March 19th, 2025
-__version__ = "2.0.0"
-
-# Copyright 2010, 2012, 2016, 2017, 2022, 2025 by Trey Cole, Sinisa Coh and David Vanderbilt
-#
-# This file is part of PythTB. PythTB is free software: you can
-# redistribute it and/or modify it under the terms of the GNU General
-# Public License as published by the Free Software Foundation, either
-# version 3 of the License, or (at your option) any later version.
-#
-# PythTB is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-# License for more details.
-#
-# A copy of the GNU General Public License should be available
-# alongside this source in a file named gpl-3.0.txt.  If not,
-# see <http://www.gnu.org/licenses/>.
-#
-# PythTB is availabe at http://www.physics.rutgers.edu/pythtb/
-
 import numpy as np  # numerics for matrices
-import sympy as sp  # for symbolic math
 import sys  # for exiting
 import copy  # for deepcopying
 import logging
 from itertools import product
+from .plotting import *
+from .k_mesh import *
 
 # Configure logging at the top of the file
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
-
-def _decompose_pauli_matrix(M, precision=3):
+def pauli_decompose(M):
     """
     Decompose a 2x2 matrix M in terms of the Pauli matrices.
 
@@ -67,31 +44,7 @@ def _decompose_pauli_matrix(M, precision=3):
     a2 = 0.5 * np.trace(np.dot(M, sigma_y))
     a3 = 0.5 * np.trace(np.dot(M, sigma_z))
 
-    # Helper to format each coefficient.
-    def fmt(x):
-        # If the imaginary part is negligible, print as a real number.
-        if abs(x.imag) < 1e-10:
-            return f"{x.real:.{precision}g}"
-        else:
-            return f"({x:.{precision}g})"
-
-    # Build a list of terms, including only those with non-negligible coefficients.
-    terms = []
-    if abs(a0) > 1e-10:
-        terms.append(f"{fmt(a0)} \sigma_0")
-    if abs(a1) > 1e-10:
-        terms.append(f"{fmt(a1)} \sigma_x")
-    if abs(a2) > 1e-10:
-        terms.append(f"{fmt(a2)} \sigma_y")
-    if abs(a3) > 1e-10:
-        terms.append(f"{fmt(a3)} \sigma_z")
-
-    # If all coefficients are zero, return "0".
-    if not terms:
-        return "0"
-
-    # Join the terms with " + " (note: you might later post-process to handle negative signs nicely).
-    return " + ".join(terms)
+    return [a0, a1, a2, a3]
 
 
 class tb_model(object):
@@ -620,7 +573,6 @@ class tb_model(object):
 
         """
         #### Prechecks and formatting ####
-
         if self._dim_k != 0 and (ind_R is None):
             raise ValueError("Must specify ind_R when we have a periodic direction.")
         # make sure ind_i and ind_j are not out of scope
@@ -680,15 +632,9 @@ class tb_model(object):
                         )
                     elif np.all(ind_R[self._per] == (-1) * np.array(h[3])[self._per]):
                         raise ValueError(
-                            """\n
+                            f"""\n
                             Following matrix element was already implicitely specified:
-                            i="""
-                            + str(ind_i)
-                            + " j="
-                            + str(ind_j)
-                            + " R="
-                            + str(ind_R)
-                            + """
+                            i={ind_i}, j={ind_j}, R={ind_R}.
                             Remember,specifying <i|H|j+R> automatically specifies <j|H|i-R>.  For
                             consistency, specify all hoppings for a given bond in the same
                             direction.  (Or, alternatively, see the documentation on the
@@ -769,7 +715,6 @@ class tb_model(object):
 
             use_val = np.array(val)
 
-            # already
             if use_val.ndim == 2:
                 if not (use_val.shape[0] == 2 and use_val.shape[1] == 2):
                     raise ValueError(
@@ -789,374 +734,8 @@ class tb_model(object):
                     "Onsite energy has incorrect dimensions. "
                     "Must either be a number, list, or could be a 2x2 matrix for spinful calculation."
                 )
-
-    def visualize(
-        self,
-        dir_first,
-        dir_second=None,
-        eig_dr=None,
-        draw_hoppings=True,
-        annotate_onsite_en=False,
-        annotate_hoppings=False,
-        ph_color="black",
-    ):
-        r"""
-
-        Rudimentary function for visualizing tight-binding model geometry,
-        hopping between tight-binding orbitals, and electron eigenstates.
-
-        If eigenvector is not drawn, then orbitals in home cell are drawn
-        as red circles, and those in neighboring cells are drawn with
-        different shade of red. Hopping term directions are drawn with
-        green lines connecting two orbitals. Origin of unit cell is
-        indicated with blue dot, while real space unit vectors are drawn
-        with blue lines.
-
-        If eigenvector is drawn, then electron eigenstate on each orbital
-        is drawn with a circle whose size is proportional to wavefunction
-        amplitude while its color depends on the phase. There are various
-        coloring schemes for the phase factor; see more details under
-        *ph_color* parameter. If eigenvector is drawn and coloring scheme
-        is "red-blue" or "wheel", all other elements of the picture are
-        drawn in gray or black.
-
-        :param dir_first: First index of Cartesian coordinates used for
-          plotting.
-
-        :param dir_second: Second index of Cartesian coordinates used for
-          plotting. For example if dir_first=0 and dir_second=2, and
-          Cartesian coordinates of some orbital is [2.0,4.0,6.0] then it
-          will be drawn at coordinate [2.0,6.0]. If dimensionality of real
-          space (*dim_r*) is zero or one then dir_second should not be
-          specified.
-
-        :param eig_dr: Optional parameter specifying eigenstate to
-          plot. If specified, this should be one-dimensional array of
-          complex numbers specifying wavefunction at each orbital in
-          the tight-binding basis. If not specified, eigenstate is not
-          drawn.
-
-        :param draw_hoppings: Optional parameter specifying whether to
-          draw all allowed hopping terms in the tight-binding
-          model. Default value is True.
-
-        :param ph_color: Optional parameter determining the way
-          eigenvector phase factors are translated into color. Default
-          value is "black". Convention of the wavefunction phase is as
-          in convention 1 in section 3.1 of :download:`notes on
-          tight-binding formalism  <misc/pythtb-formalism.pdf>`.  In
-          other words, these wavefunction phases are in correspondence
-          with cell-periodic functions :math:`u_{n {\bf k}} ({\bf r})`
-          not :math:`\Psi_{n {\bf k}} ({\bf r})`.
-
-          * "black" -- phase of eigenvectors are ignored and wavefunction
-            is always colored in black.
-
-          * "red-blue" -- zero phase is drawn red, while phases or pi or
-            -pi are drawn blue. Phases in between are interpolated between
-            red and blue. Some phase information is lost in this coloring
-            becase phase of +phi and -phi have same color.
-
-          * "wheel" -- each phase is given unique color. In steps of pi/3
-            starting from 0, colors are assigned (in increasing hue) as:
-            red, yellow, green, cyan, blue, magenta, red.
-
-        :returns:
-          * **fig** -- Figure object from matplotlib.pyplot module
-            that can be used to save the figure in PDF, EPS or similar
-            format, for example using fig.savefig("name.pdf") command.
-          * **ax** -- Axes object from matplotlib.pyplot module that can be
-            used to tweak the plot, for example by adding a plot title
-            ax.set_title("Title goes here").
-
-        Example usage::
-
-          # Draws x-y projection of tight-binding model
-          # tweaks figure and saves it as a PDF.
-          (fig, ax) = tb.visualize(0, 1)
-          ax.set_title("Title goes here")
-          fig.savefig("model.pdf")
-
-        See also these examples: :ref:`edge-example`,
-        :ref:`visualize-example`.
-
-        """
-        import matplotlib.pyplot as plt
-        from matplotlib.patches import FancyArrowPatch
-        import matplotlib.cm as cm
-
-        cmap = plt.get_cmap("viridis", self._norb)
-
-        fig, ax = plt.subplots(figsize=(8, 8))
-
-        # Projection function: projects a vector onto the 2D plane
-        def proj(v):
-            coord_x = v[dir_first]
-            coord_y = v[dir_second] if dir_second is not None else 0.0
-            return [coord_x, coord_y]
-
-        # Convert reduced coordinates to Cartesian coordinates
-        def to_cart(red):
-            return np.dot(red, self._lat)
-
-        # to ensure proper padding, track all plotted coordinates
-        all_coords = []
-
-        # Draw the origin
-        origin = [0.0, 0.0]
-        ax.plot(origin[0], origin[1], "X", color="black", ms=8)
-        all_coords.append(origin)
-
-        # Draw lattice (unit cell) vectors as arrows and label them
-        ends = []
-        for i in self._per:
-            start = origin
-            end = proj(self._lat[i])
-            ends.append(end)
-
-            # lattice vector arrow
-            arrow = FancyArrowPatch(
-                start,
-                end,
-                arrowstyle="->",
-                mutation_scale=15,
-                color="blue",
-                lw=2,
-                zorder=0,
-            )
-            ax.add_patch(arrow)
-
-            # annotation of lattice
-            ax.annotate(
-                f"$\\vec{{a}}_{i}$",
-                xy=end,  # (end[0], end[1])
-                xytext=(4, 4),  # offset in points
-                textcoords="offset points",
-                color="blue",
-                fontsize=12,
-                va="bottom",
-                ha="right",
-            )
-            all_coords.append(end)
-
-        # plot dotted bounding lines to unit cell
-        ends = np.array(ends)
-
-        # if 2d cell
-        if ends.shape[0] > 1:
-            # top shifted line
-            start = ends[0]
-            end = ends[0] + ends[1]
-            ax.plot(
-                [start[0], end[0]],
-                [start[1], end[1]],
-                ls="--",
-                lw=1,
-                color="b",
-                zorder=0,
-                alpha=0.5,
-            )
-
-            # right shifted line
-            start = ends[1]
-            ax.plot(
-                [start[0], end[0]],
-                [start[1], end[1]],
-                ls="--",
-                lw=1,
-                color="b",
-                zorder=0,
-                alpha=0.5,
-            )
-
-        # Draw orbitals: home-cell orbitals in red
-        orb_coords = []
-        for i in range(self._norb):
-            pos = to_cart(self._orb[i])
-            p = proj(pos)
-            color = cmap(i)
-            ax.scatter(p[0], p[1], color=color, s=50, zorder=2, label=f"Orbital {i}")
-            orb_coords.append(p)
-
-            # For spinful case, annotate orbital with onsite decomposition.
-            if self._nspin == 2 and annotate_onsite_en:
-                onsite_str = _decompose_pauli_matrix(self._site_energies[i])
-                ax.annotate(
-                    f"$\Delta_{{{i}}} = {onsite_str}$",
-                    xy=p,
-                    xytext=(5, 5),
-                    textcoords="offset points",
-                    fontsize=10,
-                    color="red",
-                    bbox=dict(
-                        boxstyle="round,pad=0.2", fc="lightcoral", ec="none", alpha=0.6
-                    ),
-                    zorder=5,
-                )
-            elif self._nspin == 1 and annotate_onsite_en:
-                onsite_str = f"$\Delta_{{{i}}} = {self._site_energies[i]:.2f}$"
-                ax.annotate(
-                    onsite_str,
-                    xy=p,
-                    xytext=(5, 5),
-                    textcoords="offset points",
-                    fontsize=10,
-                    color="red",
-                    bbox=dict(
-                        boxstyle="round,pad=0.2", fc="lightcoral", ec="none", alpha=0.6
-                    ),
-                    zorder=5,
-                )
-
-        # Draw hopping terms with curved arrows
-        hopping_coords = []
-
-        # maximum magnitudes of hopping strengths
-        mags = [np.amax(abs(hop[0])) for hop in self._hoppings]
-        biggest_hop = np.amax(mags)
-        arrow_alphas = mags / biggest_hop  # transparency propto hopping strength
-        arrow_alphas = (
-            0.3 + 0.7 * arrow_alphas**2
-        )  # nonlinear mapping for greater visual difference
-
-        if draw_hoppings:
-            for h_idx, h in enumerate(self._hoppings):
-                amp = h[0]
-                i_orb = h[1]
-                j_orb = h[2]
-
-                r_vec = None
-                intracell = True
-                if self._dim_k != 0 and len(h) == 4:
-                    r_vec = h[3]
-                    intracell = np.all(r_vec == 0)
-
-                for shift in range(2):  # draw both i->j+R and i-R->j hop
-                    pos_i = to_cart(self._orb[i_orb])
-                    pos_j = to_cart(self._orb[j_orb])
-                    
-                    # Determine starting and ending orbital positions
-                    if r_vec is not None:
-                        # Adjust pos_j with lattice translation if provided
-                        if shift == 0:
-                            # i->j+R
-                            pos_j += np.dot(r_vec, self._lat)
-                        elif shift == 1:
-                            # i-R->j
-                            pos_i -= np.dot(r_vec, self._lat)
-
-                    p_i = proj(pos_i)
-                    p_j = proj(pos_j)
-
-                    # plot neighboring cell orbital
-                    # ensure we don't plot orbital in unit cell again (if no translation)
-                    if not intracell:
-                        # ensure we only scatter orbitals once
-                        if p_j not in hopping_coords and shift == 0:
-                            ax.scatter(
-                                p_j[0],
-                                p_j[1],
-                                color=cmap(h[2]),
-                                s=50,
-                                zorder=1,
-                                alpha=0.5,
-                            )
-                        if p_i not in hopping_coords and shift == 1:
-                            ax.scatter(
-                                p_i[0],
-                                p_i[1],
-                                color=cmap(h[1]),
-                                s=50,
-                                zorder=1,
-                                alpha=0.5,
-                            )
-
-                    # Don't want to plot connecting arrows within unit cell twice
-                    if intracell and shift == 1:
-                        # Arrow connects orbitals within cell, so shift = 1 is same
-                        # conditions as shift = 2 (same arrows)
-                        continue
-
-                    # First arrow: p_i -> p_j
-                    arrow1 = FancyArrowPatch(
-                        p_i,
-                        p_j,
-                        connectionstyle="arc3,rad=0.08",
-                        arrowstyle="->",
-                        mutation_scale=15,
-                        color="green",
-                        lw=1.3,
-                        alpha=arrow_alphas[h_idx],
-                        zorder=1,
-                    )
-                    ax.add_patch(arrow1)
-
-                    # Second arrow: p_j -> p_i
-                    arrow2 = FancyArrowPatch(
-                        p_j,
-                        p_i,
-                        connectionstyle="arc3,rad=0.08",
-                        arrowstyle="->",
-                        mutation_scale=15,
-                        color="green",
-                        lw=1.3,
-                        alpha=arrow_alphas[h_idx],
-                        zorder=1,
-                    )
-                    ax.add_patch(arrow2)
-
-                    hopping_coords.append(p_i)
-                    hopping_coords.append(p_j)
-
-        # If eigenstate is provided, overlay eigenstate information on the orbitals
-        if eig_dr is not None:
-            # For each orbital, size the marker by amplitude and color by phase
-            cmap = cm.hsv  # You can choose a different colormap if desired
-            for i in range(self._norb):
-                pos = to_cart(self._orb[i])
-                p = proj(pos)
-                amp = (
-                    np.abs(eig_dr[i]) ** 2
-                )  # intensity proportional to probability density
-                phase = np.angle(eig_dr[i])
-                # Map phase from [-pi, pi] to [0,1]
-                color = cmap((phase + np.pi) / (2 * np.pi))
-                ax.scatter(
-                    p[0],
-                    p[1],
-                    s=100 * amp,
-                    color=color,
-                    edgecolor="k",
-                    zorder=10,
-                    label="Eigenstate" if i == 0 else None,
-                )
-
-        # Adjust the axis so everything fits
-        all_coords += hopping_coords
-        all_coords += orb_coords
-
-        xs = [c[0] for c in all_coords]
-        ys = [c[1] for c in all_coords]
-        min_x, max_x = min(xs), max(xs)
-        min_y, max_y = min(ys), max(ys)
-        # Add some padding
-        pad_x = 0.1 * (max_x - min_x if max_x != min_x else 1)
-        pad_y = 0.1 * (max_y - min_y if max_y != min_y else 1)
-        ax.set_xlim(min_x - pad_x, max_x + pad_x)
-        ax.set_ylim(min_y - pad_y, max_y + pad_y)
-
-        # Final plot adjustments
-        ax.set_aspect("equal")
-        ax.set_xlabel(f"Cartesian coordinate {dir_first}")
-        if dir_second is not None:
-            ax.set_ylabel(f"Cartesian coordinate {dir_second}")
-        else:
-            ax.set_ylabel("")
-        # ax.legend(loc="upper right", fontsize=10)
-        # plt.tight_layout()
-
-        return fig, ax
-
+            
+       
     def get_velocity(self, k_pts, cartesian=False):
         """
         Generate the velocity operator using commutator v_k = d/dk H_k for an array of k-points.
@@ -1168,13 +747,12 @@ class tb_model(object):
         Returns:
             vel: Velocity operators at each k-point, shape (dim_k, n_kpts, n_orb, n_orb).
         """
-
         dim_k = self._dim_k
 
         if k_pts is not None:
             # if kpnt is just a number then convert it to an array
             if isinstance(k_pts, (int, np.integer, float)):
-                if self.dim_k != 1:
+                if dim_k != 1:
                     raise ValueError(
                         "k_pts should be a 2D array of shape (n_kpts, dim_k)."
                     )
@@ -1182,7 +760,7 @@ class tb_model(object):
             elif isinstance(k_pts, (list, np.ndarray)):
                 k_arr = np.array(k_pts)
                 if k_arr.ndim == 1:
-                    if k_arr.shape[0] != self._dim_k:
+                    if k_arr.shape[0] != dim_k:
                         return ValueError(
                             "If 'k_pts' is a single k-point, it must be of shape dim_k."
                         )
@@ -1195,70 +773,62 @@ class tb_model(object):
                 )
 
             # check that k-vector is of corect size
-            if k_arr.ndim != 2 or k_arr.shape[-1] != self._dim_k:
+            if k_arr.ndim != 2 or k_arr.shape[-1] != dim_k:
                 raise ValueError("k_arr should be a 2D array of shape (n_kpts, dim_k).")
-
-            n_kpts = k_arr.shape[0]
-
-            if self._nspin == 1:
-                vel = np.zeros((dim_k, n_kpts, self._norb, self._norb), dtype=complex)
-            elif self._nspin == 2:
-                vel = np.zeros(
-                    (dim_k, n_kpts, self._norb, 2, self._norb, 2), dtype=complex
-                )
-            else:
-                raise ValueError("Invalid spin value.")
-
         else:
             raise TypeError("k_pts should not be None for velocity operator.")
+        
+        norb = self._norb
+        nspin = self._nspin
+        per = np.asarray(self._per)
+        orb_red = np.asarray(self._orb)           # shape (norb, dim_r)
+        hoppings = self._hoppings
+        
+        i_indices = np.array([h[1] for h in hoppings])
+        j_indices = np.array([h[2] for h in hoppings])
+        amps = np.array([h[0] for h in hoppings], dtype=complex)
 
-        # Lattice vectors in Cartesian coordinates for the periodic directions.
-        for hopping in self._hoppings:
-            if self._nspin == 1:
-                amp = complex(hopping[0])
-            elif self._nspin == 2:
-                amp = np.array(hopping[0], dtype=complex)
+        # Precompute delta_r for all hoppings
+        orb_i = orb_red[i_indices]  # Shape: (n_hoppings, dim_r)
+        orb_j = orb_red[j_indices]  # Shape: (n_hoppings, dim_r)
 
-            i = hopping[1]
-            j = hopping[2]
-            ind_R = np.array(hopping[3], dtype=float)
+        ind_Rs = np.array([h[3] for h in hoppings], dtype=float)
 
-            # Compute the displacement in real space (including orbital offsets)
-            delta_r = ind_R + self._orb[j, :] - self._orb[i, :]  # Shape: (dim_r,)
-            # Keep only the periodic (reduced) components
-            delta_r_per = delta_r[np.array(self._per)]  # Shape: (dim_k,)
+        delta_r = ind_Rs - orb_i + orb_j  # Shape: (n_hoppings, dim_r)
+        delta_r_per = delta_r[:, per]  # Shape: (n_hoppings, dim_k)
 
-            # Compute phase factors for all k-points
-            phase = np.exp(1j * 2 * np.pi * k_pts @ delta_r_per)  # Shape: (n_kpts,)
+        # # Compute phase factors for all k-points and hoppings
+        k_dot_r = k_arr @ delta_r_per.T  # Shape: (n_kpts, n_hoppings)
+        phases = np.exp(1j * 2 * np.pi * k_dot_r)  # Shape: (n_kpts, n_hoppings)
+        if cartesian:
+            deriv_phase = (
+                1j * delta_r_per @ self.get_lat()[self._per, :]
+            ).T[:, None, :] * phases[None, ...]
+        else:
+            deriv_phase = (1j * 2 * np.pi * delta_r_per).T[:, None, :] * phases[None, ...]
 
-            if cartesian:
-                deriv = (
-                    1j * delta_r_per @ self.get_lat()[self._per, :]
-                )  # Cartesian derivative (x, y, z)
-            else:
-                deriv = 1j * 2 * np.pi * delta_r_per  # d/dkappa (k1, k2, k3)
+        n_hops = len(hoppings)
+        if nspin == 1:
+            T_f = np.zeros((n_hops, norb, norb), complex)
+            T_r = np.zeros((n_hops, norb, norb), complex)
+            idx  = np.arange(n_hops)
+            T_f[idx, i_indices, j_indices] = amps
+            T_r[idx, j_indices, i_indices] = amps.conj()
 
-            # Using numpy broadcasting, combines into 2 axes, multiplying together
-            deriv = (
-                deriv[:, np.newaxis] * phase[np.newaxis, :]
-            )  # shape: (dim_k, n_kpts)
+        else:
+            # spinful: each amp is a 2×2 block
+            T_f = np.zeros((n_hops, norb, 2, norb, 2), complex)
+            T_r = np.zeros_like(T_f)
+            for h in range(n_hops):
+                T_f[h, i_indices[h], :, j_indices[h], :] = amps[h]
+                T_r[h, j_indices[h], :, i_indices[h], :] = amps[h].conj().T
 
-            # Compute the amplitude for all k-points and components
-            if self._nspin == 2:
-                amp_k = (
-                    deriv[:, :, np.newaxis, np.newaxis]
-                    * amp[np.newaxis, np.newaxis, :, :]
-                )
-                # Shape: (dim_k, n_kpts, n_spin, n_spin)
-
-                vel[..., i, :, j, :] += amp_k
-                vel[..., j, :, i, :] += np.swapaxes(amp_k.conjugate(), -1, -2)
-
-            elif self._nspin == 1:
-                amp_k = amp * deriv  # Shape: (dim_k, n_kpts)
-
-                vel[..., i, j] += amp_k
-                vel[..., j, i] += np.conj(amp_k)
+        # compute forward contribution into vel array
+        vel = np.tensordot(deriv_phase, T_f, axes=([2],[0]))
+        # compute reverse contribution in temporary buffer
+        temp = np.tensordot(deriv_phase.conj(), T_r, axes=([2],[0]))
+        # add in-place to avoid extra allocation
+        np.add(vel, temp, out=vel)
 
         return vel
 
@@ -1274,22 +844,26 @@ class tb_model(object):
         Args:
             k_pts (array-like, optional): Array of k-points in reduced coordinates
         """
+        # Cache invariant data to avoid repeated conversions
+        dim_k = self._dim_k
+        norb = self._norb
+        nspin = self._nspin
+        per = np.asarray(self._per)
+        orb_red = np.asarray(self._orb)           # shape (norb, dim_r)
+        site_energies = np.asarray(self._site_energies)
+        hoppings = self._hoppings
 
         if k_pts is not None:
             # if kpnt is just a number then convert it to an array
             if isinstance(k_pts, (int, np.integer, float)):
-                if self.dim_k != 1:
-                    raise ValueError(
-                        "k_pts should be a 2D array of shape (n_kpts, dim_k)."
-                    )
+                if dim_k != 1:
+                    raise ValueError("k_pts should be a 2D array of shape (n_kpts, dim_k).")
                 k_arr = np.array([[k_pts]])
             elif isinstance(k_pts, (list, np.ndarray)):
-                k_arr = np.array(k_pts)
+                k_arr = np.asarray(k_pts)
                 if k_arr.ndim == 1:
-                    if k_arr.shape[0] != self._dim_k:
-                        return ValueError(
-                            "If 'k_pts' is a single k-point, it must be of shape dim_k."
-                        )
+                    if k_arr.shape[0] != dim_k:
+                        return ValueError("If 'k_pts' is a single k-point, it must be of shape dim_k.")
                     else:
                         # Reshape to (1, dim_k)
                         k_arr = k_arr[None, :]
@@ -1299,71 +873,78 @@ class tb_model(object):
                 )
 
             # check that k-vector is of corect size
-            if k_arr.ndim != 2 or k_arr.shape[-1] != self._dim_k:
+            if k_arr.ndim != 2 or k_arr.shape[-1] != dim_k:
                 raise ValueError("k_arr should be a 2D array of shape (n_kpts, dim_k).")
 
             n_kpts = k_arr.shape[0]
-
-            if self._nspin == 1:
-                ham = np.zeros((n_kpts, self._norb, self._norb), dtype=complex)
-            elif self._nspin == 2:
-                ham = np.zeros((n_kpts, self._norb, 2, self._norb, 2), dtype=complex)
+            if nspin == 1:
+                ham = np.zeros((n_kpts, norb, norb), dtype=complex)
+            elif nspin == 2:
+                ham = np.zeros((n_kpts, norb, 2, norb, 2), dtype=complex)
             else:
                 raise ValueError("Invalid spin value.")
         else:
-            if self._dim_k != 0:
+            if dim_k != 0:
                 raise Exception(
                     "Must provide a list of k-vectors for the Bloch Hamiltonian of extended systems."
                 )
             else:  # finite sample
-                if self._nspin == 1:
-                    ham = np.zeros((self._norb, self._norb), dtype=complex)
-                elif self._nspin == 2:
-                    ham = np.zeros((self._norb, 2, self._norb, 2), dtype=complex)
+                if nspin == 1:
+                    ham = np.zeros((norb, norb), dtype=complex)
+                elif nspin == 2:
+                    ham = np.zeros((norb, 2, norb, 2), dtype=complex)
                 else:
                     raise ValueError("Invalid spin value.")
 
+        i_indices = np.array([h[1] for h in hoppings])
+        j_indices = np.array([h[2] for h in hoppings])
+        amps = np.array([h[0] for h in hoppings], dtype=complex)
+
+        # Precompute delta_r for all hoppings
+        orb_i = orb_red[i_indices]  # Shape: (n_hoppings, dim_r)
+        orb_j = orb_red[j_indices]  # Shape: (n_hoppings, dim_r)
+
+        if dim_k != 0:
+            ind_Rs = np.array([h[3] for h in hoppings], dtype=float)
+
+            delta_r = ind_Rs - orb_i + orb_j  # Shape: (n_hoppings, dim_r)
+            delta_r_per = delta_r[:, per]  # Shape: (n_hoppings, dim_k)
+
+            # Compute phase factors for all k-points and hoppings
+            k_dot_r = k_arr @ delta_r_per.T  # Shape: (n_kpts, n_hoppings)
+            phases = np.exp(1j * 2 * np.pi * k_dot_r)  # Shape: (n_kpts, n_hoppings)
+
+        n_hops = len(hoppings)
+        if nspin == 1:
+            T_f = np.zeros((n_hops, norb, norb), complex)
+            T_r = np.zeros((n_hops, norb, norb), complex)
+            idx  = np.arange(n_hops)
+            T_f[idx, i_indices, j_indices] = amps
+            T_r[idx, j_indices, i_indices] = amps.conj()
+        else:
+            # spinful: each amp is a 2×2 block
+            T_f = np.zeros((n_hops, norb, 2, norb, 2), complex)
+            T_r = np.zeros_like(T_f)
+            for h in range(n_hops):
+                T_f[h, i_indices[h], :, j_indices[h], :] = amps[h]
+                T_r[h, j_indices[h], :, i_indices[h], :] = amps[h].conj().T
+
+        if dim_k != 0:
+            ham = np.tensordot(phases, T_f, axes=([1],[0]))  
+            ham_hc = np.tensordot(phases.conj(), T_r, axes=([1],[0]))
+            np.add(ham, ham_hc, out=ham)
+        else:
+            ham = np.sum(T_f, axis=0)
+            ham_hc = np.sum(T_r, axis=0)
+            np.add(ham, ham_hc, out=ham)
+
         # fill diagonal elements with onsite energies
-        orb_idxs = np.arange(self._norb)
+        orb_idxs = np.arange(norb)
         for orb in orb_idxs:
-            if self._nspin == 1:
-                ham[..., orb, orb] = self._site_energies[orb]
-            elif self._nspin == 2:
-                ham[..., orb, :, orb, :] = self._site_energies[orb]
-
-        # Loop over all hoppings
-        for hopping in self._hoppings:
-            i = hopping[1]
-            j = hopping[2]
-
-            if self._nspin == 1:
-                amp = complex(hopping[0])
-            elif self._nspin == 2:
-                amp = np.array(hopping[0], dtype=complex)
-
-            # phase factor for periodic directions
-            if self._dim_k != 0:
-                ind_R = np.array(hopping[3], dtype=float)
-
-                # Compute delta_r for periodic directions
-                delta_r = ind_R - self._orb[i, :] + self._orb[j, :]  # Shape: (dim_r,)
-                delta_r_per = delta_r[np.array(self._per)]  # Shape: (dim_k,)
-
-                # Compute phase factors for all k-points
-                phase = np.exp(1j * 2 * np.pi * k_arr @ delta_r_per)  # Shape: (n_kpts,)
-
-                # Compute the amplitude for all k-points and components
-                if self._nspin == 2:
-                    amp = phase[:, None, None] * amp  # Shape: (n_kpts, n_spin, n_spin)
-                else:
-                    amp *= phase  # Shape: (n_kpts,)
-
-            if self._nspin == 1:
-                ham[..., i, j] += amp
-                ham[..., j, i] += amp.conjugate()
-            elif self._nspin == 2:
-                ham[..., i, :, j, :] += amp
-                ham[..., j, :, i, :] += np.swapaxes(amp.conjugate(), -1, -2)
+            if nspin == 1:
+                ham[..., orb, orb] += site_energies[orb]
+            elif nspin == 2:
+                ham[..., orb, :, orb, :] += site_energies[orb]
 
         return ham
 
@@ -1512,6 +1093,7 @@ class tb_model(object):
             return eigvals, eigvecs
         else:
             eigvals = self._sol_ham(Ham, return_eigvecs=return_eigvecs)
+
             if self._dim_k != 0:
                 if eigvals.ndim != 2:
                     raise ValueError("Wrong shape of eigvals")
@@ -2289,51 +1871,7 @@ somehow changed Cartesian coordinates of orbitals."""
 
         """
 
-        # get the mesh size and checks for consistency
-        use_mesh = np.array(list(map(round, mesh_size)), dtype=int)
-        if use_mesh.shape != (self._dim_k,):
-            print(use_mesh.shape)
-            raise Exception("\n\nIncorrect size of the specified k-mesh!")
-        if np.min(use_mesh) <= 0:
-            raise Exception("\n\nMesh must have positive non-zero number of elements.")
-
-        # construct the mesh
-        if self._dim_k == 1:
-            # get a mesh
-            k_vec = np.mgrid[0 : use_mesh[0]]
-            # normalize the mesh
-            norm = np.tile(np.array(use_mesh, dtype=float), use_mesh)
-            norm = norm.reshape(use_mesh.tolist() + [1])
-            norm = norm.transpose([1, 0])
-            k_vec = k_vec / norm
-            # final reshape
-            k_vec = k_vec.transpose([1, 0]).reshape([use_mesh[0], 1])
-        elif self._dim_k == 2:
-            # get a mesh
-            k_vec = np.mgrid[0 : use_mesh[0], 0 : use_mesh[1]]
-            # normalize the mesh
-            norm = np.tile(np.array(use_mesh, dtype=float), use_mesh)
-            norm = norm.reshape(use_mesh.tolist() + [2])
-            norm = norm.transpose([2, 0, 1])
-            k_vec = k_vec / norm
-            # final reshape
-            k_vec = k_vec.transpose([1, 2, 0]).reshape([use_mesh[0] * use_mesh[1], 2])
-        elif self._dim_k == 3:
-            # get a mesh
-            k_vec = np.mgrid[0 : use_mesh[0], 0 : use_mesh[1], 0 : use_mesh[2]]
-            # normalize the mesh
-            norm = np.tile(np.array(use_mesh, dtype=float), use_mesh)
-            norm = norm.reshape(use_mesh.tolist() + [3])
-            norm = norm.transpose([3, 0, 1, 2])
-            k_vec = k_vec / norm
-            # final reshape
-            k_vec = k_vec.transpose([1, 2, 3, 0]).reshape(
-                [use_mesh[0] * use_mesh[1] * use_mesh[2], 3]
-            )
-        else:
-            raise Exception("\n\nUnsupported dim_k!")
-
-        return k_vec
+        return k_uniform_mesh(self, mesh_size)
 
     def k_path(self, kpts, nk, report=True):
         r"""
@@ -2397,115 +1935,7 @@ somehow changed Cartesian coordinates of orbitals."""
 
         """
 
-        # processing of special cases for kpts
-        if kpts == "full":
-            # full Brillouin zone for 1D case
-            k_list = np.array([[0.0], [0.5], [1.0]])
-        elif kpts == "fullc":
-            # centered full Brillouin zone for 1D case
-            k_list = np.array([[-0.5], [0.0], [0.5]])
-        elif kpts == "half":
-            # half Brillouin zone for 1D case
-            k_list = np.array([[0.0], [0.5]])
-        else:
-            k_list = np.array(kpts)
-
-        # in 1D case if path is specified as a vector, convert it to an (n,1) array
-        if len(k_list.shape) == 1 and self._dim_k == 1:
-            k_list = np.array([k_list]).T
-
-        # make sure that k-points in the path have correct dimension
-        if k_list.shape[1] != self._dim_k:
-            print("input k-space dimension is", k_list.shape[1])
-            print("k-space dimension taken from model is", self._dim_k)
-            raise Exception("\n\nk-space dimensions do not match")
-
-        # must have more k-points in the path than number of nodes
-        if nk < k_list.shape[0]:
-            raise Exception(
-                "\n\nMust have more points in the path than number of nodes."
-            )
-
-        # number of nodes
-        n_nodes = k_list.shape[0]
-
-        # extract the lattice vectors from the TB model
-        lat_per = np.copy(self._lat)
-        # choose only those that correspond to periodic directions
-        lat_per = lat_per[self._per]
-        # compute k_space metric tensor
-        k_metric = np.linalg.inv(np.dot(lat_per, lat_per.T))
-
-        # Find distances between nodes and set k_node, which is
-        # accumulated distance since the start of the path
-        #  initialize array k_node
-        k_node = np.zeros(n_nodes, dtype=float)
-        for n in range(1, n_nodes):
-            dk = k_list[n] - k_list[n - 1]
-            dklen = np.sqrt(np.dot(dk, np.dot(k_metric, dk)))
-            k_node[n] = k_node[n - 1] + dklen
-
-        # Find indices of nodes in interpolated list
-        node_index = [0]
-        for n in range(1, n_nodes - 1):
-            frac = k_node[n] / k_node[-1]
-            node_index.append(int(round(frac * (nk - 1))))
-        node_index.append(nk - 1)
-
-        # initialize two arrays temporarily with zeros
-        #   array giving accumulated k-distance to each k-point
-        k_dist = np.zeros(nk, dtype=float)
-        #   array listing the interpolated k-points
-        k_vec = np.zeros((nk, self._dim_k), dtype=float)
-
-        # go over all kpoints
-        k_vec[0] = k_list[0]
-        for n in range(1, n_nodes):
-            n_i = node_index[n - 1]
-            n_f = node_index[n]
-            kd_i = k_node[n - 1]
-            kd_f = k_node[n]
-            k_i = k_list[n - 1]
-            k_f = k_list[n]
-            for j in range(n_i, n_f + 1):
-                frac = float(j - n_i) / float(n_f - n_i)
-                k_dist[j] = kd_i + frac * (kd_f - kd_i)
-                k_vec[j] = k_i + frac * (k_f - k_i)
-
-        if report:
-            if self._dim_k == 1:
-                print(" Path in 1D BZ defined by nodes at " + str(k_list.flatten()))
-            else:
-                print("----- k_path report begin ----------")
-                original = np.get_printoptions()
-                np.set_printoptions(precision=5)
-                print("real-space lattice vectors\n", lat_per)
-                print("k-space metric tensor\n", k_metric)
-                print("internal coordinates of nodes\n", k_list)
-                if lat_per.shape[0] == lat_per.shape[1]:
-                    # lat_per is invertible
-                    lat_per_inv = np.linalg.inv(lat_per).T
-                    print("reciprocal-space lattice vectors\n", lat_per_inv)
-                    # cartesian coordinates of nodes
-                    kpts_cart = np.tensordot(k_list, lat_per_inv, axes=1)
-                    print("cartesian coordinates of nodes\n", kpts_cart)
-                print("list of segments:")
-                for n in range(1, n_nodes):
-                    dk = k_node[n] - k_node[n - 1]
-                    dk_str = _nice_float(dk, 7, 5)
-                    print(
-                        "  length = " + dk_str + "  from ",
-                        k_list[n - 1],
-                        " to ",
-                        k_list[n],
-                    )
-                print("node distance list:", k_node)
-                print("node index list:   ", np.array(node_index))
-                np.set_printoptions(precision=original["precision"])
-                print("----- k_path report end ------------")
-            print()
-
-        return (k_vec, k_dist, k_node)
+        return k_path(self, kpts, nk, report)
 
     def ignore_position_operator_offdiagonal(self):
         """Call to this function enables one to approximately compute
@@ -2760,7 +2190,10 @@ somehow changed Cartesian coordinates of orbitals."""
                     "\n\nBasis must be either 'wavefunction', 'bloch', or 'orbital'"
                 )
 
-    def berry_curvature(self, k_pts, occ_idxs=None, dirs='all', cartesian=False, abelian=True):
+    def berry_curvature(
+            self, k_pts, evals = None, evecs = None, occ_idxs=None, 
+            dirs='all', cartesian=False, abelian=True
+            ):
         """
         Generates the Berry curvature from the velocity operator dH/dk.
 
@@ -2770,14 +2203,19 @@ somehow changed Cartesian coordinates of orbitals."""
         if self._dim_k < 2:
             raise Exception(
                 """
-                Berry curvature in this context is only used for k-space adiabatic parameters. 
+                Berry curvature in this context is only computed for k-space dimensions. 
                 Must have dim_k >= 2.
                 """
             )
 
         v_k = self.get_velocity(k_pts, cartesian=cartesian)  # (Nk, dim_k, n_orb, n_orb)
-        evals, evecs = self.solve_ham(k_pts, return_eigvecs=True)
+        # flatten spin axis if present
+        new_shape = (v_k.shape[:2]) + (self._nstate, self._nstate)
+        v_k = v_k.reshape(*new_shape)
 
+        if evals is None or evecs is None:
+            evals, evecs = self.solve_ham(k_pts, return_eigvecs=True, keep_spin_ax=False)
+    
         n_eigs = evecs.shape[-2]
 
         # Identify occupied bands
@@ -2800,26 +2238,20 @@ somehow changed Cartesian coordinates of orbitals."""
             inv_delta_E = np.where(delta_E != 0, 1 / delta_E, 0)
 
         # newaxis for Cartesian direction broadcasting
-        evecs_conj = evecs.conj()[np.newaxis, :, ::]
+        evecs_conj = evecs.conj()[np.newaxis, :, :, :]
         # transpose
-        evecs_T = evecs.transpose(0, 2, 1)[np.newaxis, :, ::]
+        evecs_T = evecs.transpose(0, 2, 1)[np.newaxis, :, :, :]
         # project vk into energy eignvector basis
-        vk_evecT = np.matmul(v_k, evecs_T)
+        vk_evecT = np.matmul(v_k, evecs_T) # intermediate array
         v_k_rot = np.matmul(evecs_conj, vk_evecT)  # (dim_k, n_kpts, n_orb, n_orb)
 
         # Extract relevant submatrices
         # top right
-        v_occ_cond = v_k_rot[..., occ_idxs, :][
-            ..., :, cond_idxs
-        ]  # shape (dim_k, Nk, n_occ, n_con)
+        v_occ_cond = v_k_rot[..., occ_idxs, :][..., :, cond_idxs]  # shape (dim_k, Nk, n_occ, n_con)
         # bottom left
-        v_cond_occ = v_k_rot[..., cond_idxs, :][
-            ..., :, occ_idxs
-        ]  # shape (dim_k, Nk, n_con, n_occ)
+        v_cond_occ = v_k_rot[..., cond_idxs, :][..., :, occ_idxs]  # shape (dim_k, Nk, n_con, n_occ)
         # top right (bottom left uneeded in Kubo formula)
-        delta_E_occ_cond = inv_delta_E[:, occ_idxs, :][
-            :, :, cond_idxs
-        ]  # shape (Nk, n_con, n_occ)
+        delta_E_occ_cond = inv_delta_E[:, occ_idxs, :][:, :, cond_idxs]  # shape (Nk, n_con, n_occ)
 
         # premultiply by energy denominators
         v_occ_cond = v_occ_cond * delta_E_occ_cond
@@ -2851,8 +2283,8 @@ somehow changed Cartesian coordinates of orbitals."""
                 Indices for reciprocal space directions defining
                 2d surface to integrate Berry flux.
         """
-        nks = (200,) * self._dim_k
-        k_vals = [np.arange(nk) / nk for nk in nks]  # exlcudes endpoint
+        nks = (50,) * self._dim_k
+        k_vals = [np.linspace(0, 1, nk, endpoint=False) for nk in nks]   # exlcudes endpoint
         sq_mesh = np.meshgrid(*k_vals, indexing="ij")
         flat_mesh = np.stack(sq_mesh, axis=-1).reshape(
             -1, len(nks)
@@ -2862,9 +2294,127 @@ somehow changed Cartesian coordinates of orbitals."""
 
         Nk = Omega.shape[2]
         dk_sq = 1 / Nk
-        Chern = np.sum(np.trace(Omega[dirs], axis1=-1, axis2=-2)) * dk_sq / (2 * np.pi)
+        Chern = np.sum(Omega[dirs]) * dk_sq / (2 * np.pi)
 
         return Chern.real
+    
+    ##### Plotting functions #####
+    # These plotting functions are wrappers to the functions in plotting.py
+    def visualize(
+        self,
+        proj_plane=None,
+        eig_dr=None,
+        draw_hoppings=True,
+        annotate_onsite_en=False,
+        ph_color="black",
+    ):
+        r"""
+
+        Rudimentary function for visualizing tight-binding model geometry,
+        hopping between tight-binding orbitals, and electron eigenstates.
+
+        If eigenvector is not drawn, then orbitals in home cell are drawn
+        as red circles, and those in neighboring cells are drawn with
+        different shade of red. Hopping term directions are drawn with
+        green lines connecting two orbitals. Origin of unit cell is
+        indicated with blue dot, while real space unit vectors are drawn
+        with blue lines.
+
+        If eigenvector is drawn, then electron eigenstate on each orbital
+        is drawn with a circle whose size is proportional to wavefunction
+        amplitude while its color depends on the phase. There are various
+        coloring schemes for the phase factor; see more details under
+        *ph_color* parameter. If eigenvector is drawn and coloring scheme
+        is "red-blue" or "wheel", all other elements of the picture are
+        drawn in gray or black.
+
+        :param dir_first: First index of Cartesian coordinates used for
+          plotting.
+
+        :param dir_second: Second index of Cartesian coordinates used for
+          plotting. For example if dir_first=0 and dir_second=2, and
+          Cartesian coordinates of some orbital is [2.0,4.0,6.0] then it
+          will be drawn at coordinate [2.0,6.0]. If dimensionality of real
+          space (*dim_r*) is zero or one then dir_second should not be
+          specified.
+
+        :param eig_dr: Optional parameter specifying eigenstate to
+          plot. If specified, this should be one-dimensional array of
+          complex numbers specifying wavefunction at each orbital in
+          the tight-binding basis. If not specified, eigenstate is not
+          drawn.
+
+        :param draw_hoppings: Optional parameter specifying whether to
+          draw all allowed hopping terms in the tight-binding
+          model. Default value is True.
+
+        :param ph_color: Optional parameter determining the way
+          eigenvector phase factors are translated into color. Default
+          value is "black". Convention of the wavefunction phase is as
+          in convention 1 in section 3.1 of :download:`notes on
+          tight-binding formalism  <misc/pythtb-formalism.pdf>`.  In
+          other words, these wavefunction phases are in correspondence
+          with cell-periodic functions :math:`u_{n {\bf k}} ({\bf r})`
+          not :math:`\Psi_{n {\bf k}} ({\bf r})`.
+
+          * "black" -- phase of eigenvectors are ignored and wavefunction
+            is always colored in black.
+
+          * "red-blue" -- zero phase is drawn red, while phases or pi or
+            -pi are drawn blue. Phases in between are interpolated between
+            red and blue. Some phase information is lost in this coloring
+            becase phase of +phi and -phi have same color.
+
+          * "wheel" -- each phase is given unique color. In steps of pi/3
+            starting from 0, colors are assigned (in increasing hue) as:
+            red, yellow, green, cyan, blue, magenta, red.
+
+        :returns:
+          * **fig** -- Figure object from matplotlib.pyplot module
+            that can be used to save the figure in PDF, EPS or similar
+            format, for example using fig.savefig("name.pdf") command.
+          * **ax** -- Axes object from matplotlib.pyplot module that can be
+            used to tweak the plot, for example by adding a plot title
+            ax.set_title("Title goes here").
+
+        Example usage::
+
+          # Draws x-y projection of tight-binding model
+          # tweaks figure and saves it as a PDF.
+          (fig, ax) = tb.visualize(0, 1)
+          ax.set_title("Title goes here")
+          fig.savefig("model.pdf")
+
+        See also these examples: :ref:`edge-example`,
+        :ref:`visualize-example`.
+
+        """
+        return plot_tb_model(self, proj_plane, eig_dr, draw_hoppings, annotate_onsite_en, ph_color)
+
+
+    def visualize_3d(
+        self,
+        eig_dr=None,
+        draw_hoppings=True,
+        ph_color="black",
+        ):
+        r"""
+        Visualize a 3D tight-binding model using Plotly.
+
+        This function creates an interactive 3D plot of your tight-binding model,
+        showing the unit-cell origin, lattice vectors (with arrowheads), orbitals,
+        hopping lines, and (optionally) an eigenstate overlay with marker sizes
+        proportional to amplitude and colors reflecting the phase.
+
+        :param eig_dr: Optional eigenstate (1D array of complex numbers) to display.
+        :param draw_hoppings: Whether to draw hopping lines between orbitals.
+        :param annotate_onsite_en: Whether to annotate orbitals with onsite energies.
+        :param ph_color: Coloring scheme for eigenstate phases (e.g. "black", "red-blue", "wheel").
+
+        :returns:
+        * **fig** -- A Plotly Figure object.
+        """
+        return plot_tb_model_3d(self, eig_dr=eig_dr, draw_hoppings=draw_hoppings, ph_color=ph_color)
 
     def plot_bands(
         self,
@@ -2880,7 +2430,7 @@ somehow changed Cartesian coordinates of orbitals."""
         lw=2,
         lc="b",
         ls="solid",
-        cmap="bwr",
+        cmap="plasma",
         show=False,
         cbar=True,
     ):
@@ -2897,96 +2447,8 @@ somehow changed Cartesian coordinates of orbitals."""
         Returns:
             fig, ax: matplotlib fig and ax
         """
-        import matplotlib.pyplot as plt
-
-        if fig is None:
-            fig, ax = plt.subplots()
-
-        # generate k-path and labels
-        (k_vec, k_dist, k_node) = self.k_path(k_path, nk, report=False)
-
-        # scattered bands with sublattice color
-        if proj_orb_idx is not None:
-            # diagonalize model on path
-            evals, evecs = self.solve_ham(k_vec, return_eigvecs=True)
-            n_eigs = evals.shape[-1]
-
-            if self._nspin == 1:
-                wt = abs(evecs) ** 2
-                col = np.sum([wt[..., i] for i in proj_orb_idx], axis=0)
-            elif self._nspin == 2:
-                wt = abs(evecs) ** 2
-                col = np.sum([wt[..., i, :] for i in proj_orb_idx], axis=(0, -1))
-
-            for n in range(n_eigs):
-                scat = ax.scatter(
-                    k_dist,
-                    evals[:, n],
-                    c=col[:, n],
-                    cmap=cmap,
-                    marker="o",
-                    s=scat_size,
-                    vmin=0,
-                    vmax=1,
-                    zorder=2,
-                )
-
-            if cbar:
-                cbar = fig.colorbar(scat, ticks=[1, 0], pad=0.01)
-                # cbar.set_ticks([])
-                # cbar.ax.set_yticklabels([r'$B$', r'$A$'], size=12)
-                cbar.ax.set_yticklabels([r"$ |\langle \psi_{nk} | \phi_B \rangle |^2$", r"$|\langle \psi_{nk} | \phi_A \rangle |^2$"], size=12)
-
-        elif proj_spin:
-            evals, evecs = self.solve_ham(k_vec, return_eigvecs=True)
-            n_eigs = evals.shape[-1]
-
-            if self._nspin <= 1:
-                raise ValueError("Spin needs to be greater than 1 for projecting spin.")
-
-            wt = abs(evecs) ** 2
-            col = np.sum(wt[..., 1], axis=2)
-
-            for n in range(n_eigs):
-                scat = ax.scatter(
-                    k_dist,
-                    evals[:, n],
-                    c=col[:, n],
-                    cmap=cmap,
-                    marker="o",
-                    s=scat_size,
-                    vmin=0,
-                    vmax=1,
-                    zorder=2,
-                )
-
-            cbar = fig.colorbar(scat, ticks=[1, 0])
-            cbar.ax.set_yticklabels([r"$ |\langle \psi_{nk} | \phi_{\uparrow} \rangle |^2$", r"$|\langle \psi_{nk} | \phi_{\downarrow} \rangle |^2$"], size=12)
-
-        else:
-            evals = self.solve_ham(k_vec, return_eigvecs=False)
-            n_eigs = evals.shape[-1]
-
-            # continuous bands
-            for n in range(n_eigs):
-                ax.plot(k_dist, evals[:, n], c=lc, lw=lw, ls=ls)
-
-        ax.set_xlim(0, k_node[-1])
-        ax.set_xticks(k_node)
-        for n in range(len(k_node)):
-            ax.axvline(x=k_node[n], linewidth=0.5, color="k", zorder=1)
-        if k_label is not None:
-            ax.set_xticklabels(k_label, size=12)
-
-        ax.set_title(title)
-        ax.set_ylabel(r"Energy $E(\mathbf{{k}})$", size=12)
-        ax.yaxis.labelpad = 10
-
-        if show:
-            plt.show()
-
-        return fig, ax
-
+        return plot_bands(self, k_path, nk, k_label, proj_orb_idx, proj_spin, fig, ax, title, scat_size, lw, lc, ls, cmap, show, cbar)
+        
 
 # =======================================================================
 class wf_array(object):
@@ -3194,7 +2656,7 @@ class wf_array(object):
                 # generate a kpoint
                 kpt = [start_k[0] + float(i) / float(self._mesh_arr[0] - 1)]
                 # solve at that point
-                (eval, evec) = self._model.solve_ham(kpt, return_eigvecs=True)
+                (eval, evec) = self._model.solve_ham([kpt], return_eigvecs=True)
                 # store wavefunctions
                 self[i] = evec
                 # store gaps
@@ -3209,7 +2671,9 @@ class wf_array(object):
                         start_k[0] + float(i) / float(self._mesh_arr[0] - 1),
                         start_k[1] + float(j) / float(self._mesh_arr[1] - 1),
                     ]
-                    (eval, evec) = self._model.solve_ham(kpt, return_eigvecs=True)
+                    (eval, evec) = self._model.solve_ham([kpt], return_eigvecs=True)
+                    # print(eval.shape)
+
                     self[i, j] = evec
                     if all_gaps is not None:
                         all_gaps[i, j, :] = eval[1:] - eval[:-1]
@@ -3224,10 +2688,10 @@ class wf_array(object):
                             start_k[1] + float(j) / float(self._mesh_arr[1] - 1),
                             start_k[2] + float(k) / float(self._mesh_arr[2] - 1),
                         ]
-                        (eval, evec) = self._model.solve_ham(kpt, return_eigvecs=True)
+                        (eval, evec) = self._model.solve_ham([kpt], return_eigvecs=True)
                         self[i, j, k] = evec
                         if all_gaps is not None:
-                            all_gaps[i, j, k, :] = eval[1:] - eval[:-1]
+                            all_gaps[i, j, k, :] = eval[:, 1:] - eval[:, :-1]
             for dir in range(3):
                 self.impose_pbc(dir, self._model._per[dir])
         elif self._dim_arr == 4:
@@ -4543,24 +4007,6 @@ class w90(object):
 # =======================================================================
 
 
-def _nicefy_eig(eval, eig=None):
-    "Sort eigenvaules and eigenvectors, if given, and convert to real numbers"
-    # first take only real parts of the eigenvalues
-    eval = np.array(eval.real, dtype=float)
-    # sort energies
-    args = eval.argsort()
-    eval = eval[args]
-    if eig is not None:
-        eig = eig[args]
-        return (eval, eig)
-    return eval
-
-
-# for nice justified printout
-def _nice_float(x, just, rnd):
-    return str(round(x, rnd)).rjust(just)
-
-
 def _wf_dpr(wf1, wf2):
     """calculate dot product between two wavefunctions.
     wf1 and wf2 are of the form [orbital,spin]"""
@@ -4668,7 +4114,7 @@ def _one_phase_cont(pha, clos):
 def _array_phases_cont(arr_pha, clos):
     """Reads in 2d array of phases *arr_pha* and makes sure that they
     are continuous along first index, i.e., that there are no jumps of
-    2pi. First array of phasese is made as close to *clos* as
+    2pi. First array of phases is made as close to *clos* as
     possible."""
     ret = np.zeros_like(arr_pha)
     # go over all points
