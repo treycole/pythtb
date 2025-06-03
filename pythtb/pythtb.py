@@ -1,57 +1,15 @@
 from __future__ import print_function
-
-# PythTB python tight binding module.
-# March 19th, 2025
-__version__ = "2.0.0"
-
-# Copyright 2010, 2012, 2016, 2017, 2022, 2025 by Trey Cole, Sinisa Coh and David Vanderbilt
-#
-# This file is part of PythTB. PythTB is free software: you can
-# redistribute it and/or modify it under the terms of the GNU General
-# Public License as published by the Free Software Foundation, either
-# version 3 of the License, or (at your option) any later version.
-#
-# PythTB is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-# License for more details.
-#
-# A copy of the GNU General Public License should be available
-# alongside this source in a file named gpl-3.0.txt.  If not,
-# see <http://www.gnu.org/licenses/>.
-#
-# PythTB is availabe at http://www.physics.rutgers.edu/pythtb/
-
 import numpy as np  # numerics for matrices
 import sys  # for exiting
 import copy  # for deepcopying
 import logging
 from itertools import product
+from .plotting import *
+from .k_mesh import *
 
 # Configure logging at the top of the file
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
-
-
-def _fmt_num(x, precision=3):
-    # If the imaginary part is negligible, print as a real number.
-    if abs(x.imag) < 1e-10:
-        if x.real == 1:
-            return ""
-        elif x.real == -1:
-            return "-"
-        else:
-            return f"{x.real:.{precision}g}"
-    elif abs(x.real) < 1e-10:
-        if x.imag == 1:
-            return "i"
-        elif x.imag == -1:
-            return "-i"
-        else:
-            return f"{x.imag:.{precision}g}i"
-    else:
-        return f"({x:.{precision}g})"
-    
 
 def pauli_decompose(M):
     """
@@ -87,85 +45,6 @@ def pauli_decompose(M):
     a3 = 0.5 * np.trace(np.dot(M, sigma_z))
 
     return [a0, a1, a2, a3]
-
-
-def _pauli_decompose_str(M, precision=3):
-
-    a0, a1, a2, a3 = pauli_decompose(M)
-
-    # Build a list of terms, including only those with non-negligible coefficients.
-    terms = []
-    if abs(a0) > 1e-10:
-        terms.append(f"{_fmt_num(a0, precision=precision)} \sigma_0")
-    if abs(a1) > 1e-10:
-        terms.append(f"{_fmt_num(a1=precision)} \sigma_x")
-    if abs(a2) > 1e-10:
-        terms.append(f"{_fmt_num(a2=precision)} \sigma_y")
-    if abs(a3) > 1e-10:
-        terms.append(f"{_fmt_num(a3=precision)} \sigma_z")
-
-    # If all coefficients are zero, return "0".
-    if not terms:
-        return "0"
-
-    return " + ".join(terms).replace("+ -", "- ")
-
-def _pauli_decompose_unicode(M, precision=3):
-    """
-    Decompose a 2x2 matrix M in terms of the Pauli matrices and return
-    a Unicode string representation.
-
-    That is, find coefficients a0, a1, a2, a3 such that:
-    
-        M = a0 * I + a1 * σₓ + a2 * σᵧ + a3 * σᶻ
-
-    Parameters:
-        M (array-like): A 2x2 matrix.
-        precision (int): Number of significant digits for the coefficients.
-
-    Returns:
-        str: A Unicode string representing the decomposition.
-    """
-    # Use your existing function to get the coefficients
-    a0, a1, a2, a3 = pauli_decompose(M)
-
-    def fmt(x):
-        # If the imaginary part is negligible, print as a real number.
-        if abs(x.imag) < 1e-10:
-            if x.real == 1:
-                return ""
-            elif x.real == -1:
-                return "-"
-            else:
-                return f"{x.real:.{precision}g}"
-        elif abs(x.real) < 1e-10:
-            if x.imag == 1:
-                return "i"
-            elif x.imag == -1:
-                return "-i"
-            else:
-                return f"{x.imag:.{precision}g}i"
-        else:
-            return f"({x:.{precision}g})"
-
-    # Build a list of terms, using Unicode symbols.
-    terms = []
-    if abs(a0) > 1e-10:
-        terms.append(f"{fmt(a0)} 𝟙")
-    if abs(a1) > 1e-10:
-        # Using Unicode subscript x (ₓ, U+2093)
-        terms.append(f"{fmt(a1)} σ_x")
-    if abs(a2) > 1e-10:
-        # For y, using a common Unicode modifier letter for small y: ᵧ (U+1D67)
-        terms.append(f"{fmt(a2)} σ_y")
-    if abs(a3) > 1e-10:
-        # For z, using a Unicode modifier letter small z: ᶻ (U+1D5B)
-        terms.append(f"{fmt(a3)} σ_z")
-        
-    if not terms:
-        return "0"
-    
-    return " + ".join(terms).replace("+ -", "- ")
 
 
 class tb_model(object):
@@ -753,15 +632,9 @@ class tb_model(object):
                         )
                     elif np.all(ind_R[self._per] == (-1) * np.array(h[3])[self._per]):
                         raise ValueError(
-                            """\n
+                            f"""\n
                             Following matrix element was already implicitely specified:
-                            i="""
-                            + str(ind_i)
-                            + " j="
-                            + str(ind_j)
-                            + " R="
-                            + str(ind_R)
-                            + """
+                            i={ind_i}, j={ind_j}, R={ind_R}.
                             Remember,specifying <i|H|j+R> automatically specifies <j|H|i-R>.  For
                             consistency, specify all hoppings for a given bond in the same
                             direction.  (Or, alternatively, see the documentation on the
@@ -842,7 +715,6 @@ class tb_model(object):
 
             use_val = np.array(val)
 
-            # already
             if use_val.ndim == 2:
                 if not (use_val.shape[0] == 2 and use_val.shape[1] == 2):
                     raise ValueError(
@@ -863,696 +735,7 @@ class tb_model(object):
                     "Must either be a number, list, or could be a 2x2 matrix for spinful calculation."
                 )
             
-    #TODO: Add hoverable hopping and onsite terms
-    def visualize(
-        self,
-        proj_plane=None,
-        eig_dr=None,
-        draw_hoppings=True,
-        annotate_onsite_en=False,
-        ph_color="black",
-    ):
-        r"""
-
-        Rudimentary function for visualizing tight-binding model geometry,
-        hopping between tight-binding orbitals, and electron eigenstates.
-
-        If eigenvector is not drawn, then orbitals in home cell are drawn
-        as red circles, and those in neighboring cells are drawn with
-        different shade of red. Hopping term directions are drawn with
-        green lines connecting two orbitals. Origin of unit cell is
-        indicated with blue dot, while real space unit vectors are drawn
-        with blue lines.
-
-        If eigenvector is drawn, then electron eigenstate on each orbital
-        is drawn with a circle whose size is proportional to wavefunction
-        amplitude while its color depends on the phase. There are various
-        coloring schemes for the phase factor; see more details under
-        *ph_color* parameter. If eigenvector is drawn and coloring scheme
-        is "red-blue" or "wheel", all other elements of the picture are
-        drawn in gray or black.
-
-        :param dir_first: First index of Cartesian coordinates used for
-          plotting.
-
-        :param dir_second: Second index of Cartesian coordinates used for
-          plotting. For example if dir_first=0 and dir_second=2, and
-          Cartesian coordinates of some orbital is [2.0,4.0,6.0] then it
-          will be drawn at coordinate [2.0,6.0]. If dimensionality of real
-          space (*dim_r*) is zero or one then dir_second should not be
-          specified.
-
-        :param eig_dr: Optional parameter specifying eigenstate to
-          plot. If specified, this should be one-dimensional array of
-          complex numbers specifying wavefunction at each orbital in
-          the tight-binding basis. If not specified, eigenstate is not
-          drawn.
-
-        :param draw_hoppings: Optional parameter specifying whether to
-          draw all allowed hopping terms in the tight-binding
-          model. Default value is True.
-
-        :param ph_color: Optional parameter determining the way
-          eigenvector phase factors are translated into color. Default
-          value is "black". Convention of the wavefunction phase is as
-          in convention 1 in section 3.1 of :download:`notes on
-          tight-binding formalism  <misc/pythtb-formalism.pdf>`.  In
-          other words, these wavefunction phases are in correspondence
-          with cell-periodic functions :math:`u_{n {\bf k}} ({\bf r})`
-          not :math:`\Psi_{n {\bf k}} ({\bf r})`.
-
-          * "black" -- phase of eigenvectors are ignored and wavefunction
-            is always colored in black.
-
-          * "red-blue" -- zero phase is drawn red, while phases or pi or
-            -pi are drawn blue. Phases in between are interpolated between
-            red and blue. Some phase information is lost in this coloring
-            becase phase of +phi and -phi have same color.
-
-          * "wheel" -- each phase is given unique color. In steps of pi/3
-            starting from 0, colors are assigned (in increasing hue) as:
-            red, yellow, green, cyan, blue, magenta, red.
-
-        :returns:
-          * **fig** -- Figure object from matplotlib.pyplot module
-            that can be used to save the figure in PDF, EPS or similar
-            format, for example using fig.savefig("name.pdf") command.
-          * **ax** -- Axes object from matplotlib.pyplot module that can be
-            used to tweak the plot, for example by adding a plot title
-            ax.set_title("Title goes here").
-
-        Example usage::
-
-          # Draws x-y projection of tight-binding model
-          # tweaks figure and saves it as a PDF.
-          (fig, ax) = tb.visualize(0, 1)
-          ax.set_title("Title goes here")
-          fig.savefig("model.pdf")
-
-        See also these examples: :ref:`edge-example`,
-        :ref:`visualize-example`.
-
-        """
-        import matplotlib.pyplot as plt
-        from matplotlib.patches import FancyArrowPatch
-        import matplotlib.cm as cm
-
-        cmap = plt.get_cmap("viridis", self._norb)
-
-        fig, ax = plt.subplots(figsize=(8, 8))
-
-        # Projection function: projects a vector onto the 2D plane
-        def proj(v):
-            if proj_plane is not None:
-                coord_x = v[proj_plane[0]]
-                coord_y = v[proj_plane[1]]
-            else:
-                coord_x = v[0]
-                coord_y = v[1]
-            return [coord_x, coord_y]
-
-        # Convert reduced coordinates to Cartesian coordinates
-        def to_cart(red):
-            return np.dot(red, self._lat)
-
-        # to ensure proper padding, track all plotted coordinates
-        all_coords = []
-
-        # Draw the origin
-        origin = [0.0, 0.0]
-        ax.plot(origin[0], origin[1], "X", color="black", ms=8)
-        all_coords.append(origin)
-
-        # Draw lattice (unit cell) vectors as arrows and label them
-        ends = []
-        for i in self._per:
-            start = origin
-            end = proj(self._lat[i])
-            ends.append(end)
-
-            # lattice vector arrow
-            arrow = FancyArrowPatch(
-                start,
-                end,
-                arrowstyle="->",
-                mutation_scale=15,
-                color="blue",
-                lw=2,
-                zorder=0,
-            )
-            ax.add_patch(arrow)
-
-            # annotation of lattice
-            ax.annotate(
-                f"$\\vec{{a}}_{i}$",
-                xy=end,  # (end[0], end[1])
-                xytext=(4, 4),  # offset in points
-                textcoords="offset points",
-                color="blue",
-                fontsize=12,
-                va="bottom",
-                ha="right",
-            )
-            all_coords.append(end)
-
-        # plot dotted bounding lines to unit cell
-        ends = np.array(ends)
-
-        # if 2d cell
-        if ends.shape[0] > 1:
-            # top shifted line
-            start = ends[0]
-            end = ends[0] + ends[1]
-            ax.plot(
-                [start[0], end[0]],
-                [start[1], end[1]],
-                ls="--",
-                lw=1,
-                color="b",
-                zorder=0,
-                alpha=0.5,
-            )
-
-            # right shifted line
-            start = ends[1]
-            ax.plot(
-                [start[0], end[0]],
-                [start[1], end[1]],
-                ls="--",
-                lw=1,
-                color="b",
-                zorder=0,
-                alpha=0.5,
-            )
-
-        # Draw orbitals: home-cell orbitals in red
-        orb_coords = []
-        for i in range(self._norb):
-            pos = to_cart(self._orb[i])
-            p = proj(pos)
-            color = cmap(i)
-            ax.scatter(p[0], p[1], color=color, s=50, zorder=2, label=f"Orbital {i}")
-            orb_coords.append(p)
-
-            # For spinful case, annotate orbital with onsite decomposition.
-            if self._nspin == 2 and annotate_onsite_en:
-                onsite_str = _pauli_decompose_str(self._site_energies[i])
-                ax.annotate(
-                    f"$\Delta_{{{i}}} = {onsite_str}$",
-                    xy=p,
-                    xytext=(5, 5),
-                    textcoords="offset points",
-                    fontsize=10,
-                    color="red",
-                    bbox=dict(
-                        boxstyle="round,pad=0.2", fc="lightcoral", ec="none", alpha=0.6
-                    ),
-                    zorder=5,
-                )
-            elif self._nspin == 1 and annotate_onsite_en:
-                onsite_str = f"$\Delta_{{{i}}} = {self._site_energies[i]:.2f}$"
-                ax.annotate(
-                    onsite_str,
-                    xy=p,
-                    xytext=(5, 5),
-                    textcoords="offset points",
-                    fontsize=10,
-                    color="red",
-                    bbox=dict(
-                        boxstyle="round,pad=0.2", fc="lightcoral", ec="none", alpha=0.6
-                    ),
-                    zorder=5,
-                )
-
-        # Draw hopping terms with curved arrows
-        hopping_coords = []
-
-        # maximum magnitudes of hopping strengths
-        mags = [np.amax(abs(hop[0])) for hop in self._hoppings]
-        biggest_hop = np.amax(mags)
-        # transparency propto hopping strength
-        arrow_alphas = mags / biggest_hop if biggest_hop !=0 else np.ones(len(mags))
-        arrow_alphas = (
-            0.3 + 0.7 * arrow_alphas**2
-        )  # nonlinear mapping for greater visual difference
-
-        if draw_hoppings:
-            for h_idx, h in enumerate(self._hoppings):
-                amp = h[0]
-                i_orb = h[1]
-                j_orb = h[2]
-
-                r_vec = None
-                intracell = True
-                if self._dim_k != 0 and len(h) == 4:
-                    r_vec = h[3]
-                    intracell = np.all(r_vec == 0)
-
-                for shift in range(2):  # draw both i->j+R and i-R->j hop
-                    pos_i = to_cart(self._orb[i_orb])
-                    pos_j = to_cart(self._orb[j_orb])
-                    
-                    # Determine starting and ending orbital positions
-                    if r_vec is not None:
-                        # Adjust pos_j with lattice translation if provided
-                        if shift == 0:
-                            # i->j+R
-                            pos_j += np.dot(r_vec, self._lat)
-                        elif shift == 1:
-                            # i-R->j
-                            pos_i -= np.dot(r_vec, self._lat)
-
-                    p_i = proj(pos_i)
-                    p_j = proj(pos_j)
-
-                    # plot neighboring cell orbital
-                    # ensure we don't plot orbital in unit cell again (if no translation)
-                    if not intracell:
-                        # ensure we only scatter orbitals once
-                        if p_j not in hopping_coords and shift == 0:
-                            ax.scatter(
-                                p_j[0],
-                                p_j[1],
-                                color=cmap(h[2]),
-                                s=50,
-                                zorder=1,
-                                alpha=0.5,
-                            )
-                        if p_i not in hopping_coords and shift == 1:
-                            ax.scatter(
-                                p_i[0],
-                                p_i[1],
-                                color=cmap(h[1]),
-                                s=50,
-                                zorder=1,
-                                alpha=0.5,
-                            )
-
-                    # Don't want to plot connecting arrows within unit cell twice
-                    if intracell and shift == 1:
-                        # Arrow connects orbitals within cell, so shift = 1 is same
-                        # conditions as shift = 2 (same arrows)
-                        continue
-
-                    # First arrow: p_i -> p_j
-                    arrow1 = FancyArrowPatch(
-                        p_i,
-                        p_j,
-                        connectionstyle="arc3,rad=0.08",
-                        arrowstyle="->",
-                        mutation_scale=15,
-                        color="green",
-                        lw=1.3,
-                        alpha=arrow_alphas[h_idx],
-                        zorder=1,
-                    )
-                    ax.add_patch(arrow1)
-
-                    # Second arrow: p_j -> p_i
-                    arrow2 = FancyArrowPatch(
-                        p_j,
-                        p_i,
-                        connectionstyle="arc3,rad=0.08",
-                        arrowstyle="->",
-                        mutation_scale=15,
-                        color="green",
-                        lw=1.3,
-                        alpha=arrow_alphas[h_idx],
-                        zorder=1,
-                    )
-                    ax.add_patch(arrow2)
-
-                    hopping_coords.append(p_i)
-                    hopping_coords.append(p_j)
-
-        # If eigenstate is provided, overlay eigenstate information on the orbitals
-        if eig_dr is not None:
-            # For each orbital, size the marker by amplitude and color by phase
-            cmap = cm.hsv  # You can choose a different colormap if desired
-            for i in range(self._norb):
-                pos = to_cart(self._orb[i])
-                p = proj(pos)
-                amp = (
-                    np.abs(eig_dr[i]) ** 2
-                )  # intensity proportional to probability density
-                phase = np.angle(eig_dr[i])
-                # Map phase from [-pi, pi] to [0,1]
-                color = cmap((phase + np.pi) / (2 * np.pi))
-                ax.scatter(
-                    p[0],
-                    p[1],
-                    s=100 * amp,
-                    color=color,
-                    edgecolor="k",
-                    zorder=10,
-                    label="Eigenstate" if i == 0 else None,
-                )
-
-        # Adjust the axis so everything fits
-        all_coords += hopping_coords
-        all_coords += orb_coords
-
-        xs = [c[0] for c in all_coords]
-        ys = [c[1] for c in all_coords]
-        min_x, max_x = min(xs), max(xs)
-        min_y, max_y = min(ys), max(ys)
-        # Add some padding
-        pad_x = 0.1 * (max_x - min_x if max_x != min_x else 1)
-        pad_y = 0.1 * (max_y - min_y if max_y != min_y else 1)
-        ax.set_xlim(min_x - pad_x, max_x + pad_x)
-        ax.set_ylim(min_y - pad_y, max_y + pad_y)
-
-        # Final plot adjustments
-        ax.set_aspect("equal")
-        if proj_plane is not None:
-            ax.set_xlabel(f"Cartesian coordinate {proj_plane[0]}")
-            ax.set_ylabel(f"Cartesian coordinate {proj_plane[1]}")
-        else:
-            ax.set_xlabel(f"Cartesian coordinate {0}")
-            ax.set_ylabel(f"Cartesian coordinate {1}")
-
-        # ax.legend(loc="upper right", fontsize=10)
-        # plt.tight_layout()
-
-        return fig, ax
-
-
-    def visualize_3d(
-        self,
-        eig_dr=None,
-        draw_hoppings=True,
-        ph_color="black",
-        ):
-        r"""
-        Visualize a 3D tight-binding model using Plotly.
-
-        This function creates an interactive 3D plot of your tight-binding model,
-        showing the unit-cell origin, lattice vectors (with arrowheads), orbitals,
-        hopping lines, and (optionally) an eigenstate overlay with marker sizes
-        proportional to amplitude and colors reflecting the phase.
-
-        :param eig_dr: Optional eigenstate (1D array of complex numbers) to display.
-        :param draw_hoppings: Whether to draw hopping lines between orbitals.
-        :param annotate_onsite_en: Whether to annotate orbitals with onsite energies.
-        :param ph_color: Coloring scheme for eigenstate phases (e.g. "black", "red-blue", "wheel").
-
-        :returns:
-        * **fig** -- A Plotly Figure object.
-        """
-        import plotly.graph_objects as go
-        import matplotlib.cm as cm
-        import matplotlib.colors as mcolors
-
-        # Helper: Convert reduced coordinates to Cartesian coordinates.
-        def to_cart(red):
-            return np.dot(red, self._lat)
-
-        # Container for all Plotly traces.
-        traces = []
-        all_coords = []
-
-        # --- Draw Origin ---
-        origin = np.array([0.0, 0.0, 0.0])
-        
-        all_coords.append(origin)
-
-        # --- Draw Lattice Vectors ---
-        # We assume self._per is an iterable of indices for lattice vectors.
-        lattice_traces = []
-        for i in self._per:
-            start = origin
-            end = np.array(self._lat[i])
-            # Line for the lattice vector.
-            lattice_traces.append(
-                go.Scatter3d(
-                    x=[start[0], end[0]],
-                    y=[start[1], end[1]],
-                    z=[start[2], end[2]],
-                    mode="lines",
-                    line=dict(color="blue", width=4),
-                    showlegend=False,
-                    hoverinfo="none",
-                )
-            )
-            # Add a cone to simulate an arrowhead.
-            direction = end - start
-            norm = np.linalg.norm(direction)
-            if norm > 0:
-                direction_unit = direction / norm
-                lattice_traces.append(
-                    go.Cone(
-                        x=[end[0]],
-                        y=[end[1]],
-                        z=[end[2]],
-                        u=[direction_unit[0]],
-                        v=[direction_unit[1]],
-                        w=[direction_unit[2]],
-                        anchor="tip",
-                        sizemode="absolute",
-                        sizeref=0.2,  
-                        showscale=False,
-                        colorscale=[[0, "blue"], [1, "blue"]],
-                        name=f"a{i}",
-                    )
-                )
-            # Add a text annotation (using a text scatter) at the end.
-            lattice_traces.append(
-                go.Scatter3d(
-                    x=[end[0]],
-                    y=[end[1]],
-                    z=[end[2]],
-                    mode="text",
-                    # text=[fr"$\vec{{a}}_{i}$"],
-                    text=[f"a{i}"],
-                    textposition="top center",
-                    textfont=dict(color="blue", size=12),
-                    showlegend=False,
-                    hoverinfo="none",
-                )
-            )
-            all_coords.append(end)
-        traces.extend(lattice_traces)
-
-        # --- Draw Orbitals ---
-        orb_x, orb_y, orb_z = [], [], []
-        orb_text = []
-        orb_marker_colors = []
-        onsite_labels = []
-        cmap_orb = cm.get_cmap("viridis", self._norb)
-        for i in range(self._norb):
-            if self._nspin == 2:
-                onsite_str = _pauli_decompose_unicode(self._site_energies[i])
-                onsite_label = fr"{onsite_str}"
-            else:
-                onsite_label = fr"{self._site_energies[i]:.2f}"
-            onsite_labels.append(onsite_label)
-            pos = to_cart(self._orb[i])
-            orb_x.append(pos[0])
-            orb_y.append(pos[1])
-            orb_z.append(pos[2])
-            orb_text.append(f"Orbital {i}")
-            # Convert RGBA to hex.
-            orb_marker_colors.append(mcolors.to_hex(cmap_orb(i)))
-            all_coords.append(pos)
-            traces.append(
-                go.Scatter3d(
-                    x=[pos[0]],
-                    y=[pos[1]],
-                    z=[pos[2]],
-                    mode="markers",
-                    marker=dict(color=orb_marker_colors[i], size=10),
-                    text=[fr"Orbital {i}, Onsite Energy = {onsite_label}"],
-                    hoverinfo="text",
-                    name=f"Orbital {i}"
-                )
-            )
-
-        # Draw hopping terms ---
-        if draw_hoppings:
-            hopping_traces = []
-            # Compute hopping strengths for opacity.
-            mags = [np.amax(np.abs(hop[0])) for hop in self._hoppings]
-            biggest_hop = np.amax(mags) if mags else 1.0
-            arrow_alphas = np.array(mags) / biggest_hop if biggest_hop != 0 else np.ones(len(mags))
-            arrow_alphas = 0.3 + 0.7 * arrow_alphas**2  # Non-linear mapping.
-            for h_idx, h in enumerate(self._hoppings):
-                amp = h[0]
-                i_orb = h[1]
-                j_orb = h[2]
-                r_vec = None
-                intracell = True
-
-                if self._dim_k != 0 and len(h) == 4:
-                    r_vec = h[3]
-                    intracell = np.all(np.array(r_vec) == 0)
-
-                # Draw hopping for both directions.
-                for shift in range(2):
-                    pos_i = to_cart(self._orb[i_orb])
-                    pos_j = to_cart(self._orb[j_orb])
-                    if r_vec is not None:
-                        if shift == 0:
-                            pos_j = pos_j + np.dot(r_vec, self._lat)
-                        elif shift == 1:
-                            pos_i = pos_i - np.dot(r_vec, self._lat)
-
-                    if not intracell:
-                        # ensure we only scatter orbitals once
-                        traces.append(
-                            go.Scatter3d(
-                                x=[pos_i[0]],
-                                y=[pos_i[1]],
-                                z=[pos_i[2]],
-                                mode="markers",
-                                marker=dict(color=orb_marker_colors[i_orb], size=8),
-                                name="",
-                                showlegend=False,
-                                text=[f"Orbital {i_orb}, \n Onsite Energy: {onsite_labels[i_orb]}"],
-                                hoverinfo="text"
-                            )
-                        )
-
-                        traces.append(
-                            go.Scatter3d(
-                                x=[pos_j[0]],
-                                y=[pos_j[1]],
-                                z=[pos_j[2]],
-                                mode="markers",
-                                marker=dict(color=orb_marker_colors[j_orb], size=8),
-                                name="", 
-                                showlegend=False,
-                                text=[fr"Orbital {j_orb}, onsite energy: {onsite_labels[j_orb]}"],
-                                hoverinfo="text",
-                            )
-                        )
-                    
-
-                    # Don't want to plot connecting arrows within unit cell twice
-                    if intracell and shift == 1:
-                        # Arrow connects orbitals to home cell, so shift = 1 is same
-                        # conditions as shift = 2 (same arrows)
-                        continue
-
-                    if self._nspin == 2:
-                        amp_str = _pauli_decompose_unicode(amp)
-                    else:
-                        amp_str = f"{amp:.2f}"
-
-                    if r_vec is not None:
-                        r_vec_str = np.array2string(r_vec, precision=2, separator=", ")
-                        r_vec_str = r_vec_str.replace("\n", "")
-                        r_vec_str = r_vec_str.replace(" ", "")
-                        hop_str = f"Hopping {i_orb} --> {j_orb} + {r_vec} = {amp_str}"
-                    else:
-                        hop_str = f"Hopping {i_orb} --> {j_orb} = {amp_str}"
-
-                    hopping_traces.append(
-                        go.Scatter3d(
-                            x=[pos_i[0], pos_j[0]],
-                            y=[pos_i[1], pos_j[1]],
-                            z=[pos_i[2], pos_j[2]],
-                            mode="lines",
-                            line=dict(
-                                color="green",
-                                width=3,
-                            ),
-                            opacity=arrow_alphas[h_idx],
-                            text=hop_str,
-                            showlegend=False,
-                            hoverinfo="text",
-                        )
-                    )
-                    all_coords.append(pos_i)
-                    all_coords.append(pos_j)
-            traces.extend(hopping_traces)
-
-        # Overlay eigenstate if provided
-        if eig_dr is not None:
-            eigen_x, eigen_y, eigen_z = [], [], []
-            eigen_marker_sizes = []
-            eigen_marker_colors = []
-            cmap_phase = cm.get_cmap("hsv")
-            for i in range(self._norb):
-                pos = to_cart(self._orb[i])
-                eigen_x.append(pos[0])
-                eigen_y.append(pos[1])
-                eigen_z.append(pos[2])
-                amp = np.abs(eig_dr[i]) ** 2  # amplitude propto probability density.
-                eigen_marker_sizes.append(10 * amp)  # Scale factor for magnitude.
-                phase = np.angle(eig_dr[i])
-                eigen_marker_colors.append(mcolors.to_hex(cmap_phase((phase + np.pi) / (2 * np.pi))))
-            traces.append(
-                go.Scatter3d(
-                    x=eigen_x,
-                    y=eigen_y,
-                    z=eigen_z,
-                    mode="markers",
-                    marker=dict(
-                        color=eigen_marker_colors,
-                        size=eigen_marker_sizes,
-                        symbol="circle",
-                        line=dict(color="black", width=1),
-                    ),
-                    name="Eigenstate",
-                )
-            )
-
-        # --- Determine Axis Limits ---
-        all_coords = np.array(all_coords)
-        min_x, max_x = np.min(all_coords[:, 0]), np.max(all_coords[:, 0])
-        min_y, max_y = np.min(all_coords[:, 1]), np.max(all_coords[:, 1])
-        min_z, max_z = np.min(all_coords[:, 2]), np.max(all_coords[:, 2])
-        pad_x = 0.1 * (max_x - min_x if max_x != min_x else 1)
-        pad_y = 0.1 * (max_y - min_y if max_y != min_y else 1)
-        pad_z = 0.1 * (max_z - min_z if max_z != min_z else 1)
-
-        layout = go.Layout(
-            scene=dict(
-                xaxis=dict(range=[min_x - pad_x, max_x + pad_x], title="X"),
-                yaxis=dict(range=[min_y - pad_y, max_y + pad_y], title="Y"),
-                zaxis=dict(range=[min_z - pad_z, max_z + pad_z], title="Z"),
-                aspectmode="data",
-            ),
-            margin=dict(l=0, r=0, b=0, t=0),
-        )
-
-        fig = go.Figure(data=traces, layout=layout)
-
-        def get_pretty_model_info_str():
-            lines = []
-            lines.append("<b>Tight-Binding Model Information</b><br>")
-            lines.append("<br>")
-            lines.append("<b>Lattice Vectors:</b><br>")
-            for i, vec in enumerate(self._lat):
-                lines.append(f"a_{i} = {np.array2string(vec, precision=3, separator=', ')}<br>")
-            lines.append("<br>")
-            lines.append("<b>Orbital Vectors:</b><br>")
-            for i, orb in enumerate(self._orb):
-                lines.append(f"Orbital {i} = {np.array2string(orb, precision=3, separator=', ')}<br>")
-            lines.append("<br>")
-            lines.append(f"<b>Number of Spins:</b> {self._nspin}")
-            return "".join(lines)
-        
-        report_text = get_pretty_model_info_str()
-
-        # 3) Add an annotation. We’ll place it in the upper-left corner (x=0.01, y=0.99).
-        fig.add_annotation(
-            text=report_text,
-            xref="paper",
-            yref="paper",
-            x=0.01,
-            y=0.99,
-            showarrow=False,
-            align="left",
-            font=dict(family="Courier New, monospace", size=12, color="black"),
-            bordercolor="black",
-            borderwidth=1,
-            borderpad=5,
-            bgcolor="white",
-        )
-
-        return fig
-
+       
     def get_velocity(self, k_pts, cartesian=False):
         """
         Generate the velocity operator using commutator v_k = d/dk H_k for an array of k-points.
@@ -2688,51 +1871,7 @@ somehow changed Cartesian coordinates of orbitals."""
 
         """
 
-        # get the mesh size and checks for consistency
-        use_mesh = np.array(list(map(round, mesh_size)), dtype=int)
-        if use_mesh.shape != (self._dim_k,):
-            print(use_mesh.shape)
-            raise Exception("\n\nIncorrect size of the specified k-mesh!")
-        if np.min(use_mesh) <= 0:
-            raise Exception("\n\nMesh must have positive non-zero number of elements.")
-
-        # construct the mesh
-        if self._dim_k == 1:
-            # get a mesh
-            k_vec = np.mgrid[0 : use_mesh[0]]
-            # normalize the mesh
-            norm = np.tile(np.array(use_mesh, dtype=float), use_mesh)
-            norm = norm.reshape(use_mesh.tolist() + [1])
-            norm = norm.transpose([1, 0])
-            k_vec = k_vec / norm
-            # final reshape
-            k_vec = k_vec.transpose([1, 0]).reshape([use_mesh[0], 1])
-        elif self._dim_k == 2:
-            # get a mesh
-            k_vec = np.mgrid[0 : use_mesh[0], 0 : use_mesh[1]]
-            # normalize the mesh
-            norm = np.tile(np.array(use_mesh, dtype=float), use_mesh)
-            norm = norm.reshape(use_mesh.tolist() + [2])
-            norm = norm.transpose([2, 0, 1])
-            k_vec = k_vec / norm
-            # final reshape
-            k_vec = k_vec.transpose([1, 2, 0]).reshape([use_mesh[0] * use_mesh[1], 2])
-        elif self._dim_k == 3:
-            # get a mesh
-            k_vec = np.mgrid[0 : use_mesh[0], 0 : use_mesh[1], 0 : use_mesh[2]]
-            # normalize the mesh
-            norm = np.tile(np.array(use_mesh, dtype=float), use_mesh)
-            norm = norm.reshape(use_mesh.tolist() + [3])
-            norm = norm.transpose([3, 0, 1, 2])
-            k_vec = k_vec / norm
-            # final reshape
-            k_vec = k_vec.transpose([1, 2, 3, 0]).reshape(
-                [use_mesh[0] * use_mesh[1] * use_mesh[2], 3]
-            )
-        else:
-            raise Exception("\n\nUnsupported dim_k!")
-
-        return k_vec
+        return k_uniform_mesh(self, mesh_size)
 
     def k_path(self, kpts, nk, report=True):
         r"""
@@ -2796,115 +1935,7 @@ somehow changed Cartesian coordinates of orbitals."""
 
         """
 
-        # processing of special cases for kpts
-        if kpts == "full":
-            # full Brillouin zone for 1D case
-            k_list = np.array([[0.0], [0.5], [1.0]])
-        elif kpts == "fullc":
-            # centered full Brillouin zone for 1D case
-            k_list = np.array([[-0.5], [0.0], [0.5]])
-        elif kpts == "half":
-            # half Brillouin zone for 1D case
-            k_list = np.array([[0.0], [0.5]])
-        else:
-            k_list = np.array(kpts)
-
-        # in 1D case if path is specified as a vector, convert it to an (n,1) array
-        if len(k_list.shape) == 1 and self._dim_k == 1:
-            k_list = np.array([k_list]).T
-
-        # make sure that k-points in the path have correct dimension
-        if k_list.shape[1] != self._dim_k:
-            print("input k-space dimension is", k_list.shape[1])
-            print("k-space dimension taken from model is", self._dim_k)
-            raise Exception("\n\nk-space dimensions do not match")
-
-        # must have more k-points in the path than number of nodes
-        if nk < k_list.shape[0]:
-            raise Exception(
-                "\n\nMust have more points in the path than number of nodes."
-            )
-
-        # number of nodes
-        n_nodes = k_list.shape[0]
-
-        # extract the lattice vectors from the TB model
-        lat_per = np.copy(self._lat)
-        # choose only those that correspond to periodic directions
-        lat_per = lat_per[self._per]
-        # compute k_space metric tensor
-        k_metric = np.linalg.inv(np.dot(lat_per, lat_per.T))
-
-        # Find distances between nodes and set k_node, which is
-        # accumulated distance since the start of the path
-        #  initialize array k_node
-        k_node = np.zeros(n_nodes, dtype=float)
-        for n in range(1, n_nodes):
-            dk = k_list[n] - k_list[n - 1]
-            dklen = np.sqrt(np.dot(dk, np.dot(k_metric, dk)))
-            k_node[n] = k_node[n - 1] + dklen
-
-        # Find indices of nodes in interpolated list
-        node_index = [0]
-        for n in range(1, n_nodes - 1):
-            frac = k_node[n] / k_node[-1]
-            node_index.append(int(round(frac * (nk - 1))))
-        node_index.append(nk - 1)
-
-        # initialize two arrays temporarily with zeros
-        #   array giving accumulated k-distance to each k-point
-        k_dist = np.zeros(nk, dtype=float)
-        #   array listing the interpolated k-points
-        k_vec = np.zeros((nk, self._dim_k), dtype=float)
-
-        # go over all kpoints
-        k_vec[0] = k_list[0]
-        for n in range(1, n_nodes):
-            n_i = node_index[n - 1]
-            n_f = node_index[n]
-            kd_i = k_node[n - 1]
-            kd_f = k_node[n]
-            k_i = k_list[n - 1]
-            k_f = k_list[n]
-            for j in range(n_i, n_f + 1):
-                frac = float(j - n_i) / float(n_f - n_i)
-                k_dist[j] = kd_i + frac * (kd_f - kd_i)
-                k_vec[j] = k_i + frac * (k_f - k_i)
-
-        if report:
-            if self._dim_k == 1:
-                print(" Path in 1D BZ defined by nodes at " + str(k_list.flatten()))
-            else:
-                print("----- k_path report begin ----------")
-                original = np.get_printoptions()
-                np.set_printoptions(precision=5)
-                print("real-space lattice vectors\n", lat_per)
-                print("k-space metric tensor\n", k_metric)
-                print("internal coordinates of nodes\n", k_list)
-                if lat_per.shape[0] == lat_per.shape[1]:
-                    # lat_per is invertible
-                    lat_per_inv = np.linalg.inv(lat_per).T
-                    print("reciprocal-space lattice vectors\n", lat_per_inv)
-                    # cartesian coordinates of nodes
-                    kpts_cart = np.tensordot(k_list, lat_per_inv, axes=1)
-                    print("cartesian coordinates of nodes\n", kpts_cart)
-                print("list of segments:")
-                for n in range(1, n_nodes):
-                    dk = k_node[n] - k_node[n - 1]
-                    dk_str = _nice_float(dk, 7, 5)
-                    print(
-                        "  length = " + dk_str + "  from ",
-                        k_list[n - 1],
-                        " to ",
-                        k_list[n],
-                    )
-                print("node distance list:", k_node)
-                print("node index list:   ", np.array(node_index))
-                np.set_printoptions(precision=original["precision"])
-                print("----- k_path report end ------------")
-            print()
-
-        return (k_vec, k_dist, k_node)
+        return k_path(self, kpts, nk, report)
 
     def ignore_position_operator_offdiagonal(self):
         """Call to this function enables one to approximately compute
@@ -3159,7 +2190,10 @@ somehow changed Cartesian coordinates of orbitals."""
                     "\n\nBasis must be either 'wavefunction', 'bloch', or 'orbital'"
                 )
 
-    def berry_curvature(self, k_pts, evals = None, evecs = None, occ_idxs=None, dirs='all', cartesian=False, abelian=True):
+    def berry_curvature(
+            self, k_pts, evals = None, evecs = None, occ_idxs=None, 
+            dirs='all', cartesian=False, abelian=True
+            ):
         """
         Generates the Berry curvature from the velocity operator dH/dk.
 
@@ -3169,12 +2203,13 @@ somehow changed Cartesian coordinates of orbitals."""
         if self._dim_k < 2:
             raise Exception(
                 """
-                Berry curvature in this context is only used for k-space adiabatic parameters. 
+                Berry curvature in this context is only computed for k-space dimensions. 
                 Must have dim_k >= 2.
                 """
             )
 
         v_k = self.get_velocity(k_pts, cartesian=cartesian)  # (Nk, dim_k, n_orb, n_orb)
+        # flatten spin axis if present
         new_shape = (v_k.shape[:2]) + (self._nstate, self._nstate)
         v_k = v_k.reshape(*new_shape)
 
@@ -3207,7 +2242,7 @@ somehow changed Cartesian coordinates of orbitals."""
         # transpose
         evecs_T = evecs.transpose(0, 2, 1)[np.newaxis, :, :, :]
         # project vk into energy eignvector basis
-        vk_evecT = np.matmul(v_k, evecs_T)
+        vk_evecT = np.matmul(v_k, evecs_T) # intermediate array
         v_k_rot = np.matmul(evecs_conj, vk_evecT)  # (dim_k, n_kpts, n_orb, n_orb)
 
         # Extract relevant submatrices
@@ -3262,6 +2297,124 @@ somehow changed Cartesian coordinates of orbitals."""
         Chern = np.sum(Omega[dirs]) * dk_sq / (2 * np.pi)
 
         return Chern.real
+    
+    ##### Plotting functions #####
+    # These plotting functions are wrappers to the functions in plotting.py
+    def visualize(
+        self,
+        proj_plane=None,
+        eig_dr=None,
+        draw_hoppings=True,
+        annotate_onsite_en=False,
+        ph_color="black",
+    ):
+        r"""
+
+        Rudimentary function for visualizing tight-binding model geometry,
+        hopping between tight-binding orbitals, and electron eigenstates.
+
+        If eigenvector is not drawn, then orbitals in home cell are drawn
+        as red circles, and those in neighboring cells are drawn with
+        different shade of red. Hopping term directions are drawn with
+        green lines connecting two orbitals. Origin of unit cell is
+        indicated with blue dot, while real space unit vectors are drawn
+        with blue lines.
+
+        If eigenvector is drawn, then electron eigenstate on each orbital
+        is drawn with a circle whose size is proportional to wavefunction
+        amplitude while its color depends on the phase. There are various
+        coloring schemes for the phase factor; see more details under
+        *ph_color* parameter. If eigenvector is drawn and coloring scheme
+        is "red-blue" or "wheel", all other elements of the picture are
+        drawn in gray or black.
+
+        :param dir_first: First index of Cartesian coordinates used for
+          plotting.
+
+        :param dir_second: Second index of Cartesian coordinates used for
+          plotting. For example if dir_first=0 and dir_second=2, and
+          Cartesian coordinates of some orbital is [2.0,4.0,6.0] then it
+          will be drawn at coordinate [2.0,6.0]. If dimensionality of real
+          space (*dim_r*) is zero or one then dir_second should not be
+          specified.
+
+        :param eig_dr: Optional parameter specifying eigenstate to
+          plot. If specified, this should be one-dimensional array of
+          complex numbers specifying wavefunction at each orbital in
+          the tight-binding basis. If not specified, eigenstate is not
+          drawn.
+
+        :param draw_hoppings: Optional parameter specifying whether to
+          draw all allowed hopping terms in the tight-binding
+          model. Default value is True.
+
+        :param ph_color: Optional parameter determining the way
+          eigenvector phase factors are translated into color. Default
+          value is "black". Convention of the wavefunction phase is as
+          in convention 1 in section 3.1 of :download:`notes on
+          tight-binding formalism  <misc/pythtb-formalism.pdf>`.  In
+          other words, these wavefunction phases are in correspondence
+          with cell-periodic functions :math:`u_{n {\bf k}} ({\bf r})`
+          not :math:`\Psi_{n {\bf k}} ({\bf r})`.
+
+          * "black" -- phase of eigenvectors are ignored and wavefunction
+            is always colored in black.
+
+          * "red-blue" -- zero phase is drawn red, while phases or pi or
+            -pi are drawn blue. Phases in between are interpolated between
+            red and blue. Some phase information is lost in this coloring
+            becase phase of +phi and -phi have same color.
+
+          * "wheel" -- each phase is given unique color. In steps of pi/3
+            starting from 0, colors are assigned (in increasing hue) as:
+            red, yellow, green, cyan, blue, magenta, red.
+
+        :returns:
+          * **fig** -- Figure object from matplotlib.pyplot module
+            that can be used to save the figure in PDF, EPS or similar
+            format, for example using fig.savefig("name.pdf") command.
+          * **ax** -- Axes object from matplotlib.pyplot module that can be
+            used to tweak the plot, for example by adding a plot title
+            ax.set_title("Title goes here").
+
+        Example usage::
+
+          # Draws x-y projection of tight-binding model
+          # tweaks figure and saves it as a PDF.
+          (fig, ax) = tb.visualize(0, 1)
+          ax.set_title("Title goes here")
+          fig.savefig("model.pdf")
+
+        See also these examples: :ref:`edge-example`,
+        :ref:`visualize-example`.
+
+        """
+        return plot_tb_model(self, proj_plane, eig_dr, draw_hoppings, annotate_onsite_en, ph_color)
+
+
+    def visualize_3d(
+        self,
+        eig_dr=None,
+        draw_hoppings=True,
+        ph_color="black",
+        ):
+        r"""
+        Visualize a 3D tight-binding model using Plotly.
+
+        This function creates an interactive 3D plot of your tight-binding model,
+        showing the unit-cell origin, lattice vectors (with arrowheads), orbitals,
+        hopping lines, and (optionally) an eigenstate overlay with marker sizes
+        proportional to amplitude and colors reflecting the phase.
+
+        :param eig_dr: Optional eigenstate (1D array of complex numbers) to display.
+        :param draw_hoppings: Whether to draw hopping lines between orbitals.
+        :param annotate_onsite_en: Whether to annotate orbitals with onsite energies.
+        :param ph_color: Coloring scheme for eigenstate phases (e.g. "black", "red-blue", "wheel").
+
+        :returns:
+        * **fig** -- A Plotly Figure object.
+        """
+        return plot_tb_model_3d(self, eig_dr=eig_dr, draw_hoppings=draw_hoppings, ph_color=ph_color)
 
     def plot_bands(
         self,
@@ -3277,7 +2430,7 @@ somehow changed Cartesian coordinates of orbitals."""
         lw=2,
         lc="b",
         ls="solid",
-        cmap="bwr",
+        cmap="plasma",
         show=False,
         cbar=True,
     ):
@@ -3294,96 +2447,8 @@ somehow changed Cartesian coordinates of orbitals."""
         Returns:
             fig, ax: matplotlib fig and ax
         """
-        import matplotlib.pyplot as plt
-
-        if fig is None:
-            fig, ax = plt.subplots()
-
-        # generate k-path and labels
-        (k_vec, k_dist, k_node) = self.k_path(k_path, nk, report=False)
-
-        # scattered bands with sublattice color
-        if proj_orb_idx is not None:
-            # diagonalize model on path
-            evals, evecs = self.solve_ham(k_vec, return_eigvecs=True)
-            n_eigs = evals.shape[-1]
-
-            if self._nspin == 1:
-                wt = abs(evecs) ** 2
-                col = np.sum([wt[..., i] for i in proj_orb_idx], axis=0)
-            elif self._nspin == 2:
-                wt = abs(evecs) ** 2
-                col = np.sum([wt[..., i, :] for i in proj_orb_idx], axis=(0, -1))
-
-            for n in range(n_eigs):
-                scat = ax.scatter(
-                    k_dist,
-                    evals[:, n],
-                    c=col[:, n],
-                    cmap=cmap,
-                    marker="o",
-                    s=scat_size,
-                    vmin=0,
-                    vmax=1,
-                    zorder=2,
-                )
-
-            if cbar:
-                cbar = fig.colorbar(scat, ticks=[1, 0], pad=0.01)
-                # cbar.set_ticks([])
-                # cbar.ax.set_yticklabels([r'$B$', r'$A$'], size=12)
-                cbar.ax.set_yticklabels([r"$ |\langle \psi_{nk} | \phi_B \rangle |^2$", r"$|\langle \psi_{nk} | \phi_A \rangle |^2$"], size=12)
-
-        elif proj_spin:
-            evals, evecs = self.solve_ham(k_vec, return_eigvecs=True)
-            n_eigs = evals.shape[-1]
-
-            if self._nspin <= 1:
-                raise ValueError("Spin needs to be greater than 1 for projecting spin.")
-
-            wt = abs(evecs) ** 2
-            col = np.sum(wt[..., 1], axis=2)
-
-            for n in range(n_eigs):
-                scat = ax.scatter(
-                    k_dist,
-                    evals[:, n],
-                    c=col[:, n],
-                    cmap=cmap,
-                    marker="o",
-                    s=scat_size,
-                    vmin=0,
-                    vmax=1,
-                    zorder=2,
-                )
-
-            cbar = fig.colorbar(scat, ticks=[1, 0])
-            cbar.ax.set_yticklabels([r"$ |\langle \psi_{nk} | \phi_{\uparrow} \rangle |^2$", r"$|\langle \psi_{nk} | \phi_{\downarrow} \rangle |^2$"], size=12)
-
-        else:
-            evals = self.solve_ham(k_vec, return_eigvecs=False)
-            n_eigs = evals.shape[-1]
-
-            # continuous bands
-            for n in range(n_eigs):
-                ax.plot(k_dist, evals[:, n], c=lc, lw=lw, ls=ls)
-
-        ax.set_xlim(0, k_node[-1])
-        ax.set_xticks(k_node)
-        for n in range(len(k_node)):
-            ax.axvline(x=k_node[n], linewidth=0.5, color="k", zorder=1)
-        if k_label is not None:
-            ax.set_xticklabels(k_label, size=12)
-
-        ax.set_title(title)
-        ax.set_ylabel(r"Energy $E(\mathbf{{k}})$", size=12)
-        ax.yaxis.labelpad = 10
-
-        if show:
-            plt.show()
-
-        return fig, ax
-
+        return plot_bands(self, k_path, nk, k_label, proj_orb_idx, proj_spin, fig, ax, title, scat_size, lw, lc, ls, cmap, show, cbar)
+        
 
 # =======================================================================
 class wf_array(object):
@@ -4942,24 +4007,6 @@ class w90(object):
 # =======================================================================
 
 
-def _nicefy_eig(eval, eig=None):
-    "Sort eigenvaules and eigenvectors, if given, and convert to real numbers"
-    # first take only real parts of the eigenvalues
-    eval = np.array(eval.real, dtype=float)
-    # sort energies
-    args = eval.argsort()
-    eval = eval[args]
-    if eig is not None:
-        eig = eig[args]
-        return (eval, eig)
-    return eval
-
-
-# for nice justified printout
-def _nice_float(x, just, rnd):
-    return str(round(x, rnd)).rjust(just)
-
-
 def _wf_dpr(wf1, wf2):
     """calculate dot product between two wavefunctions.
     wf1 and wf2 are of the form [orbital,spin]"""
@@ -5067,7 +4114,7 @@ def _one_phase_cont(pha, clos):
 def _array_phases_cont(arr_pha, clos):
     """Reads in 2d array of phases *arr_pha* and makes sure that they
     are continuous along first index, i.e., that there are no jumps of
-    2pi. First array of phasese is made as close to *clos* as
+    2pi. First array of phases is made as close to *clos* as
     possible."""
     ret = np.zeros_like(arr_pha)
     # go over all points
