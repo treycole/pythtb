@@ -8,13 +8,16 @@ Thank you for your interest in contributing to `pythTB`! Your contributions help
   Write code that is straightforward and easy to understand. Our aim is to produce reliable and maintainable code—simplicity in design is highly valued.
 
 - **Comprehensive Documentation:**  
-  Every edge-case should be clearly documented. Whether it’s a non-obvious behavior, defined sign, conjugate, or any special case, please explain it in the code comments and documentation.
+  Every edge-case should be clearly documented. Whether it’s a non-obvious behavior, non-standard convention, or any special case, please explain it in the code comments and documentation.
 
 - **Simple Class Structure:**  
   When designing new classes or refactoring existing ones, strive for a minimal and intuitive interface. Avoid unnecessary complexity; the simpler the design, the easier it is to maintain and extend.
 
 - **Handling Ambiguity:**  
   In situations where a function could produce ambiguous output, it is better to print a warning and refrain from returning a potentially confusing result. This approach helps maintain trust and clarity for the end user.
+
+- **Vectorizing:**
+   Where possible, avoid nested `for` loops in favor of vectorized operations, especially for linear algebra operations. This helps avoid bottlenecks and keeps the code running smoothly and effeciently.  
 
 ## How to Contribute
 
@@ -37,7 +40,7 @@ Thank you for your interest in contributing to `pythTB`! Your contributions help
 
 If you encounter bugs or have suggestions for improvements:
 - Please open an issue on GitHub.
-- Provide as much detail as possible (e.g., steps to reproduce, error messages, and relevant system information).
+- Provide as much detail as possible (e.g., minimal example, steps to reproduce, error messages, and relevant system information).
 
 ## Code Reviews
 
