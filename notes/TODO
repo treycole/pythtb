@@ -9,14 +9,11 @@ function.
 
 _______________________
 
-<<<<<<< TODO
 When visualizing thre is problem if two orbitals are overlapping.
 
-=======
 What about having an object that represents a single band or set of
 bands from a model and then you can smoothen the gauge acording to the
 MV 1997 paper?
-
 
 I thought about making further changes that would make it easier
 and more natural to treat cases that combine k-space and
@@ -32,7 +29,6 @@ parametric directions, along these lines:
 But I didn't do anything yet.  I'm not sure how straightforward
 it would be.
 
->>>>>>> 1.11
 Have a way to force model to use only some of the atoms in the
 calculation. Just take an array with indices of atoms to include and
 then apply this at all points in the code.
