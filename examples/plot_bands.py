@@ -19,7 +19,7 @@ orb = [[1.0 / 3.0, 1.0 / 3.0], [2.0 / 3.0, 2.0 / 3.0]]
 my_model = tb_model(2, 2, lat, orb)
 
 # set model parameters
-delta = 0.0
+delta = 0.3
 t = -1.0
 
 # set on-site energies
@@ -41,46 +41,12 @@ label = (r"$\Gamma $", r"$K$", r"$M$", r"$\Gamma $")
 # total number of interpolated k-points along the path
 nk = 121
 
-# call function k_path to construct the actual path
-(k_vec, k_dist, k_node) = my_model.k_path(path, nk)
-# inputs:
-#   path, nk: see above
-#   my_model: the pythtb model
-# outputs:
-#   k_vec: list of interpolated k-points
-#   k_dist: horizontal axis position of each k-point in the list
-#   k_node: horizontal axis position of each original node
 
 print("---------------------------------------")
 print("starting calculation")
 print("---------------------------------------")
 print("Calculating bands...")
 
-# obtain eigenvalues to be plotted
-evals = my_model.solve_ham(k_vec)
-
-# figure for bandstructure
-fig, ax = plt.subplots()
-# specify horizontal axis details
-# set range of horizontal axis
-ax.set_xlim(k_node[0], k_node[-1])
-# put tickmarks and labels at node positions
-ax.set_xticks(k_node)
-ax.set_xticklabels(label)
-# add vertical lines at node positions
-for n in range(len(k_node)):
-    ax.axvline(x=k_node[n], linewidth=0.5, color="k")
-# put title
-ax.set_title("Graphene band structure")
-ax.set_xlabel("Path in k-space")
-ax.set_ylabel("Band energy")
-
-# plot bands
-ax.plot(k_dist, evals)
-
-# make an PDF figure of a plot
-fig.tight_layout()
-fig.savefig("graphene.pdf")
-plt.show()
+my_model.plot_bands(k_path=path, k_label=label, nk=nk, show=True, proj_orb_idx=[0])
 
 print("Done.\n")

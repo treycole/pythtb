@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(name='pythtb',
       version='2.0.0',
@@ -10,6 +11,7 @@ setup(name='pythtb',
       download_url='http://www.physics.rutgers.edu/pythtb',
       keywords='tight binding, solid state physics, condensed matter physics, materials science',
       py_modules=['pythtb'],
+      packages=find_packages(),
       license="gpl-3.0",
       description="Simple solver for tight binding models for use in condensed matter physics and materials science.",
       long_description="The tight binding method is an approximate approach for solving for the electronic wave functions for electrons in solids assuming a basis of localized atomic-like orbitals.",
