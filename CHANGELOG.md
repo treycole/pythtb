@@ -1,79 +1,67 @@
-## v2.0.0
+# Changelog
 
-### Improvements
+All notable changes to this project will be documented in this file.  
+This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and follows [Semantic Versioning](https://semver.org/).
 
-#### `tb_model.__init__`
-- Cleaned up and simplified the code for readability
-- Using type hints to clarify data type to the user
-- Some changes to error messages, being more explicit in places
-- Using logger to send messages to user. Can specify level of message (warning, info, etc.). Standard module.
-- Changed `self._nsta` to `self._nstate`
-#### `tb_model.get_orb`
-- Added `cartesian` boolean flag to return orbital vectors in cartesian units
-#### `tb_model.set_onsite`
-- Only keeping 'set' and 'add' for simplicity
-  - using 'set' in place of 'reset' only had the difference that an exception was raised
-  - A more common use case would likely be that the user intended to 'reset' anyways (from experience)
-  - Now throws a warning from the logger that a site energy had already been set and will be overwritten
-#### `tb_model.visualize`
-- hopping vectors depicted as curved arrows
-- lattice vectors shown as arrows
-- legend labeling the orbitals indicated by distinct colors
-- Transparency of the hopping arrow is scaled by the magnitude of the hopping.
-	-  This transparency corresponds to the largest magnitude in the 2x2 matrix for spinful calculations.
-#### `tb_model.display` -> `tb_model.report` 
-- Simplified and shortened code
-- Used `np.array2string` with custom formatter for aligning and centering
-- Specify cartesian or reduced units
-- Changed capitalization, centered header
-#### `tb_model._gen_ham` -> `tb_model.get_ham`
-- Generates Hamiltonian for both a list of k-points or a single k-point
-- Source of major bottleneck in code, now vectorized for efficiency
-- Promoted to a public method, likely use cases where the user wants to obtain the Hamiltonian 
-#### `tb_model.solve_one` and `tb_model.solve_all` -> `tb_model.solve_ham`
-- `solve_ham` subsumes `solve_one` and `solve_all`
-- Flag `eigvectors` -> `return_eigvecs` for clarity
-- Indexing has swapped Nk and band index
-  - Returned eigenvalues have shape (Nk, n_state) instead of (n_state, Nk)
-  - To vectorize diagonalization, the matrix elements need to be the last indices (Nk first) in the Hamiltonian
-  - This returns the eigenstates and eigenvalues with Nk being first axis. This is a more natural indexing pattern.
-- returned eigenvectors have shape 
-	- spin=1: (Nk, n_state, n_state) 
-	- spin=2: (Nk, n_state, n_orb, n_spin)
-	- If finite, no k axis: (n_state, ...)
-- Checks if k_pts is a single point, and if so, it adjusts the shape accordingly and reproduces the former `solve_one`
+----
+
+## [2.0.0] - 2025-06-03
 
 ### Added
+- `tb_model.__repr__`: Object representation now displays `rdim`, `kdim`, and `nspin`.
+- `tb_model.__str__`: Printing a `tb_model` instance now calls the `report()` (formerly `dislplay`) method.
+- `tb_model.get_velocity`: Computes  $dH/dk$ (velocity operator) in the orbital basis.
+- `tb_model.berry_curv`: Computes Berry curvature from $dH/dk$ elements; accepts occupied band indices.
+- `tb_model.chern`: Returns Chern number for a given set of occupied bands.
+- `tb_model.get_recip_lat`: Returns reciprocal lattice vectors.
+- Standard files added:
+    - `LICENSE`: GPL-3 license (copied over from the .txt file).
+    - `CHANGELOG`: This file for tracking changes between versions. 
+    - `pyproject.toml`: Now the recommended way to package Python projects.
+    - `CONTRIBUTING`: Outlines expectations and guidelines for contributors.
 
-#### `tb_model.__repr__`
-- In an interactive shell, this is what Python reports as a representation for the object.
-- Shows the `rdim`, `kdim`, and `nspin`
-
-#### `tb_model.__str__`
-- String representation of `tb_model`
-- `print(tb_model)` shows the former `display` (now `report`)
-- `print(tb_model)` has same effect as `tb_model.report()`
-
-#### `tb_model.get_velocity`
-- computes dH/dK in the orbital basis
-
-#### `tb_model.berry_curv`
-- computes Berry curvature from dH/dk elements
-- takes the occupied indices as an arguement
-
-#### `tb_model.chern`
-- returns Chern number for a set of occupied bands
-- takes the occupied indices as an argument
-
-#### `tb_model.get_recip_lat`
-- returns reciprocal lattice vectors
-
-#### Files
-- `LICENSE`: copied over the .txt file to the standard `LICENSE` file
-- This `CHANGELOG`: to track updates for each version
-- `pyproject.toml`: this is the current recommended way to package in place of setup tools
-- `CONTRIBUTING`: outlining expectations from contributors 
+### Changed
+- **Major Refactor:** The `pythtb.py` was split into a modular package (`pythtb/` folder with submodules). This improves maintainability and readability. [See [DEVELPMENT.md](notes/DEVELOPMENT.md) for rationale and module overview.]
+- `tb_model.__init__`:
+    - Codebase cleaned and simplified for readability.
+    - Added type hints throughout.
+    - Improved error messages for clarity.
+    - Added logging (using Python's `logging` module) with configurable message levels.
+    - Renamed `self._nsta` to `self._nstate` to be explicit.
+- `tb_model.get_orb`: Added `cartesian` boolean flag to return orbitals in Cartesian coordinates.
+- `tb_model.set_onsite`:
+    - Only `set` and `add` methods retained for clarity; `reset` is now merged into `set`.
+      - The only difference between `set` and `reset` internally was that an exception is raised if `set` 
+      is overwriting a previously set site energy. Now warns via logger if overwriting a previously set site energy.
+- `tb_model.visualize`:
+    - Hopping vectors depicted as curved arrows.
+    - Lattice vectors shown as arrows.
+    - Arrow transparency scales with hopping magnitude (max element in 2x2 matrix if spinful).
+- `tb_model.display` -> `tb_model.report`:
+    - Simplified and aligned output (now uses `np.array2string` with custom formatting).
+    - Header is centered and capitalized.
+    - Added both Cartesian and reduced units.
+- `tb_model._gen_ham` -> `tb_model.get_ham`:
+    - Now generates Hamiltonians for both single and multiple k-points.
+    - Bottleneck code vectorized for better performance.
+    - Method is now public.
+- `tb_model.solve_one` / `tb_model.solve_all` -> `tb_model.solve_ham`:
+    - Unified method subsumes previous methods.
+    - Flag renamed: `eigvectors` → `return_eigvecs` for clarity.
+    - Changed output shape: eigenvalues now indexed as `(Nk, n_state)` for vectorized workflows (matrix elements go last for NumPy linear algebra operations).
+    - Eigenvectors shaped for spinful and spinless cases (see docstring for full details).
+      - `n_spin`= 1: (Nk, n_state, n_state) 
+      - `n_spin`= 2: (Nk, n_state, n_orb, n_spin)
+      - If finite (no k axis): (n_state, ...) and spin axes are as before
+    - Handles single-k-point input automatically and reproduces `solve_one`.
 
 ### Removed 
-- Support for Python <3.10 (see [SPEC-0](https://scientific-python.org/specs/spec-0000/))
-- `setup.py` is deprecated. Recommended to use `pyproject.toml`.
+- Support for Python <3.10 ([SPEC-0](https://scientific-python.org/specs/spec-0000/))
+- Deprecated `setup.py`: migration to  `pyproject.toml`.
+
+### Deprecated
+- Old `reset` flag for `tb_model` onsite energies is now deprecated; use `set` instead.
+
+### Developer Notes
+For a detailed rationale for the refactor and module breakdown, see the developer documentation [DEVELPMENT.md](notes/DEVELOPMENT.md).
+
