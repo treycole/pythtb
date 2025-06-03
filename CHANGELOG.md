@@ -60,6 +60,9 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Deprecated `setup.py`: migration to  `pyproject.toml`.
 
 ### Deprecated
+- `tb_model.solve_one`: Use `tb_model.solve_ham` instead
+- `tb_model.solve_all`: Use `tb_model.solve_ham` instead
+- `tb_model.display`: Use `tb_model.report` instead
 - Old `reset` flag for `tb_model` onsite energies is now deprecated; use `set` instead.
 
 ### Developer Notes
