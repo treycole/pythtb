@@ -63,8 +63,8 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `tb_model.solve_one`: Use `tb_model.solve_ham` instead
 - `tb_model.solve_all`: Use `tb_model.solve_ham` instead
 - `tb_model.display`: Use `tb_model.report` instead
-- Old `reset` flag for `tb_model` onsite energies is now deprecated; use `set` instead.
+- `reset` flag for `tb_model` onsite energies: Use `set` instead.
 
 ### Developer Notes
-For a detailed rationale for the refactor and module breakdown, see the developer documentation [DEVELPMENT.md](notes/DEVELOPMENT.md).
+For a detailed rationale for the refactor and module breakdown, see the developer documentation [DEVELOPMENT.md](notes/DEVELOPMENT.md).
 
