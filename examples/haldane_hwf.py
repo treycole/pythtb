@@ -9,7 +9,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb.pythtb import *  # import TB model class
+from pythtb import *  # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -25,7 +25,7 @@ efermi = 0.25
 # define lattice vectors and orbitals and make model
 lat = [[1.0, 0.0], [0.5, np.sqrt(3.0) / 2.0]]
 orb = [[1.0 / 3.0, 1.0 / 3.0], [2.0 / 3.0, 2.0 / 3.0]]
-my_model = tb_model(2, 2, lat, orb)
+my_model = TBModel(2, 2, lat, orb)
 
 # set on-site energies and hoppings
 my_model.set_onsite([-delta, delta])
@@ -44,7 +44,7 @@ len_0 = 100
 len_1 = 10
 
 # compute Berry phases in direction 1 for the bottom band
-my_array = wf_array(my_model, [len_0, len_1])
+my_array = WFArray(my_model, [len_0, len_1])
 my_array.solve_on_grid([0.0, 0.0])
 phi_1 = my_array.berry_phase(occ=[0], dir=1, contin=True)
 

@@ -5,7 +5,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb.pythtb import *  # import TB model class
+from pythtb import *  # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -20,7 +20,7 @@ orb = [
     [0.0, 0.0, 1.0],
 ]
 # make zero dimensional tight-binding model
-my_model = tb_model(0, 3, lat, orb)
+my_model = TBModel(0, 3, lat, orb)
 
 # set model parameters
 delta = 0.5

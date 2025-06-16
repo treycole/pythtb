@@ -6,7 +6,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb.pythtb import *  # import TB model class
+from pythtb import *  # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -16,7 +16,7 @@ lat = [[1.0, 0.0], [0.5, np.sqrt(3.0) / 2.0]]
 orb = [[1.0 / 3.0, 1.0 / 3.0], [2.0 / 3.0, 2.0 / 3.0]]
 
 # make two dimensional tight-binding Haldane model
-my_model = tb_model(2, 2, lat, orb)
+my_model = TBModel(2, 2, lat, orb)
 
 # set model parameters
 delta = 0.0
@@ -40,13 +40,13 @@ my_model.set_hop(t2c, 0, 0, [1, -1])
 my_model.set_hop(t2c, 0, 0, [0, 1])
 
 # print tight-binding model details
-my_model.display()
+print(my_model)
 
 print(r"Using approach #1")
 # approach #1
 # generate object of type wf_array that will be used for
 # Berry phase and curvature calculations
-my_array_1 = wf_array(my_model, [31, 31])
+my_array_1 = WFArray(my_model, [31, 31])
 # solve model on a regular grid, and put origin of
 # Brillouin zone at -1/2 -1/2 point
 my_array_1.solve_on_grid([-0.5, -0.5])
@@ -94,11 +94,11 @@ nky = 31
 kx = np.linspace(-0.5, 0.5, num=nkx)
 ky = np.linspace(-0.5, 0.5, num=nky)
 # initialize object to store all wavefunctions
-my_array_2 = wf_array(my_model, [nkx, nky])
+my_array_2 = WFArray(my_model, [nkx, nky])
 # solve model at all k-points
 for i in range(nkx):
     for j in range(nky):
-        (eval, evec) = my_model.solve_one([kx[i], ky[j]], eig_vectors=True)
+        (eval, evec) = my_model.solve_ham([kx[i], ky[j]], return_eigvecs=True)
         # store wavefunctions
         my_array_2[i, j] = evec
 # impose periodic boundary conditions in both k_x and k_y directions

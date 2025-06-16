@@ -6,7 +6,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb.pythtb import *
+from pythtb import *
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 def set_model(t, delta, lmbd):
     lat = [[1.0]]
     orb = [[0.0], [1.0 / 3.0], [2.0 / 3.0]]
-    model = tb_model(1, 1, lat, orb)
+    model = TBModel(1, 1, lat, orb)
     model.set_hop(t, 0, 1, [0])
     model.set_hop(t, 1, 2, [0])
     model.set_hop(t, 2, 0, [1])

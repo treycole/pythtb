@@ -6,7 +6,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb.pythtb import *  # import TB model class
+from pythtb import *  # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -16,7 +16,7 @@ lat = [[1.0]]
 orb = [[0.0], [1.0 / 3.0], [2.0 / 3.0]]
 
 # make one dimensional tight-binding model
-my_model = tb_model(1, 1, lat, orb)
+my_model = TBModel(1, 1, lat, orb)
 
 # set model parameters
 delta = 2.0
@@ -44,7 +44,7 @@ num_kpt = 31
 # two-dimensional wf_array in which we will store wavefunctions
 # for all k-points and all values of lambda.  (note that the index
 # order [k,lambda] is important for interpreting the sign.)
-wf_kpt_lambda = wf_array(my_model, [num_kpt, path_steps])
+wf_kpt_lambda = WFArray(my_model, [num_kpt, path_steps])
 for i_lambda in range(path_steps):
     # for each step along the path compute onsite terms for each orbital
     lmbd = all_lambda[i_lambda]

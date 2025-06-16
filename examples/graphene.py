@@ -6,7 +6,7 @@
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
 from __future__ import print_function
-from pythtb.pythtb import *  # import TB model class
+from pythtb import *  # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -16,7 +16,7 @@ lat = [[1.0, 0.0], [0.5, np.sqrt(3.0) / 2.0]]
 orb = [[1.0 / 3.0, 1.0 / 3.0], [2.0 / 3.0, 2.0 / 3.0]]
 
 # make two dimensional tight-binding graphene model
-my_model = tb_model(2, 2, lat, orb)
+my_model = TBModel(2, 2, lat, orb)
 
 # set model parameters
 delta = 0.0
