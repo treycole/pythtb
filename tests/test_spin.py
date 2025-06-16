@@ -1,7 +1,7 @@
 import sys
 sys.path.append("../")
 
-from pythtb.pythtb import *
+from pythtb.tb_model import *
 from test_dimr_dimk_different import generic_test_of_models
 
 def test_answer():

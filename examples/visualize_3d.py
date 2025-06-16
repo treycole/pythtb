@@ -1,4 +1,4 @@
-from pythtb.pythtb import *  # import TB model class
+from pythtb.tb_model import *  # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
 

@@ -3,7 +3,7 @@
 # Construct and compute Berry phases of hybrid Wannier functions
 # for a simple slab model
 
-from pythtb.pythtb import *  # import TB model class
+from pythtb.tb_model import *  # import TB model class
 import matplotlib.pyplot as plt
 
 

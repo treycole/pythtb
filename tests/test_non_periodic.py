@@ -1,7 +1,7 @@
 import sys
 sys.path.append("../")
 
-from pythtb.pythtb import *
+from pythtb.tb_model import *
 
 def test_answer():
 
