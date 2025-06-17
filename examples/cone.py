@@ -6,7 +6,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb.tb_model import *  # import TB model class
+from pythtb import TBModel, WFArray
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -16,7 +16,7 @@ lat = [[1.0, 0.0], [0.5, np.sqrt(3.0) / 2.0]]
 orb = [[1.0 / 3.0, 1.0 / 3.0], [2.0 / 3.0, 2.0 / 3.0]]
 
 # make two dimensional tight-binding graphene model
-my_model = tb_model(2, 2, lat, orb)
+my_model = TBModel(2, 2, lat, orb)
 
 # set model parameters
 delta = -0.1  # small staggered onsite term
@@ -39,7 +39,7 @@ circ_step = 31
 circ_center = np.array([1.0 / 3.0, 2.0 / 3.0])
 circ_radius = 0.05
 # one-dimensional wf_array to store wavefunctions on the path
-w_circ = wf_array(my_model, [circ_step])
+w_circ = WFArray(my_model, [circ_step])
 # now populate array with wavefunctions
 for i in range(circ_step):
     # construct k-point coordinate on the path
@@ -65,7 +65,7 @@ square_step = 31
 square_center = np.array([1.0 / 3.0, 2.0 / 3.0])
 square_length = 0.1
 # two-dimensional wf_array to store wavefunctions on the path
-w_square = wf_array(my_model, [square_step, square_step])
+w_square = WFArray(my_model, [square_step, square_step])
 all_kpt = np.zeros((square_step, square_step, 2))
 # now populate array with wavefunctions
 for i in range(square_step):
