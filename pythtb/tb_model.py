@@ -2157,7 +2157,7 @@ somehow changed Cartesian coordinates of orbitals."""
             pos_use = np.tile(pos_tmp, (2, 1)).transpose().flatten()
             # also flatten the state along the spin index
             #TODO: check if this is correct
-            # evec is k, band, orbital, spin
+            # evec is band, orbital, spin
             # evec_use = evec.reshape((evec.shape[0], evec.shape[1] * evec.shape[2]))
             evec_use = evec.reshape((*evec.shape[:-2], -1))
         else:
