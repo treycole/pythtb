@@ -2,7 +2,7 @@ import sys
 
 sys.path.append("../")
 
-from pythtb import TBModel, WFArray
+from pythtb import tb_model, wf_array
 import numpy as np
 
 
@@ -13,7 +13,7 @@ def test_answer():
     # define coordinates of orbitals
     orb = [[0.15, 0.34], [0.29, 0.65]]
     # make two-dimensional model
-    bulk_model = TBModel(2, 2, lat, orb, per=[0, 1])
+    bulk_model = tb_model(2, 2, lat, orb, per=[0, 1])
 
     # Add hopping terms.  Note that there are no hoppings
     # along the second periodic lattice vector.  Therefore
@@ -35,7 +35,7 @@ def test_answer():
     num_wire = 3
 
     # compute berry phases for the bottom band along both directions
-    bulk_array = WFArray(bulk_model, [numk, 100])
+    bulk_array = wf_array(bulk_model, [numk, 100])
     bulk_array.solve_on_grid([0.0, 0.0])
     # (skip last kpoints to avoid double counting)
     bulk_phase_0 = np.mean(bulk_array.berry_phase([0], dir=0, contin=True)[:-1])
@@ -69,7 +69,7 @@ def test_answer():
     sc_model = bulk_model.make_supercell(
         [[1, 0], [0, num_wire]], to_home=False, to_home_suppress_warning=True
     )
-    sc_array = WFArray(sc_model, [numk, 100])
+    sc_array = wf_array(sc_model, [numk, 100])
     sc_array.solve_on_grid([0.0, 0.0])
     # (skip last kpoints to avoid double counting)
     sc_phase_0 = np.mean(sc_array.berry_phase(range(num_wire), dir=0, contin=True)[:-1])
@@ -94,7 +94,7 @@ def test_answer():
     # direction 0 and finite along direction 1
     def get_centers_01(mod, num_bands):
         # get wavefunctions on a grid
-        wfa = WFArray(mod, [numk])
+        wfa = wf_array(mod, [numk])
         wfa.solve_on_grid([0.0])
 
         # compute center of charge along the periodic direction

@@ -20,8 +20,6 @@
 - [ ] slab
     - [ ] cubic_slab_hwf
     - [ ] edge
-- [ ] ssh
-    - [ ] simple
 - [ ] supercell
     - [ ] supercell
 - [x] three_site
@@ -30,7 +28,5 @@
 - [ ] w90
     - [ ] w90
     - [ ] w90_quick
-- [ ] wannier
-    - [ ] triv_haldane
 - [x] zero_dim
     - [x] 0dim

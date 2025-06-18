@@ -1,10 +1,10 @@
 import sys
 
-sys.path.append("../examples/")
+sys.path.append("../../examples")
 sys.path.append("../")
 
 import numpy as np
-from tests.test_examples.slab.edge.edge import evecs, ed
+from examples.edge import evecs, ed
 
 
 def test_answer():
