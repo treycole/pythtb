@@ -1,7 +1,0 @@
-- [x] `0d.py`
-- [x] `checkerboard.py`
-- [x] `trestle.py`
-- [x] `graphene.py`
-- [x] `cone.py`
-- [x] `3site_cycle.py`
-- [] 

@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib.patches import FancyArrowPatch
 from matplotlib import cm
 import matplotlib.colors as mcolors
-from matplotlib.colors import Normalize
+from .utils import pauli_decompose
 
 def _fmt_num(x, precision=3):
     # If the imaginary part is negligible, print as a real number.
@@ -24,42 +24,6 @@ def _fmt_num(x, precision=3):
     else:
         return f"({x:.{precision}g})"
 
-def pauli_decompose(M):
-    """
-    Decompose a 2x2 matrix M in terms of the Pauli matrices.
-
-    That is, find coefficients a0, a1, a2, a3 such that:
-
-        M = a0 * I + a1 * sigma_x + a2 * sigma_y + a3 * sigma_z
-
-    Parameters:
-        M (array-like): A 2x2 matrix (as a numpy array or convertible to one).
-        precision (int): Number of significant digits for the coefficients.
-
-    Returns:
-        str: A string representing the decomposition, e.g.
-             "1I + 0.3τₓ - 0.2τ_y + 0τ_z"
-
-    Note: This function is applicable only when nspin = 2.
-    """
-    M = np.array(M, dtype=complex)
-    if M.shape != (2, 2):
-        raise ValueError("Matrix must be 2x2 for Pauli decomposition.")
-
-    # Define the 2x2 identity and Pauli matrices.
-    sigma_x = np.array([[0, 1], [1, 0]], dtype=complex)
-    sigma_y = np.array([[0, -1j], [1j, 0]], dtype=complex)
-    sigma_z = np.array([[1, 0], [0, -1]], dtype=complex)
-
-    # Compute coefficients using the Hilbert-Schmidt inner product.
-    a0 = 0.5 * np.trace(M)
-    a1 = 0.5 * np.trace(np.dot(M, sigma_x))
-    a2 = 0.5 * np.trace(np.dot(M, sigma_y))
-    a3 = 0.5 * np.trace(np.dot(M, sigma_z))
-
-    return [a0, a1, a2, a3]
-
-
 def _pauli_decompose_str(M, precision=3):
 
     a0, a1, a2, a3 = pauli_decompose(M)
@@ -69,11 +33,11 @@ def _pauli_decompose_str(M, precision=3):
     if abs(a0) > 1e-10:
         terms.append(f"{_fmt_num(a0, precision=precision)} \sigma_0")
     if abs(a1) > 1e-10:
-        terms.append(f"{_fmt_num(a1=precision)} \sigma_x")
+        terms.append(f"{_fmt_num(a1, precision=precision)} \sigma_x")
     if abs(a2) > 1e-10:
-        terms.append(f"{_fmt_num(a2=precision)} \sigma_y")
+        terms.append(f"{_fmt_num(a2, precision=precision)} \sigma_y")
     if abs(a3) > 1e-10:
-        terms.append(f"{_fmt_num(a3=precision)} \sigma_z")
+        terms.append(f"{_fmt_num(a3, precision=precision)} \sigma_z")
 
     # If all coefficients are zero, return "0".
     if not terms:
@@ -514,6 +478,9 @@ def plot_tb_model_3d(
     model,
     eig_dr=None,
     draw_hoppings=True,
+    show_model_info=True,
+    site_colors=None,
+    site_names=None,
     ph_color="black",
     ):
     r"""
@@ -611,20 +578,34 @@ def plot_tb_model_3d(
     onsite_labels = []
     cmap_orb = cm.get_cmap("viridis", model._norb)
     for i in range(model._norb):
+        orb_text.append(f"Orbital {i}")
+
         if model._nspin == 2:
             onsite_str = _pauli_decompose_unicode(model._site_energies[i])
             onsite_label = fr"{onsite_str}"
         else:
             onsite_label = fr"{model._site_energies[i]:.2f}"
         onsite_labels.append(onsite_label)
+
         pos = to_cart(model._orb[i])
         orb_x.append(pos[0])
         orb_y.append(pos[1])
         orb_z.append(pos[2])
-        orb_text.append(f"Orbital {i}")
-        # Convert RGBA to hex.
-        orb_marker_colors.append(mcolors.to_hex(cmap_orb(i)))
         all_coords.append(pos)
+
+        if site_colors is not None:
+            # Use provided color for orbitals.
+            orb_marker_colors.append(site_colors[i])
+
+        else:
+            # Convert RGBA to hex.
+            orb_marker_colors.append(mcolors.to_hex(cmap_orb(i)))
+
+        if site_names is not None:
+            name =  site_names[i]
+        else:
+            name = f"Orbital {i}"
+
         traces.append(
             go.Scatter3d(
                 x=[pos[0]],
@@ -634,7 +615,7 @@ def plot_tb_model_3d(
                 marker=dict(color=orb_marker_colors[i], size=10),
                 text=[fr"Orbital {i}, Onsite Energy = {onsite_label}"],
                 hoverinfo="text",
-                name=f"Orbital {i}"
+                name=name
             )
         )
 
@@ -806,21 +787,22 @@ def plot_tb_model_3d(
     
     report_text = get_pretty_model_info_str()
 
-    # 3) Add an annotation. We’ll place it in the upper-left corner (x=0.01, y=0.99).
-    fig.add_annotation(
-        text=report_text,
-        xref="paper",
-        yref="paper",
-        x=0.01,
-        y=0.99,
-        showarrow=False,
-        align="left",
-        font=dict(family="Courier New, monospace", size=12, color="black"),
-        bordercolor="black",
-        borderwidth=1,
-        borderpad=5,
-        bgcolor="white",
-    )
+    if show_model_info:
+        # 3) Add an annotation. We’ll place it in the upper-left corner (x=0.01, y=0.99).
+        fig.add_annotation(
+            text=report_text,
+            xref="paper",
+            yref="paper",
+            x=0.01,
+            y=0.99,
+            showarrow=False,
+            align="left",
+            font=dict(family="Courier New, monospace", size=12, color="black"),
+            bordercolor="black",
+            borderwidth=1,
+            borderpad=5,
+            bgcolor="white",
+        )
 
     return fig
 

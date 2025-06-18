@@ -13,7 +13,7 @@ authors = [
   { name = "Sinisa Coh", email = "sinisacoh@gmail.com" },
   { name = "David Vanderbilt", email = "dhv@physics.rutgers.edu" }
 ]
-license = { file = "LICENSE" }  # or use: license = { text = "GPL-3.0" }
+license = { file = "LICENSE" } 
 keywords = ["tight binding", "solid state physics", "condensed matter physics", "materials science"]
 dependencies = [
   "numpy",
