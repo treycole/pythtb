@@ -34,7 +34,7 @@ def run():
 ''')
 
     # test.py
-    write_file(example_dir / "test.py", '''\
+    write_file(example_dir / f"test_{name}.py", '''\
 import os
 import numpy as np
 import json

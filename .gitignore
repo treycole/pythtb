@@ -57,7 +57,7 @@ Untitled.ipynb
 *.pyc
 __pycache__/
 .ipynb_checkpoints
-*.ipynb
+# *.ipynb
 
 # DATA files #
 *.dat
