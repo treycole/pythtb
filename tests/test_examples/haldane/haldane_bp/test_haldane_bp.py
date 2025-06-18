@@ -7,9 +7,11 @@ from run import run
 
 OUTPUTDIR = "golden_outputs"
 OUTPUTS = {
-    "out1": "out1.npy",
-    "out2": "out2.npy",
-    "out3": "out3.npy"
+    "phi_a1": "phi_a1.npy",
+    "phi_b1": "phi_b1.npy",
+    "phi_c1": "phi_c1.npy",
+    "flux_a1": "flux_a1.npy",
+    "flux_a2": "flux_a2.npy"
 }
 #NOTE: Replace with your expected output file name(s). Should be in order
 # of the results returned by run()

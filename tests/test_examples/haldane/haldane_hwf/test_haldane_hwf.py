@@ -7,9 +7,11 @@ from run import run
 
 OUTPUTDIR = "golden_outputs"
 OUTPUTS = {
-    "out1": "out1.npy",
-    "out2": "out2.npy",
-    "out3": "out3.npy"
+    "phi_1": "phi1.npy",
+    "rib_eval": "rib_eval.npy",
+    "jump_k": "jump_k.npy",
+    "pos_exps": "pos_exps.npy",
+    "hwfcs": "hwfcs.npy"
 }
 #NOTE: Replace with your expected output file name(s). Should be in order
 # of the results returned by run()
@@ -24,7 +26,7 @@ def test_example():
     expected = {}
     for label, fname in OUTPUTS.items():
         path = os.path.join(os.path.dirname(__file__), OUTPUTDIR, fname)
-        expected[label] = np.load(path)
+        expected[label] = np.load(path, allow_pickle=True)
     
     # Get result from model
     results = run()
@@ -47,7 +49,30 @@ def test_example():
     #NOTE: Modify to match your expected output structure
     try:
         for i, (label, fname) in enumerate(OUTPUTS.items()):
-            np.testing.assert_allclose(results[i], expected[label], rtol=1e-8, atol=1e-14)
+            result = results[i]
+            expect = expected[label]
+            if label == 'rib_eval':
+                np.testing.assert_allclose(result, expect, rtol=1e-8, atol=1e-14)
+            elif label == 'jump_k':
+                np.testing.assert_array_equal(result, expect)
+            elif label == 'pos_exps':
+                print(result.shape)
+                result = np.array(result, dtype=complex)
+                expect = np.array(expect, dtype=complex)
+                np.testing.assert_allclose(result, expect, rtol=1e-8, atol=1e-14)
+            elif label == 'hwfcs':
+                for j in range(result.shape[0]):
+                    result[j] = np.array(result[j], dtype=complex)
+                    expect[j] = np.array(expect[j], dtype=complex)
+                    np.testing.assert_allclose(result[j], expect[j], rtol=1e-8, atol=1e-14)
+            elif label == 'phi_1':
+                if isinstance(result, np.ndarray) and result.dtype == 'object':
+                    # Convert object arrays to numpy arrays for comparison
+                    result = np.array([np.array(item) for item in result], dtype=complex)
+                if isinstance(expect, np.ndarray) and expect.dtype == 'object':
+                    expect = np.array([np.array(item) for item in expect], dtype=complex)
+                np.testing.assert_allclose(result, expect, rtol=1e-8, atol=1e-14)
+            
     except AssertionError as e:
         entry["status"] = "fail"
         entry["reason"] = f"Mismatch in {label}: {str(e)}"

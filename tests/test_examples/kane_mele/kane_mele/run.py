@@ -82,6 +82,7 @@ def run():
         k_vec, _, _ = my_model.k_path(path, 101, report=False)
 
         evals = my_model.solve_ham(k_vec)
+        evals = evals.T # transpose for v2
         evals_list.append(evals)
 
         wan_cent = my_array.berry_phase([0, 1], dir=1, contin=False, berry_evals=True)

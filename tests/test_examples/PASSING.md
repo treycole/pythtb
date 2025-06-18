@@ -9,27 +9,23 @@
     - [x] trestle
 - [x] checkerboard
     - [x] checkerboard
-- [ ] graphene
-    - [ ] cone
+- [x] graphene
+    - [x] cone
     - [x] graphene
 - [ ] haldane
-    - [ ] haldane
-    - [ ] haldane_bp
-    - [ ] haldane_fin
-    - [ ] haldane_hwf
-- [ ] kane_mele
-    - [ ] kane_mele
-- [ ] slab
-    - [ ] cubic_slab_hwf
     - [ ] edge
-- [ ] ssh
-    - [ ] simple
-- [ ] supercell
-    - [ ] supercell
+    - [x] haldane
+    - [x] haldane_bp
+    - [x] haldane_fin
+    - [x] haldane_hwf
+- [x] kane_mele
+    - [x] kane_mele
+- [x] slab
+    - [x] cubic_slab_hwf
+- [x] supercell
+    - [x] supercell
 - [x] three_site
     - [x] 3site_cycle
     - [x] 3site_cycle_fin
-- [ ] wannier
-    - [ ] triv_haldane
 - [x] zero_dim
     - [x] 0dim

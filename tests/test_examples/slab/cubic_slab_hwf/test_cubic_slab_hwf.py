@@ -7,9 +7,9 @@ from run import run
 
 OUTPUTDIR = "golden_outputs"
 OUTPUTS = {
-    "out1": "out1.npy",
-    "out2": "out2.npy",
-    "out3": "out3.npy"
+    "evals": "evals.npy",
+    "hwfc": "hwfc.npy",
+    "px": "px.npy"
 }
 #NOTE: Replace with your expected output file name(s). Should be in order
 # of the results returned by run()
