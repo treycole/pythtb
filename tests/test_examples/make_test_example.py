@@ -112,7 +112,7 @@ def get_version(pkg):
     try:
         import importlib.metadata as im
         return im.version(pkg)
-    except:
+    except Exception:
         return "unknown"
 ''')
 
@@ -125,11 +125,11 @@ import json
 import datetime
 import platform
 import importlib.metadata
-from .run import run
+from run import run
 
 OUTPUTDIR = "golden_outputs"
 FILENAMES = ["OUT1.npy", "OUT2.npy", "OUT3.npy"]
-LOGFILE = os.path.join(os.path.dirname(__file__), "golden_log.json")
+LOGFILE = os.path.join(os.path.dirname(__file__), OUTPUTDIR, "golden_log.json")
 
 def get_version(pkg):
     try:
@@ -148,6 +148,9 @@ def regenerate():
         np.save(path, result)
 
     metadata = {
+        "group": os.path.basename(os.path.dirname(os.path.dirname(__file__))),
+        "name": os.path.basename(os.path.dirname(__file__)),
+        "filenames": FILENAMES,
         "generated_at": datetime.datetime.now().isoformat(),
         "python_version": platform.python_version(),
         "pythtb_version": get_version("pythtb")
