@@ -5,11 +5,11 @@ import json
 import datetime
 import platform
 import importlib.metadata
-from .run import run
+from run import run
 
 OUTPUTDIR = "golden_outputs"
-FILENAMES = ["OUT1.npy", "OUT2.npy", "OUT3.npy"]
-LOGFILE = os.path.join(os.path.dirname(__file__), "golden_log.json")
+FILENAMES = ["3site_cycle_wann_centers.npy", "3site_cycle_final.npy"]
+LOGFILE = os.path.join(os.path.dirname(__file__), OUTPUTDIR, "golden_log.json")
 
 def get_version(pkg):
     try:
@@ -19,7 +19,7 @@ def get_version(pkg):
 
 def regenerate():
     os.makedirs(OUTPUTDIR, exist_ok=True)
-    results = run()
+    results = run(-1, 2)
     if not isinstance(results, (tuple, list)):
         results = [results]
 
@@ -28,6 +28,9 @@ def regenerate():
         np.save(path, result)
 
     metadata = {
+        "group": os.path.basename(os.path.dirname(os.path.dirname(__file__))),
+        "name": os.path.basename(os.path.dirname(__file__)),
+        "filenames": FILENAMES,
         "generated_at": datetime.datetime.now().isoformat(),
         "python_version": platform.python_version(),
         "pythtb_version": get_version("pythtb")

@@ -1,3 +1,4 @@
+# regen_golden_data.py
 import os
 import numpy as np
 import json
@@ -7,8 +8,8 @@ import importlib.metadata
 from run import run
 
 OUTPUTDIR = "golden_outputs"
-OUTPUTNAME = "result.npy" #NOTE: Replace with your expected output file name
-LOGFILE = os.path.join(os.path.dirname(__file__), "golden_data_log.json")
+FILENAMES = ["evals"]
+LOGFILE = os.path.join(os.path.dirname(__file__), OUTPUTDIR, "golden_log.json")
 
 def get_version(pkg):
     try:
@@ -18,12 +19,18 @@ def get_version(pkg):
 
 def regenerate():
     os.makedirs(OUTPUTDIR, exist_ok=True)
+    results = run()
+    if not isinstance(results, (tuple, list)):
+        results = [results]
 
-    #NOTE: Modify as needed to save expected output        
-    result = run()
-    np.save(os.path.join(OUTPUTDIR, OUTPUTNAME), result)
+    for result, fname in zip(results, FILENAMES):
+        path = os.path.join(OUTPUTDIR, fname)
+        np.save(path, result)
 
     metadata = {
+        "group": os.path.basename(os.path.dirname(os.path.dirname(__file__))),
+        "name": os.path.basename(os.path.dirname(__file__)),
+        "filenames": FILENAMES,
         "generated_at": datetime.datetime.now().isoformat(),
         "python_version": platform.python_version(),
         "pythtb_version": get_version("pythtb")
@@ -31,7 +38,7 @@ def regenerate():
     with open(LOGFILE, "w") as f:
         json.dump(metadata, f, indent=4)
 
-    print("✅ Golden data regenerated and logged to", LOGFILE)
+    print("✅ Golden data regenerated:", FILENAMES)
 
 if __name__ == "__main__":
     regenerate()

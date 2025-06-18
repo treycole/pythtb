@@ -3,7 +3,7 @@ import sys
 sys.path.append("../examples/")
 sys.path.append("../")
 
-from tests.test_examples.graphene.cone import w_square
+from tests.test_examples.graphene.cone.cone import w_square
 import numpy as np
 
 
