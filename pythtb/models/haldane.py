@@ -11,7 +11,6 @@ def haldane(delta, t, t2):
 
     for lvec in ([0, 0], [-1, 0], [0, -1]):
         model.set_hop(t, 0, 1, lvec, mode='set')
-        model.set_hop(t, 0, 1, lvec, mode='set')
 
     for lvec in ([1, 0], [-1, 1], [0, -1]):
         model.set_hop(t2*1j, 0, 0, lvec, mode='set')

@@ -1,8 +1,0 @@
-- [x] `0d.py`
-- [] `checkerboard.py`
-- [] `trestle.py`
-- [x] `graphene.py`
-- [] `cone.py`
-- [x] `3site_cycle.py`
-- [x] `haldane_bp.py`
-- [x] `haldane_hwf.py`

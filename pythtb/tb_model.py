@@ -492,6 +492,28 @@ class TBModel:
         A_inv = np.linalg.inv(A)  # shape (dim_r, dim_r)
         b = 2 * np.pi * A_inv.T  # shape (dim_k, dim_k)
         return b
+    
+    def get_recip_vol(self):
+        recip_lat_vecs = self.get_recip_lat()
+        if self._dim_k == 0:
+            logger.warning(
+                "Reciprocal volume is not defined for zero-dimensional k-space."
+            )
+            return 0.0
+        if self._dim_k != self._dim_r:
+            logger.warning(
+                "Reciprocal volume is not defined for systems where k-space and real-space dimensions differ."
+            )
+            return 0.0
+        if recip_lat_vecs.shape[0] != self._dim_k or recip_lat_vecs.shape[1] != self._dim_r:
+            raise ValueError(
+                "Reciprocal lattice vectors must have shape (dim_k, dim_r)."
+            )
+        if np.linalg.det(recip_lat_vecs) == 0:
+            raise ValueError("Reciprocal lattice vectors are not linearly independent.")
+        # Calculate the volume of the reciprocal lattice
+        # The volume is the absolute value of the determinant of the reciprocal lattice vectors
+        return abs(np.linalg.det(recip_lat_vecs))
 
     def set_onsite(self, onsite_en, ind_i=None, mode="set"):
         r"""
