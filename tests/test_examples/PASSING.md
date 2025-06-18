@@ -1,0 +1,36 @@
+# ✅ Test Status Checklist
+
+- [ ] boron_nitride
+    - [ ] bn_ribbon_berry
+- [ ] buckling
+    - [ ] buckled_layer
+    - [ ] trestle
+- [ ] checkerboard
+    - [ ] checkerboard
+- [ ] graphene
+    - [ ] cone
+    - [ ] graphene
+- [ ] haldane
+    - [ ] haldane
+    - [ ] haldane_bp
+    - [ ] haldane_fin
+    - [ ] haldane_hwf
+- [ ] kane_mele
+    - [ ] kane_mele
+- [ ] slab
+    - [ ] cubic_slab_hwf
+    - [ ] edge
+- [ ] ssh
+    - [ ] simple
+- [ ] supercell
+    - [ ] supercell
+- [x] three_site
+    - [x] 3site_cycle
+    - [x] 3site_cycle_fin
+- [ ] w90
+    - [ ] w90
+    - [ ] w90_quick
+- [ ] wannier
+    - [ ] triv_haldane
+- [x] zero_dim
+    - [x] 0dim
