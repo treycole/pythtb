@@ -21,6 +21,9 @@ def detect_degeneracies(eigenvalues, tol=1e-8):
         degenerate_groups (list of lists): Indices of degenerate eigenvalues.
     """
     eigenvalues = np.array(eigenvalues)
+    #sort eigenvalues if not already sorted
+    if not np.all(np.diff(eigenvalues) >= 0):
+        eigenvalues = np.sort(eigenvalues)
     degenerate_groups = []
     current_group = [0]
 
