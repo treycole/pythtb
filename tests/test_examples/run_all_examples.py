@@ -4,7 +4,7 @@ from pathlib import Path
 
 def find_tests():
     test_files = []
-    base = Path("tests/test_examples")
+    base = Path(".")
     for group in base.iterdir():
         if not group.is_dir():
             continue
