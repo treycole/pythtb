@@ -3,7 +3,8 @@ import numpy as np
 import json
 import datetime
 import platform
-from run import run
+# from run import run
+import importlib.util
 
 OUTPUTDIR = "golden_outputs"
 OUTPUTS = {
@@ -12,7 +13,16 @@ OUTPUTS = {
 #NOTE: Replace with your expected output file name(s). Should be in order
 # of the results returned by run()
 
+# This avoids namespace conflicts in the test environment
+def import_run(example_dir):
+    spec = importlib.util.spec_from_file_location("run", os.path.join(example_dir, "run.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.run
+
 def test_example():
+    example_dir = os.path.dirname(__file__)
+    run = import_run(example_dir)
     name = os.path.basename(os.path.dirname(__file__))
     group = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
     base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))

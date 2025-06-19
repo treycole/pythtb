@@ -3,12 +3,14 @@ import numpy as np
 import json
 import datetime
 import platform
-from run import run
+from tests.utils import import_run
 
 OUTPUTDIR = "golden_outputs"
 OUTPUTNAME = "evals.npy" #NOTE: Replace with your expected output file name
 
 def test_example():
+    example_dir = os.path.dirname(__file__)
+    run = import_run(example_dir)
     name = os.path.basename(os.path.dirname(__file__))
     group = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
     base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))

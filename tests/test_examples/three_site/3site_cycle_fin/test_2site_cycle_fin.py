@@ -3,7 +3,7 @@ import numpy as np
 import json
 import datetime
 import platform
-from run import run
+from tests.utils import import_run
 import pytest
 
 OUTPUTDIR = "golden_outputs"
@@ -17,6 +17,8 @@ OUTPUTS = {
     (-1.3, 2.0)
 ])
 def test_example(t, delta):
+    example_dir = os.path.dirname(__file__)
+    run = import_run(example_dir)
     name = os.path.basename(os.path.dirname(__file__))
     group = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
     base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))

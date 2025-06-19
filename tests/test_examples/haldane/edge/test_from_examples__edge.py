@@ -1,12 +1,11 @@
-# import sys
+import numpy as np
+from tests.utils import import_run
+import os
 
-# sys.path.append("../examples/")
-# sys.path.append("../")
+example_dir = os.path.dirname(__file__)
+run = import_run(example_dir)
 
-# import numpy as np
 # from tests.test_examples.slab.edge.edge import evecs, ed
-
-
 # def test_answer():
 #     print(evecs[ed, :])
 #     assert np.isclose(evecs[ed, 0], 2.80366220e-01 + 0.00000000e00j)

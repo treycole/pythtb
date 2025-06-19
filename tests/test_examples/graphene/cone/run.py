@@ -70,5 +70,5 @@ def run():
         berr_flux_square_0,
         berr_flux_square_1,
         berr_flux_square_01,
-        plaq,
+        plaq
     )
