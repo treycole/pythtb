@@ -1,7 +1,30 @@
 import numpy as np
 from pythtb import TBModel
+
 def fu_kane_mele(t, soc, m, beta):
-    # set up Fu-Kane-Mele model
+    """
+    fu_kane_mele tight-binding model.
+
+    Parameters
+    ----------
+    t : float
+        Spin-independent nearest-neighbor hopping amplitude.
+    soc : float
+        Spin-orbit coupling strength. Modulates next-nearest neighbor
+        hopping amplitudes.
+    m : float
+        Magnetic field strength.
+    beta : float
+        Adiabatic parameter which controls the strength of the magnetic field 
+        and the hopping amplitude along [111] direction.
+
+    Returns
+    -------
+    TBModel
+        An instance of the model.
+    """
+
+   
     lat = [[0, 1, 1], [1, 0, 1], [1, 1, 0]]
     orb = [[0, 0, 0], [0.25, 0.25, 0.25]]
     model = TBModel(3, 3, lat, orb, nspin=2)
