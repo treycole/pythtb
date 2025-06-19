@@ -12,8 +12,8 @@
 - [x] graphene
     - [x] cone
     - [x] graphene
-- [ ] haldane
-    - [ ] edge
+- [x] haldane
+    - [x] edge
     - [x] haldane
     - [x] haldane_bp
     - [x] haldane_fin

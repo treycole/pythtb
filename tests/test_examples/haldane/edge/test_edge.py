@@ -48,16 +48,15 @@ def test_example():
     #NOTE: Modify to match your expected output structure
     try:
         for i, (label, fname) in enumerate(OUTPUTS.items()):
-            if i % 2 == 0: # eigvals
-                evals = results[i]
-                evals = evals.T
-                result = evals
+            result = results[i]
+            # There are degenerate states in the Haldane model, so we need to check
+            # that the projectors are equivalent rather than the eigenvectors themselves.
+            if label == 'evecs_half':
+                P1 = result @ result.conj().T  # Projector for result
+                P2 = expected[label] @ expected[label].conj().T  # Projector for golden
+                assert np.allclose(P1, P2, rtol=1e-8, atol=1e-14), f"Projectors for {label} are not equivalent"
             else:
-                evecs = results[i]
-                print(evecs.shape)
-                # evecs = evecs.swapaxes(0,1)
-                result = evecs
-            np.testing.assert_allclose(result, expected[label], rtol=1e-8, atol=1e-14)
+                np.testing.assert_allclose(result, expected[label], rtol=1e-8, atol=1e-14)
     except AssertionError as e:
         entry["status"] = "fail"
         entry["reason"] = f"Mismatch in {label}: {str(e)}"

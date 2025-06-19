@@ -8,7 +8,7 @@ def haldane():
     my_model = TBModel(2, 2, lat, orb)
     delta = 0.0
     t = -1.0
-    t2 = 0.15 * np.exp((1.0j) * np.pi / 2.0)
+    t2 = 0.15 * np.exp(1j * np.pi / 2.0)
     t2c = t2.conjugate()
 
     my_model.set_onsite([-delta, delta])
@@ -34,7 +34,11 @@ def run():
     tmp_model_half = my_model.cut_piece(10, 0, glue_edgs=True)
     fin_model_half = tmp_model_half.cut_piece(10, 1, glue_edgs=False)
 
-    (evals, evecs) = fin_model.solve_ham(return_eigvecs=True)
-    (evals_half, evecs_half) = fin_model_half.solve_ham(return_eigvecs=True)
+    evals, evecs = fin_model.solve_ham(return_eigvecs=True)
+    evals_half, evecs_half = fin_model_half.solve_ham(return_eigvecs=True)
+
+    # golden_evals_half = np.load("golden_outputs/evals_half.npy")
+    # print("Golden evals_half:", golden_evals_half.round(6))
+    # print("Computed evals_half:", evals_half.round(6))
 
     return evals, evecs, evals_half, evecs_half

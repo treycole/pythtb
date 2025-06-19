@@ -9,6 +9,34 @@ __all__ = [
     "pauli_decompose",
 ]
 
+def detect_degeneracies(eigenvalues, tol=1e-8):
+    """
+    Detects degeneracies in a list of eigenvalues.
+
+    Parameters:
+        eigenvalues (array): List or array of eigenvalues (assumed sorted).
+        tol (float): Tolerance for identifying degeneracy.
+
+    Returns:
+        degenerate_groups (list of lists): Indices of degenerate eigenvalues.
+    """
+    eigenvalues = np.array(eigenvalues)
+    degenerate_groups = []
+    current_group = [0]
+
+    for i in range(1, len(eigenvalues)):
+        if abs(eigenvalues[i] - eigenvalues[i-1]) < tol:
+            current_group.append(i)
+        else:
+            if len(current_group) > 1:
+                degenerate_groups.append(current_group)
+            current_group = [i]
+
+    if len(current_group) > 1:
+        degenerate_groups.append(current_group)
+
+    return degenerate_groups
+
 def levi_civita(n, d):
     """
     Constructs the rank-n Levi-Civita tensor in dimension d.
@@ -160,6 +188,7 @@ def _red_to_cart(a_vecs, red):
 
 def _is_int(a):
     return np.issubdtype(type(a), np.integer)
+
 
 
 class PositionOperatorApproximationError(Exception):

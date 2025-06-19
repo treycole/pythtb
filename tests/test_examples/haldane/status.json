@@ -1,33 +1,32 @@
 {
     "haldane_bp": {
-        "last_pass": "2025-06-18T22:36:04.255200",
+        "last_pass": "2025-06-19T03:09:20.796295",
         "pythtb_version": "2.0.0",
         "python_version": "3.11.11",
         "status": "pass"
     },
     "haldane_fin": {
-        "last_pass": "2025-06-18T22:39:19.250323",
+        "last_pass": "2025-06-19T03:09:39.939669",
         "pythtb_version": "2.0.0",
         "python_version": "3.11.11",
         "status": "pass"
     },
     "haldane_hwf": {
-        "last_pass": "2025-06-18T23:16:04.636653",
+        "last_pass": "2025-06-19T03:09:44.111865",
         "pythtb_version": "2.0.0",
         "python_version": "3.11.11",
         "status": "pass"
     },
     "haldane": {
-        "last_pass": "2025-06-18T22:31:45.199276",
+        "last_pass": "2025-06-19T03:09:00.597524",
         "pythtb_version": "2.0.0",
         "python_version": "3.11.11",
         "status": "pass"
     },
     "edge": {
-        "last_pass": "2025-06-18T22:31:40.218418",
+        "last_pass": "2025-06-19T03:08:41.778651",
         "pythtb_version": "2.0.0",
         "python_version": "3.11.11",
-        "status": "fail",
-        "reason": "Mismatch in evecs_half: \nNot equal to tolerance rtol=1e-08, atol=1e-14\n\nMismatched elements: 38293 / 40000 (95.7%)\nMax absolute difference among violations: 0.42971616\nMax relative difference among violations: 1.38803761e+15\n ACTUAL: array([[ 1.891493e-02+0.000000e+00j,  2.809965e-02-2.019292e-17j,\n         1.891493e-02-5.213975e-17j, ...,  1.891493e-02-1.583409e-18j,\n         2.809965e-02+7.652419e-18j,  1.891493e-02-2.307457e-18j],...\n DESIRED: array([[ 0.018915+0.000000e+00j,  0.0281  +1.467328e-18j,\n         0.018915+5.281102e-17j, ...,  0.018915-5.331341e-20j,\n         0.0281  -9.647125e-18j,  0.018915-6.818417e-19j],..."
+        "status": "pass"
     }
 }
