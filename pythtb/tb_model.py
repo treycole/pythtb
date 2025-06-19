@@ -2445,7 +2445,7 @@ somehow changed Cartesian coordinates of orbitals."""
         else:
             return b_curv[dirs]
 
-    def chern(self, occ_idxs=None, dirs=(0, 1)):
+    def chern(self, occ_idxs=None, dirs=(0, 1), nk=100):
         """
         Computes Chern number for occupied manifold.
 
@@ -2456,12 +2456,15 @@ somehow changed Cartesian coordinates of orbitals."""
                 Indices for reciprocal space directions defining
                 2d surface to integrate Berry flux.
         """
-        nks = (50,) * self._dim_k
-        k_vals = [np.linspace(0, 1, nk, endpoint=False) for nk in nks]   # exlcudes endpoint
-        sq_mesh = np.meshgrid(*k_vals, indexing="ij")
-        flat_mesh = np.stack(sq_mesh, axis=-1).reshape(
-            -1, len(nks)
-        )  # 1D list of k-vectors
+        from .k_mesh import KMesh
+        nks = (nk,) * self._dim_k
+        k_mesh = KMesh(self, *nks)
+        flat_mesh = k_mesh.flat_mesh
+        # k_vals = [np.linspace(0, 1, nk, endpoint=False) for nk in nks]   # exlcudes endpoint
+        # sq_mesh = np.meshgrid(*k_vals, indexing="ij")
+        # flat_mesh = np.stack(sq_mesh, axis=-1).reshape(
+        #     -1, len(nks)
+        # )  # 1D list of k-vectors
 
         Omega = self.berry_curvature(flat_mesh, occ_idxs=occ_idxs)
 
