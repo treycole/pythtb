@@ -217,9 +217,9 @@ def plot_tb_model(
     all_coords.append(origin)
 
     # Draw lattice (unit cell) vectors as arrows and label them
+    #TODO: Fix lattice vectors to appear in hybrid finite/periodic models
     ends = []
     for i in model._per:
-        print(i)
         start = origin
         end = proj(model._lat[i])
         ends.append(end)
