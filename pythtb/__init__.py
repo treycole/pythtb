@@ -6,9 +6,9 @@ May 22, 2025
 Copyright (c) 2010-2025 Trey Cole, Sinisa Coh and David Vanderbilt.
 
 PythTB is free software available at http://www.physics.rutgers.edu/pythtb/ .
-You can redistribute it and/or modify it under the terms of the GNU General 
-Public License v3.0 or later. See LICENSE or https://www.gnu.org/licenses/gpl-3.0.en.html 
-for details. 
+You can redistribute it and/or modify it under the terms of the GNU General
+Public License v3.0 or later. See LICENSE or https://www.gnu.org/licenses/gpl-3.0.en.html
+for details.
 """
 
 __version__ = "2.0.0"

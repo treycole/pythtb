@@ -5,6 +5,7 @@ from matplotlib import cm
 import matplotlib.colors as mcolors
 from .utils import pauli_decompose
 
+
 def _fmt_num(x, precision=3):
     # If the imaginary part is negligible, print as a real number.
     if abs(x.imag) < 1e-10:
@@ -23,6 +24,7 @@ def _fmt_num(x, precision=3):
             return f"{x.imag:.{precision}g}i"
     else:
         return f"({x:.{precision}g})"
+
 
 def _pauli_decompose_str(M, precision=3):
 
@@ -45,13 +47,14 @@ def _pauli_decompose_str(M, precision=3):
 
     return " + ".join(terms).replace("+ -", "- ")
 
+
 def _pauli_decompose_unicode(M, precision=3):
     """
     Decompose a 2x2 matrix M in terms of the Pauli matrices and return
     a Unicode string representation.
 
     That is, find coefficients a0, a1, a2, a3 such that:
-    
+
         M = a0 * I + a1 * σₓ + a2 * σᵧ + a3 * σᶻ
 
     Parameters:
@@ -96,18 +99,23 @@ def _pauli_decompose_unicode(M, precision=3):
     if abs(a3) > 1e-10:
         # For z, using a Unicode modifier letter small z: ᶻ (U+1D5B)
         terms.append(f"{fmt(a3)} σ_z")
-        
+
     if not terms:
         return "0"
-    
+
     return " + ".join(terms).replace("+ -", "- ")
 
-#TODO: Add hoverable hopping and onsite terms
+
+# TODO: Add hoverable hopping and onsite terms
 def plot_tb_model(
-        model, proj_plane=None, eig_dr=None,
-        draw_hoppings=True, annotate_onsite_en=False,
-        ph_color="black", orb_color="r"
-        ):
+    model,
+    proj_plane=None,
+    eig_dr=None,
+    draw_hoppings=True,
+    annotate_onsite_en=False,
+    ph_color="black",
+    orb_color="r",
+):
     r"""
 
     Rudimentary function for visualizing tight-binding model geometry,
@@ -217,7 +225,7 @@ def plot_tb_model(
     all_coords.append(origin)
 
     # Draw lattice (unit cell) vectors as arrows and label them
-    #TODO: Fix lattice vectors to appear in hybrid finite/periodic models
+    # TODO: Fix lattice vectors to appear in hybrid finite/periodic models
     ends = []
     for i in model._per:
         start = origin
@@ -325,7 +333,7 @@ def plot_tb_model(
     mags = [np.amax(abs(hop[0])) for hop in model._hoppings]
     biggest_hop = np.amax(mags)
     # transparency propto hopping strength
-    arrow_alphas = mags / biggest_hop if biggest_hop !=0 else np.ones(len(mags))
+    arrow_alphas = mags / biggest_hop if biggest_hop != 0 else np.ones(len(mags))
     arrow_alphas = (
         0.3 + 0.7 * arrow_alphas**2
     )  # nonlinear mapping for greater visual difference
@@ -345,7 +353,7 @@ def plot_tb_model(
             for shift in range(2):  # draw both i->j+R and i-R->j hop
                 pos_i = to_cart(model._orb[i_orb])
                 pos_j = to_cart(model._orb[j_orb])
-                
+
                 # Determine starting and ending orbital positions
                 if r_vec is not None:
                     # Adjust pos_j with lattice translation if provided
@@ -422,7 +430,7 @@ def plot_tb_model(
     # If eigenstate is provided, overlay eigenstate information on the orbitals
     if eig_dr is not None:
         # For each orbital, size the marker by amplitude and color by phase
-        cmap = cm.hsv  
+        cmap = cm.hsv
         for i in range(model._norb):
             pos = to_cart(model._orb[i])
             p = proj(pos)
@@ -437,7 +445,7 @@ def plot_tb_model(
             ax.scatter(
                 p[0],
                 p[1],
-                s = 30*amp*2*model._norb,  # size proportional to amplitude
+                s=30 * amp * 2 * model._norb,  # size proportional to amplitude
                 color=color,
                 edgecolor="k",
                 zorder=10,
@@ -482,7 +490,7 @@ def plot_tb_model_3d(
     site_colors=None,
     site_names=None,
     ph_color="black",
-    ):
+):
     r"""
     Visualize a 3D tight-binding model using Plotly.
 
@@ -511,7 +519,7 @@ def plot_tb_model_3d(
 
     # --- Draw Origin ---
     origin = np.array([0.0, 0.0, 0.0])
-    
+
     all_coords.append(origin)
 
     # --- Draw Lattice Vectors ---
@@ -547,7 +555,7 @@ def plot_tb_model_3d(
                     w=[direction_unit[2]],
                     anchor="tip",
                     sizemode="absolute",
-                    sizeref=0.2,  
+                    sizeref=0.2,
                     showscale=False,
                     colorscale=[[0, "blue"], [1, "blue"]],
                     name=f"a{i}",
@@ -582,9 +590,9 @@ def plot_tb_model_3d(
 
         if model._nspin == 2:
             onsite_str = _pauli_decompose_unicode(model._site_energies[i])
-            onsite_label = fr"{onsite_str}"
+            onsite_label = rf"{onsite_str}"
         else:
-            onsite_label = fr"{model._site_energies[i]:.2f}"
+            onsite_label = rf"{model._site_energies[i]:.2f}"
         onsite_labels.append(onsite_label)
 
         pos = to_cart(model._orb[i])
@@ -602,7 +610,7 @@ def plot_tb_model_3d(
             orb_marker_colors.append(mcolors.to_hex(cmap_orb(i)))
 
         if site_names is not None:
-            name =  site_names[i]
+            name = site_names[i]
         else:
             name = f"Orbital {i}"
 
@@ -613,9 +621,9 @@ def plot_tb_model_3d(
                 z=[pos[2]],
                 mode="markers",
                 marker=dict(color=orb_marker_colors[i], size=10),
-                text=[fr"Orbital {i}, Onsite Energy = {onsite_label}"],
+                text=[rf"Orbital {i}, Onsite Energy = {onsite_label}"],
                 hoverinfo="text",
-                name=name
+                name=name,
             )
         )
 
@@ -625,7 +633,9 @@ def plot_tb_model_3d(
         # Compute hopping strengths for opacity.
         mags = [np.amax(np.abs(hop[0])) for hop in model._hoppings]
         biggest_hop = np.amax(mags) if mags else 1.0
-        arrow_alphas = np.array(mags) / biggest_hop if biggest_hop != 0 else np.ones(len(mags))
+        arrow_alphas = (
+            np.array(mags) / biggest_hop if biggest_hop != 0 else np.ones(len(mags))
+        )
         arrow_alphas = 0.3 + 0.7 * arrow_alphas**2  # Non-linear mapping.
         for h_idx, h in enumerate(model._hoppings):
             amp = h[0]
@@ -659,8 +669,10 @@ def plot_tb_model_3d(
                             marker=dict(color=orb_marker_colors[i_orb], size=8),
                             name="",
                             showlegend=False,
-                            text=[f"Orbital {i_orb}, \n Onsite Energy: {onsite_labels[i_orb]}"],
-                            hoverinfo="text"
+                            text=[
+                                f"Orbital {i_orb}, \n Onsite Energy: {onsite_labels[i_orb]}"
+                            ],
+                            hoverinfo="text",
                         )
                     )
 
@@ -671,13 +683,14 @@ def plot_tb_model_3d(
                             z=[pos_j[2]],
                             mode="markers",
                             marker=dict(color=orb_marker_colors[j_orb], size=8),
-                            name="", 
+                            name="",
                             showlegend=False,
-                            text=[fr"Orbital {j_orb}, onsite energy: {onsite_labels[j_orb]}"],
+                            text=[
+                                rf"Orbital {j_orb}, onsite energy: {onsite_labels[j_orb]}"
+                            ],
                             hoverinfo="text",
                         )
                     )
-                
 
                 # Don't want to plot connecting arrows within unit cell twice
                 if intracell and shift == 1:
@@ -732,7 +745,9 @@ def plot_tb_model_3d(
             amp = np.abs(eig_dr[i]) ** 2  # amplitude propto probability density.
             eigen_marker_sizes.append(10 * amp)  # Scale factor for magnitude.
             phase = np.angle(eig_dr[i])
-            eigen_marker_colors.append(mcolors.to_hex(cmap_phase((phase + np.pi) / (2 * np.pi))))
+            eigen_marker_colors.append(
+                mcolors.to_hex(cmap_phase((phase + np.pi) / (2 * np.pi)))
+            )
         traces.append(
             go.Scatter3d(
                 x=eigen_x,
@@ -776,15 +791,19 @@ def plot_tb_model_3d(
         lines.append("<br>")
         lines.append("<b>Lattice Vectors:</b><br>")
         for i, vec in enumerate(model._lat):
-            lines.append(f"a_{i} = {np.array2string(vec, precision=3, separator=', ')}<br>")
+            lines.append(
+                f"a_{i} = {np.array2string(vec, precision=3, separator=', ')}<br>"
+            )
         lines.append("<br>")
         lines.append("<b>Orbital Vectors:</b><br>")
         for i, orb in enumerate(model._orb):
-            lines.append(f"Orbital {i} = {np.array2string(orb, precision=3, separator=', ')}<br>")
+            lines.append(
+                f"Orbital {i} = {np.array2string(orb, precision=3, separator=', ')}<br>"
+            )
         lines.append("<br>")
         lines.append(f"<b>Number of Spins:</b> {model._nspin}")
         return "".join(lines)
-    
+
     report_text = get_pretty_model_info_str()
 
     if show_model_info:
@@ -805,7 +824,6 @@ def plot_tb_model_3d(
         )
 
     return fig
-
 
 
 def plot_bands(
@@ -875,7 +893,13 @@ def plot_bands(
             cbar = fig.colorbar(scat, ticks=[1, 0], pad=0.01)
             # cbar.set_ticks([])
             # cbar.ax.set_yticklabels([r'$B$', r'$A$'], size=12)
-            cbar.ax.set_yticklabels([r"$ |\langle \psi_{nk} | \phi_B \rangle |^2$", r"$|\langle \psi_{nk} | \phi_A \rangle |^2$"], size=12)
+            cbar.ax.set_yticklabels(
+                [
+                    r"$ |\langle \psi_{nk} | \phi_B \rangle |^2$",
+                    r"$|\langle \psi_{nk} | \phi_A \rangle |^2$",
+                ],
+                size=12,
+            )
 
     elif proj_spin:
         evals, evecs = model.solve_ham(k_vec, return_eigvecs=True)
@@ -901,7 +925,13 @@ def plot_bands(
             )
 
         cbar = fig.colorbar(scat, ticks=[1, 0])
-        cbar.ax.set_yticklabels([r"$ |\langle \psi_{nk} | \phi_{\uparrow} \rangle |^2$", r"$|\langle \psi_{nk} | \phi_{\downarrow} \rangle |^2$"], size=12)
+        cbar.ax.set_yticklabels(
+            [
+                r"$ |\langle \psi_{nk} | \chi_{\uparrow} \rangle |^2$",
+                r"$|\langle \psi_{nk} | \chi_{\downarrow} \rangle |^2$",
+            ],
+            size=12,
+        )
 
     else:
         evals = model.solve_ham(k_vec, return_eigvecs=False)
