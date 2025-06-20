@@ -17,10 +17,10 @@ SIGMAX = np.array([[0, 1], [1, 0]], dtype=complex)
 SIGMAY = np.array([[0, -1j], [1j, 0]], dtype=complex)
 SIGMAZ = np.array([[1, 0], [0, -1]], dtype=complex)
 
+
 class TBModel:
     r"""
-    This is the main class of the PythTB package which contains all
-    information for the tight-binding model.
+    This class contains the tight-binding model information.
 
     :param dim_k: Dimensionality of reciprocal space, i.e., specifies how
       many directions are considered to be periodic.
@@ -65,7 +65,7 @@ class TBModel:
       *nspin* is 1 then the model is spinless, if *nspin* is 2 then it
       is explicitly a spinfull model and each orbital is assumed to
       have two spin components. Default value of this parameter is
-      *1*.  Of course one can make spinfull calculation even with
+      *1*. Of course one can make spinfull calculation even with
       *nspin* set to 1, but then the user must keep track of which
       orbital corresponds to which spin component.
 
@@ -307,60 +307,77 @@ class TBModel:
             print("\n".join(output))
         else:
             return "\n".join(output)
-        
+
     def set_k_mesh(self, *nks):
         from .k_mesh import KMesh
+
         dim_k = len(nks)
         if dim_k != self.dim_k:
             raise ValueError(
-                "K-space dimensions do not match specified mesh numbers. Must be a number" \
-                "for each dimension.")
+                "K-space dimensions do not match specified mesh numbers. Must be a number"
+                "for each dimension."
+            )
         if hasattr(self, "k_mesh") and self.k_mesh.nks == nks:
-            logger.warning("KMesh already set and 'nks' are the same as specified. Doing nothing.")
+            logger.warning(
+                "KMesh already set and 'nks' are the same as specified. Doing nothing."
+            )
             return
         self.k_mesh = KMesh(self, *nks)
         self.nks = nks
 
     def get_k_mesh(self, flat: bool = False):
+        """
+        Returns the k-space mesh.
+
+        :param flat: If True, returns the flat mesh (1D array of k-points).
+         If False, returns the square mesh (2D array of k-points).
+        
+        :return: k_mesh object containing the k-space mesh.
+        """
         if not hasattr(self, "k_mesh"):
-            raise NameError("No k_mesh attribute. Must use 'set_k_mesh' first to generate uniform mesh.")
+            raise NameError(
+                "No k_mesh attribute. Must use 'set_k_mesh' first to generate uniform mesh."
+            )
         if flat:
             return self.k_mesh.flat_mesh
         else:
             return self.k_mesh.square_mesh
-    
-    def get_periodic_H(self, H_flat, k_vals):
+
+    def _get_periodic_H(self, H_flat, k_vals):
         """
         Change to periodic gauge so that H(k+G) = H(k)
 
         If n_spin = 2, H_flat should only be flat along k and NOT spin.
         """
-        orb_vecs = self.get_orb_vecs() # reduced units
+        orb_vecs = self.get_orb_vecs()  # reduced units
         orb_vec_diff = orb_vecs[:, None, :] - orb_vecs[None, :, :]
         if self._dim_k == 0:
-            logger.warning("No periodic directions in k-space. Returning H_flat unchanged.")
+            logger.warning(
+                "No periodic directions in k-space. Returning H_flat unchanged."
+            )
             return H_flat
-        orb_phase = np.exp(1j * 2 * np.pi * np.matmul(orb_vec_diff, k_vals.T)).transpose(2,0,1)
+        orb_phase = np.exp(
+            1j * 2 * np.pi * np.matmul(orb_vec_diff, k_vals.T)
+        ).transpose(2, 0, 1)
         H_per_flat = H_flat * orb_phase
         return H_per_flat
-
 
     # Property decorators for read-only access to model attributes
     @property
     def dim_r(self):
         "Returns dimensionality of real space."
         return self._dim_r
-    
+
     @property
     def dim_k(self):
         "Returns dimensionality of reciprocal space."
         return self._dim_k
-    
+
     @property
     def nspin(self):
         "Returns number of spin components."
         return self._nspin
-    
+
     @property
     def per(self):
         """
@@ -368,7 +385,7 @@ class TBModel:
         Each index corresponds to a lattice vector in the model.
         """
         return self._per
-    
+
     @property
     def norb(self):
         """
@@ -376,7 +393,7 @@ class TBModel:
         This is the number of tight-binding orbitals defined in the model.
         """
         return self._norb
-    
+
     @property
     def nstate(self):
         """
@@ -384,7 +401,7 @@ class TBModel:
         This is the number of orbitals multiplied by the number of spin components.
         """
         return self._nstate
-    
+
     @property
     def lat_vecs(self):
         """
@@ -392,7 +409,7 @@ class TBModel:
         Each vector is a row in the array.
         """
         return self._lat.copy()
-    
+
     @property
     def orb_vecs(self):
         """
@@ -400,7 +417,7 @@ class TBModel:
         Each orbital is a row in the array.
         """
         return self._orb.copy()
-    
+
     @property
     def site_energies(self):
         """
@@ -409,7 +426,7 @@ class TBModel:
         If the model is spinless, this is a 1D array with shape (norb,).
         """
         return self._site_energies.copy()
-    
+
     @property
     def hoppings(self):
         """
@@ -421,7 +438,7 @@ class TBModel:
         - R: optional list of lattice vectors for the hopping
         """
         return copy.deepcopy(self._hoppings)
-    
+
     @property
     def assume_position_operator_diagonal(self):
         """
@@ -429,7 +446,7 @@ class TBModel:
         This is used for calculating the velocity operator.
         """
         return self._assume_position_operator_diagonal
-    
+
     @assume_position_operator_diagonal.setter
     def assume_position_operator_diagonal(self, value: bool):
         """
@@ -466,7 +483,7 @@ class TBModel:
         """
         return self._lat.copy()
 
-    #TODO: Fix to work with systems where not all lattice vectors are periodic
+    # TODO: Fix to work with systems where not all lattice vectors are periodic
     def get_recip_lat(self):
         """
         Returns reciprocal lattice vectors in format [vector, coordinate].
@@ -477,7 +494,7 @@ class TBModel:
                 "Reciprocal lattice vectors are not defined for zero-dimensional k-space."
             )
             return np.zeros((0, self._dim_r))
-        
+
         if self._dim_k != self._dim_r:
             logger.warning(
                 "Reciprocal lattice vectors are not defined for systems where k-space and real-space dimensions differ."
@@ -485,15 +502,22 @@ class TBModel:
             return np.zeros((self._dim_k, self._dim_r))
 
         # Calculate the reciprocal lattice vectors
-        A = self._lat # shape (dim_r, dim_r)
+        A = self._lat  # shape (dim_r, dim_r)
         if np.linalg.det(A) == 0:
             raise ValueError("Lattice vectors are not linearly independent.")
         # Calculate the inverse of the lattice matrix
         A_inv = np.linalg.inv(A)  # shape (dim_r, dim_r)
         b = 2 * np.pi * A_inv.T  # shape (dim_k, dim_k)
         return b
-    
+
     def get_recip_vol(self):
+        """
+        Returns the volume of the reciprocal lattice.
+        The volume is defined as the absolute value of the determinant
+        of the reciprocal lattice vectors.
+
+        :return: Volume of the reciprocal lattice.
+        """
         recip_lat_vecs = self.get_recip_lat()
         if self._dim_k == 0:
             logger.warning(
@@ -505,7 +529,10 @@ class TBModel:
                 "Reciprocal volume is not defined for systems where k-space and real-space dimensions differ."
             )
             return 0.0
-        if recip_lat_vecs.shape[0] != self._dim_k or recip_lat_vecs.shape[1] != self._dim_r:
+        if (
+            recip_lat_vecs.shape[0] != self._dim_k
+            or recip_lat_vecs.shape[1] != self._dim_r
+        ):
             raise ValueError(
                 "Reciprocal lattice vectors must have shape (dim_k, dim_r)."
             )
@@ -566,11 +593,12 @@ class TBModel:
           # Increases value of on-site energy for second orbital
           tb.set_onsite(100.0, 1, mode="add")
           # Changes on-site energy of second orbital to zero
-          tb.set_onsite(0.0, 1, mode="reset")
+          tb.set_onsite(0.0, 1, mode="set")
           # Sets all three on-site energies at once
-          tb.set_onsite([2.0, 3.0, 4.0], mode="reset")
+          tb.set_onsite([2.0, 3.0, 4.0], mode="set")
 
         """
+
         if ind_i is None:
             if not isinstance(onsite_en, (list, np.ndarray)):
                 raise TypeError(
@@ -581,35 +609,79 @@ class TBModel:
                     "List of onsite energies must "
                     "include a value for every orbital when `ind_i` is unspecified."
                 )
-            # for ons in onsite_en:
-            #     if isinstance(ons, (int, float)):
-            #         continue
-            #     if isinstance(ons, (list, np.ndarray)):
-            #         if len(ons) != 4 and ons.shape != (2, 2) and self._nspin == 2:
-            #             raise ValueError(
-            #                 "Onsite energies for spinful model must be either a single number, or an array of four numbers, or a 2x2 matrix."
-            #             )
-            #     if not is_Hermitian(ons):
-            #         raise ValueError(
-            #             "Onsite terms should be real, or in case where it is a matrix, Hermitian."
-            #         )
+            if self.nspin == 1:
+                for ons in onsite_en:
+                    if not isinstance(ons, (int, float)):
+                        raise TypeError(
+                            "Onsite energies for spinless model must be a single number."
+                        )
+            elif self.nspin == 2:
+                for ons in onsite_en:
+                    if isinstance(ons, (int, float)):
+                        # If onsite_en is a single number, it is interpreted as the onsite energy for both spin components
+                        # ons = np.array([[ons, 0], [0, ons]], dtype=complex) # will be done by _val_to_block
+                        continue
+                    elif isinstance(ons, (list, np.ndarray)):
+                        if len(ons) != 4 and ons.shape != (2, 2):
+                            raise ValueError(
+                                "Onsite energies for spinful model must be either an array of four numbers multiplying each Pauli matrix, or a 2x2 matrix."
+                            )
+                        ons = np.array(ons, dtype=complex)
+                    else:
+                        raise TypeError(
+                            "Onsite energies for spinful model must be an array of four numbers or a 2x2 matrix."
+                        )
         else:
             if ind_i < 0 or ind_i >= self._norb:
                 raise ValueError(
                     "Index ind_i is not within the range of number of orbitals."
                 )
-            # if not is_Hermitian(onsite_en):
-            #     raise ValueError(
-            #         "Onsite terms should be real, or in case where it is a matrix, Hermitian."
-            #     )
-       
+            if isinstance(onsite_en, (list, np.ndarray)) and self.nspin == 2:
+                if len(onsite_en) != 4 and onsite_en.shape != (2, 2):
+                    raise ValueError(
+                        "Onsite energies for spinful model must " \
+                        "be either an array of four numbers multiplying each Pauli matrix, or a 2x2 matrix."
+                    )
+            elif isinstance(onsite_en, (list, np.ndarray)) and self.nspin == 1:
+                # If onsite_en is a list or array, it should be a single number for spinless model
+                if len(onsite_en) != 1:
+                    raise ValueError(
+                        "Onsite energies for spinless model must be a single number when specifying ind_i."
+                    )
+                onsite_en = onsite_en[0]
+                if not isinstance(onsite_en, (int, float)):
+                    raise TypeError(
+                        "Onsite energies for spinless model must be a single number."
+                    )
+            elif isinstance(onsite_en, complex) and self.nspin == 1:
+                raise ValueError(
+                    "Onsite energies for spinless model must be a real number."
+                )
+            elif isinstance(onsite_en, (int, float)):
+                # If onsite_en is a single number, it is interpreted as the onsite energy for both spin components
+                if self._nspin == 2:
+                    onsite_en = np.array([[onsite_en, 0], [0, onsite_en]], dtype=complex)
+            
+            else:
+                raise TypeError(
+                    "When specifying ind_i, onsite energies must be a single number, an array of four numbers, or a 2x2 matrix."
+                )
+
+        # deprecation warning
+        if mode.lower() == "reset":
+            logger.warning(
+                "The 'reset' mode is deprecated as of v2.0. Use 'set' instead to set the onsite energy." \
+                "This will be removed in a future version."
+            )
+            mode = "set"
+
         if mode.lower() == "set":
             if ind_i is not None:
                 if self._site_energies_specified[ind_i]:
                     logger.warning(
                         f"Onsite energy for site {ind_i} was already set; resetting to the specified values."
                     )
-                
+
                 term = self._val_to_block(onsite_en)
 
                 if not is_Hermitian(term):
@@ -633,7 +705,7 @@ class TBModel:
                         )
                     self._site_energies[i] = term
                     self._site_energies_specified[i] = True
-                
+
         elif mode.lower() == "add":
             if ind_i is not None:
                 self._site_energies[ind_i] += self._val_to_block(onsite_en)
@@ -743,6 +815,14 @@ class TBModel:
 
         """
         #### Prechecks and formatting ####
+        # deprecation warning
+        if mode == 'reset':
+            logger.warning(
+                "The 'reset' mode is deprecated as of v2.0. Use 'set' instead to set the hopping term." \
+                "This will be removed in a future version."
+            )
+            mode = "set"
+
         if self._dim_k != 0 and (ind_R is None):
             raise ValueError("Must specify ind_R when we have a periodic direction.")
         # make sure ind_i and ind_j are not out of scope
@@ -901,11 +981,8 @@ class TBModel:
                     "For spin=2, value should be a 2x2 array or list of 4 numbers."
                 )
             else:
-                raise ValueError(
-                    "Value has incorrect dimensions. "
-                )
-            
-       
+                raise ValueError("Value has incorrect dimensions. ")
+
     def get_velocity(self, k_pts, cartesian=False):
         """
         Generate the velocity operator using commutator v_k = d/dk H_k for an array of k-points.
@@ -947,13 +1024,13 @@ class TBModel:
                 raise ValueError("k_arr should be a 2D array of shape (n_kpts, dim_k).")
         else:
             raise TypeError("k_pts should not be None for velocity operator.")
-        
+
         norb = self._norb
         nspin = self._nspin
         per = np.asarray(self._per)
-        orb_red = np.asarray(self._orb)           # shape (norb, dim_r)
+        orb_red = np.asarray(self._orb)  # shape (norb, dim_r)
         hoppings = self._hoppings
-        
+
         i_indices = np.array([h[1] for h in hoppings])
         j_indices = np.array([h[2] for h in hoppings])
         amps = np.array([h[0] for h in hoppings], dtype=complex)
@@ -971,17 +1048,19 @@ class TBModel:
         k_dot_r = k_arr @ delta_r_per.T  # Shape: (n_kpts, n_hoppings)
         phases = np.exp(1j * 2 * np.pi * k_dot_r)  # Shape: (n_kpts, n_hoppings)
         if cartesian:
-            deriv_phase = (
-                1j * delta_r_per @ self.get_lat()[self._per, :]
-            ).T[:, None, :] * phases[None, ...]
+            deriv_phase = (1j * delta_r_per @ self.get_lat()[self._per, :]).T[
+                :, None, :
+            ] * phases[None, ...]
         else:
-            deriv_phase = (1j * 2 * np.pi * delta_r_per).T[:, None, :] * phases[None, ...]
+            deriv_phase = (1j * 2 * np.pi * delta_r_per).T[:, None, :] * phases[
+                None, ...
+            ]
 
         n_hops = len(hoppings)
         if nspin == 1:
             T_f = np.zeros((n_hops, norb, norb), complex)
             T_r = np.zeros((n_hops, norb, norb), complex)
-            idx  = np.arange(n_hops)
+            idx = np.arange(n_hops)
             T_f[idx, i_indices, j_indices] = amps
             T_r[idx, j_indices, i_indices] = amps.conj()
 
@@ -994,9 +1073,9 @@ class TBModel:
                 T_r[h, j_indices[h], :, i_indices[h], :] = amps[h].conj().T
 
         # compute forward contribution into vel array
-        vel = np.tensordot(deriv_phase, T_f, axes=([2],[0]))
+        vel = np.tensordot(deriv_phase, T_f, axes=([2], [0]))
         # compute reverse contribution in temporary buffer
-        temp = np.tensordot(deriv_phase.conj(), T_r, axes=([2],[0]))
+        temp = np.tensordot(deriv_phase.conj(), T_r, axes=([2], [0]))
         # add in-place to avoid extra allocation
         np.add(vel, temp, out=vel)
 
@@ -1004,22 +1083,36 @@ class TBModel:
 
     def get_ham(self, k_pts=None):
         """
-        Generate Bloch Hamiltonian for an array of k-points and varying parameters
+        Generate Bloch Hamiltonian for an array of k-points in reduced coordinates.
+        The Hamiltonian is defined as
+        H(k) = sum_{ij} H_{ij}(k) |i><j| 
+        where H_{ij}(k) = <i|H|j> exp(i k . (r_i - r_j + R)).
+        
+        The Hamiltonian is Hermitian, and the k-points are in reduced coordinates.
 
-        This Hamiltonian follows tight-binding convention I where the phase factors
+        The Hamiltonian follows tight-binding convention I where the phase factors
         associated with the orbital positions are included. This means H(k) =\= H(k+G), but
-        instead H(k) = U H(k+G) U^(dagger). Taking finite differences for partial k_mu H(k)
-        doesn't work in convention I at the boundaries.
+        instead H(k) = U H(k+G) U^(dagger) where U is the unitary transformation that relates the
+        Hamiltonian at k and k+G, where G is a reciprocal lattice vector.
 
-        Args:
-            k_pts (array-like, optional): Array of k-points in reduced coordinates
+        WARNING: Taking finite differences for partial k_mu H(k) won't work in convention I
+        at the boundaries.
+
+        :param k_pts: Array of k-points in reduced coordinates, shape (n_kpts, dim_k).
+        If None, the Hamiltonian is computed for a finite sample (dim_k = 0).
+
+        :return: Hamiltonian in the form of a numpy array.
+        The shape of the array is (n_kpts, n_orb, n_orb) for spinless models,
+        or (n_kpts, n_orb, 2, n_orb, 2) for spinful models.
+        If dim_k = 0, the shape is (n_orb, n_orb) for spinless models,
+        or (n_orb, 2, n_orb, 2) for spinful models.
         """
         # Cache invariant data to avoid repeated conversions
         dim_k = self._dim_k
         norb = self._norb
         nspin = self._nspin
         per = np.asarray(self._per)
-        orb_red = np.asarray(self._orb)           # shape (norb, dim_r)
+        orb_red = np.asarray(self._orb)  # shape (norb, dim_r)
         site_energies = np.asarray(self._site_energies)
         hoppings = self._hoppings
 
@@ -1027,13 +1120,17 @@ class TBModel:
             # if kpnt is just a number then convert it to an array
             if isinstance(k_pts, (int, np.integer, float)):
                 if dim_k != 1:
-                    raise ValueError("k_pts should be a 2D array of shape (n_kpts, dim_k).")
+                    raise ValueError(
+                        "k_pts should be a 2D array of shape (n_kpts, dim_k)."
+                    )
                 k_arr = np.array([[k_pts]])
             elif isinstance(k_pts, (list, np.ndarray)):
                 k_arr = np.asarray(k_pts)
                 if k_arr.ndim == 1:
                     if k_arr.shape[0] != dim_k:
-                        return ValueError("If 'k_pts' is a single k-point, it must be of shape dim_k.")
+                        return ValueError(
+                            "If 'k_pts' is a single k-point, it must be of shape dim_k."
+                        )
                     else:
                         # Reshape to (1, dim_k)
                         k_arr = k_arr[None, :]
@@ -1070,17 +1167,15 @@ class TBModel:
         j_indices = np.array([h[2] for h in hoppings])
         amps = np.array([h[0] for h in hoppings], dtype=complex)
 
-        # Precompute delta_r for all hoppings
+        # Compute phase factors for all k-points and hoppings
         orb_i = orb_red[i_indices]  # Shape: (n_hoppings, dim_r)
         orb_j = orb_red[j_indices]  # Shape: (n_hoppings, dim_r)
-
         if dim_k != 0:
             ind_Rs = np.array([h[3] for h in hoppings], dtype=float)
 
             delta_r = ind_Rs - orb_i + orb_j  # Shape: (n_hoppings, dim_r)
             delta_r_per = delta_r[:, per]  # Shape: (n_hoppings, dim_k)
 
-            # Compute phase factors for all k-points and hoppings
             k_dot_r = k_arr @ delta_r_per.T  # Shape: (n_kpts, n_hoppings)
             phases = np.exp(1j * 2 * np.pi * k_dot_r)  # Shape: (n_kpts, n_hoppings)
 
@@ -1088,7 +1183,7 @@ class TBModel:
         if nspin == 1:
             T_f = np.zeros((n_hops, norb, norb), complex)
             T_r = np.zeros((n_hops, norb, norb), complex)
-            idx  = np.arange(n_hops)
+            idx = np.arange(n_hops)
             T_f[idx, i_indices, j_indices] = amps
             T_r[idx, j_indices, i_indices] = amps.conj()
         else:
@@ -1100,8 +1195,8 @@ class TBModel:
                 T_r[h, j_indices[h], :, i_indices[h], :] = amps[h].conj().T
 
         if dim_k != 0:
-            ham = np.tensordot(phases, T_f, axes=([1],[0]))  
-            ham_hc = np.tensordot(phases.conj(), T_r, axes=([1],[0]))
+            ham = np.tensordot(phases, T_f, axes=([1], [0]))
+            ham_hc = np.tensordot(phases.conj(), T_r, axes=([1], [0]))
             np.add(ham, ham_hc, out=ham)
         else:
             ham = np.sum(T_f, axis=0)
@@ -1207,10 +1302,10 @@ class TBModel:
 
         :returns:
           * **eval** -- Two dimensional array of eigenvalues for
-            all bands for all kpoints. Format is eval[band,kpoint] where
-            first index (band) corresponds to the electron band in
-            question and second index (kpoint) corresponds to the k-point
-            as listed in the input parameter *k_list*. Eigenvalues are
+            all bands for all kpoints. Format is eval[kpoint, band] where
+            first index (kpoint) corresponds to the k-point
+            as listed in the input parameter *k_list* and second index (band)
+            corresponds to the electron band in question. Eigenvalues are
             sorted from smallest to largest at each k-point seperately.
 
             In the case when reciprocal space is zero-dimensional (as in a
@@ -1219,13 +1314,13 @@ class TBModel:
 
           * **evec** -- Three dimensional array of eigenvectors for
             all bands and all kpoints. If *nspin* equals 1 the format
-            of *evec* is evec[band,kpoint,orbital] where "band" is the
+            of *evec* is evec[kpoint, band, orbital] where "band" is the
             electron band in question, "kpoint" is index of k-vector
             as given in input parameter *k_list*. Finally, "orbital"
             refers to the tight-binding orbital basis function.
             Ordering of bands is the same as in *eval*.
 
-            Eigenvectors evec[n,k,j] correspond to :math:`C^{n {\bf
+            Eigenvectors evec[k, n, j] correspond to :math:`C^{n {\bf
             k}}_{j}` from section 3.1 equation 3.5 and 3.7 of the
             :download:`notes on tight-binding formalism
             <misc/pythtb-formalism.pdf>`.
@@ -1235,7 +1330,7 @@ class TBModel:
             evec[band,orbital].
 
             In the spinfull calculation (*nspin* equals 2) evec has
-            additional component evec[...,spin] corresponding to the
+            additional component evec[..., spin] corresponding to the
             spin component of the wavefunction.
 
         Example usage::
@@ -1376,7 +1471,7 @@ class TBModel:
                 # lattice vector of the hopping
                 ind_R = copy.deepcopy(self._hoppings[h][3])
                 # store by how many cells is the hopping in finite direction
-                jump_fin = ind_R[fin_dir]  
+                jump_fin = ind_R[fin_dir]
                 if fin_model._dim_k != 0:
                     ind_R[fin_dir] = 0  # one of the directions now becomes finite
 
@@ -1744,10 +1839,10 @@ somehow changed Cartesian coordinates of orbitals."""
 
         # candidates for super-cell vectors
         sc_cands = [
-            np.array(candidate) 
+            np.array(candidate)
             for candidate in product(range(-max_R, max_R + 1), repeat=self._dim_r)
-            ]
-        
+        ]
+
         # find all vectors inside super-cell
         # store them here
         sc_vec = []
@@ -1849,7 +1944,6 @@ somehow changed Cartesian coordinates of orbitals."""
             return sc_tb
         else:
             return (sc_tb, sc_vec)
-        
 
     def _shift_to_home(self, to_home_suppress_warning=False):
         """Shifts orbital coordinates (along periodic directions) to the home
@@ -1948,7 +2042,7 @@ somehow changed Cartesian coordinates of orbitals."""
         wants to remove 2nd orbital, then returned model will have 5
         orbitals indexed as 0,1,2,3,4.  In the returned model orbital
         indexed as 2 corresponds to the one indexed as 3 in the
-        original model.  Similarly 3 and 4 correspond to 4 and 5.
+        original model. Similarly 3 and 4 correspond to 4 and 5.
         Indices of first two orbitals (0 and 1) are unaffected.
 
         :param to_remove: List of orbital indices to be removed, or
@@ -2075,14 +2169,14 @@ somehow changed Cartesian coordinates of orbitals."""
             the Cartesian frame, however coordinates themselves are
             given in dimensionless reduced coordinates!  This is done
             so that this array can be directly passed to function
-            :func:`pythtb.TBModel.solve_all`.
+            :func:`pythtb.TBModel.solve_ham`.
 
           * **k_dist** -- Array giving accumulated k-distance to each
-            k-point in the path.  Unlike array *k_vec* this one has
+            k-point in the path. Unlike array *k_vec* this one has
             dimensions! (Units are defined here so that for an
             one-dimensional crystal with lattice constant equal to for
             example *10* the length of the Brillouin zone would equal
-            *1/10=0.1*.  In other words factors of :math:`2\pi` are
+            *1/10=0.1*. In other words factors of :math:`2\pi` are
             absorbed into *k*.) This array can be used to plot path in
             the k-space so that the distances between the k-points in
             the plot are exact.
@@ -2149,10 +2243,10 @@ somehow changed Cartesian coordinates of orbitals."""
         Example usage::
 
           # diagonalizes Hamiltonian at some k-points
-          (evals, evecs) = my_model.solve_all(k_vec,eig_vectors=True)
+          (evals, evecs) = my_model.solve_ham(k_vec, return_eigvecs=True)
           # computes position operator matrix elements for 3-rd kpoint
           # and bottom five bands along first coordinate
-          pos_mat = my_model.position_matrix(evecs[:5,2], 0)
+          pos_mat = my_model.position_matrix(evecs[2, :5], 0)
 
         See also this example: :ref:`haldane_hwf-example`,
 
@@ -2171,17 +2265,28 @@ somehow changed Cartesian coordinates of orbitals."""
         if not self._assume_position_operator_diagonal:
             _offdiag_approximation_warning_and_stop()
 
+        # check shape of evec
+        if not isinstance(evec, np.ndarray):
+            raise TypeError("evec must be a numpy array.")
+        # check number of dimensions of evec
+        if self.nspin == 1:
+            if evec.ndim != 2:
+                raise ValueError(
+                    "evec must be a 2D array with shape (band, orbital) for spinless models."
+                )
+        elif self.nspin == 2:
+            if evec.ndim != 3:
+                raise ValueError(
+                    "evec must be a 3D array with shape (band, orbital, spin) for spinful models."
+                )
+
         # get coordinates of orbitals along the specified direction
         pos_tmp = self._orb[:, dir]
         # reshape arrays in the case of spinfull calculation
         if self._nspin == 2:
             # tile along spin direction if needed
             pos_use = np.tile(pos_tmp, (2, 1)).transpose().flatten()
-            # also flatten the state along the spin index
-            #TODO: check if this is correct
-            # evec is band, orbital, spin
-            # evec_use = evec.reshape((evec.shape[0], evec.shape[1] * evec.shape[2]))
-            evec_use = evec.reshape((*evec.shape[:-2], -1))
+            evec_use = evec.reshape((evec.shape[0], evec.shape[1] * evec.shape[2]))
         else:
             pos_use = pos_tmp
             evec_use = evec
@@ -2364,13 +2469,57 @@ somehow changed Cartesian coordinates of orbitals."""
                 )
 
     def berry_curvature(
-            self, k_pts, evals = None, evecs = None, occ_idxs=None, 
-            dirs='all', cartesian=False, abelian=True
-            ):
+        self,
+        k_pts,
+        evals=None,
+        evecs=None,
+        occ_idxs=None,
+        dirs="all",
+        cartesian=False,
+        abelian=True,
+    ):
         """
         Generates the Berry curvature from the velocity operator dH/dk.
+        The Berry curvature is computed as
+        :math:`\Omega_{mn} = i \sum_{l\in \rm con} \left( \langle u_m | v_\mu | u_l \rangle
+        \langle u_l | v_\nu | u_m \rangle - \langle u_m | v_\nu | u_l \rangle
+        \langle u_l | v_\mu | u_m \rangle
+        \right) / (E_n - E_l)(E_m - E_l)`.
 
-        Requires at least two k-space directions.
+        Args:
+            k_pts (np.ndarray):
+                k-points at which to compute Berry curvature.
+                Shape should be (Nk, dim_k) where Nk is the number of k-points
+                and dim_k is the dimension of the k-space.
+            evals (np.ndarray, optional):
+                Eigenvalues of the Hamiltonian at the k-points.
+                If not provided, they will be computed.
+                Shape should be (Nk, n_states) where n_states is the number of states.
+            evecs (np.ndarray, optional):
+                Eigenvectors of the Hamiltonian at the k-points.
+                If not provided, they will be computed.    
+                Shape should be (Nk, n_states, n_orb) where n_orb is the number of orbitals.
+            occ_idxs (list, np.ndarray, optional):
+                Indices of the occupied bands.
+                If not provided, the first half of the states will be considered occupied.
+            dirs (str, tuple, optional):
+                Directions in k-space for which to compute Berry curvature.
+                If "all", curvature is computed for all dimensions.
+                If a tuple, it should contain indices of the dimensions to compute.
+            cartesian (bool, optional):
+                If True, the velocity operator is computed in Cartesian coordinates.
+                Default is False, which uses reduced coordinates.
+            abelian (bool, optional):
+                If True, the Berry curvature is computed in an abelian way,
+                i.e., the trace over the orbital indices is taken.
+                If False, the full tensor is returned.  
+
+        Returns:
+            np.ndarray:
+                Berry curvature tensor.
+                If `dirs` is "all", shape will be (dim_k, dim_k, Nk, n_orb, n_orb).
+                If `dirs` is a tuple, shape will be (Nk, n_orb, n_orb) for
+                the specified dimensions.
         """
 
         if self._dim_k < 2:
@@ -2387,8 +2536,10 @@ somehow changed Cartesian coordinates of orbitals."""
         v_k = v_k.reshape(*new_shape)
 
         if evals is None or evecs is None:
-            evals, evecs = self.solve_ham(k_pts, return_eigvecs=True, keep_spin_ax=False)
-    
+            evals, evecs = self.solve_ham(
+                k_pts, return_eigvecs=True, keep_spin_ax=False
+            )
+
         n_eigs = evecs.shape[-2]
 
         # Identify occupied bands
@@ -2415,16 +2566,22 @@ somehow changed Cartesian coordinates of orbitals."""
         # transpose
         evecs_T = evecs.transpose(0, 2, 1)[np.newaxis, :, :, :]
         # project vk into energy eignvector basis
-        vk_evecT = np.matmul(v_k, evecs_T) # intermediate array
+        vk_evecT = np.matmul(v_k, evecs_T)  # intermediate array
         v_k_rot = np.matmul(evecs_conj, vk_evecT)  # (dim_k, n_kpts, n_orb, n_orb)
 
         # Extract relevant submatrices
         # top right
-        v_occ_cond = v_k_rot[..., occ_idxs, :][..., :, cond_idxs]  # shape (dim_k, Nk, n_occ, n_con)
+        v_occ_cond = v_k_rot[..., occ_idxs, :][
+            ..., :, cond_idxs
+        ]  # shape (dim_k, Nk, n_occ, n_con)
         # bottom left
-        v_cond_occ = v_k_rot[..., cond_idxs, :][..., :, occ_idxs]  # shape (dim_k, Nk, n_con, n_occ)
+        v_cond_occ = v_k_rot[..., cond_idxs, :][
+            ..., :, occ_idxs
+        ]  # shape (dim_k, Nk, n_con, n_occ)
         # top right (bottom left uneeded in Kubo formula)
-        delta_E_occ_cond = inv_delta_E[:, occ_idxs, :][:, :, cond_idxs]  # shape (Nk, n_con, n_occ)
+        delta_E_occ_cond = inv_delta_E[:, occ_idxs, :][
+            :, :, cond_idxs
+        ]  # shape (Nk, n_con, n_occ)
 
         # premultiply by energy denominators
         v_occ_cond = v_occ_cond * delta_E_occ_cond
@@ -2439,8 +2596,8 @@ somehow changed Cartesian coordinates of orbitals."""
         )
 
         if abelian:
-            b_curv = np.trace(b_curv, axis1=-1, axis2=-2) 
-        if dirs=='all':
+            b_curv = np.trace(b_curv, axis1=-1, axis2=-2)
+        if dirs == "all":
             return b_curv
         else:
             return b_curv[dirs]
@@ -2457,14 +2614,10 @@ somehow changed Cartesian coordinates of orbitals."""
                 2d surface to integrate Berry flux.
         """
         from .k_mesh import KMesh
+
         nks = (nk,) * self._dim_k
         k_mesh = KMesh(self, *nks)
         flat_mesh = k_mesh.flat_mesh
-        # k_vals = [np.linspace(0, 1, nk, endpoint=False) for nk in nks]   # exlcudes endpoint
-        # sq_mesh = np.meshgrid(*k_vals, indexing="ij")
-        # flat_mesh = np.stack(sq_mesh, axis=-1).reshape(
-        #     -1, len(nks)
-        # )  # 1D list of k-vectors
 
         Omega = self.berry_curvature(flat_mesh, occ_idxs=occ_idxs)
 
@@ -2473,7 +2626,7 @@ somehow changed Cartesian coordinates of orbitals."""
         Chern = np.sum(Omega[dirs]) * dk_sq / (2 * np.pi)
 
         return Chern.real
-    
+
     ##### Plotting functions #####
     # These plotting functions are wrappers to the functions in plotting.py
     def visualize(
@@ -2504,15 +2657,16 @@ somehow changed Cartesian coordinates of orbitals."""
         is "red-blue" or "wheel", all other elements of the picture are
         drawn in gray or black.
 
-        :param dir_first: First index of Cartesian coordinates used for
-          plotting.
-
-        :param dir_second: Second index of Cartesian coordinates used for
-          plotting. For example if dir_first=0 and dir_second=2, and
-          Cartesian coordinates of some orbital is [2.0,4.0,6.0] then it
-          will be drawn at coordinate [2.0,6.0]. If dimensionality of real
-          space (*dim_r*) is zero or one then dir_second should not be
-          specified.
+        :param proj_plane: tuple or list of two integers specifying
+          Cartesian coordinates to be used for plotting.  For example,
+          if proj_plane=(0,1) then x-y projection of the model is
+          drawn. If *dim_r* is zero or one then this parameter should
+          not be specified. If *dim_r* is two then this parameter
+          should be specified as a tuple or list of two integers
+          between 0 and *dim_r*-1. If *dim_r* is three then
+          proj_plane should be specified as a tuple or list of two
+          integers between 0 and *dim_r*-1, and dir_second should not
+          be specified.
 
         :param eig_dr: Optional parameter specifying eigenstate to
           plot. If specified, this should be one-dimensional array of
@@ -2557,16 +2711,16 @@ somehow changed Cartesian coordinates of orbitals."""
 
           # Draws x-y projection of tight-binding model
           # tweaks figure and saves it as a PDF.
-          (fig, ax) = tb.visualize(0, 1)
-          ax.set_title("Title goes here")
-          fig.savefig("model.pdf")
+          fig, ax = tb.visualize(0, 1)
+          plt.show()
 
         See also these examples: :ref:`edge-example`,
         :ref:`visualize-example`.
 
         """
-        return plot_tb_model(self, proj_plane, eig_dr, draw_hoppings, annotate_onsite_en, ph_color)
-
+        return plot_tb_model(
+            self, proj_plane, eig_dr, draw_hoppings, annotate_onsite_en, ph_color
+        )
 
     def visualize_3d(
         self,
@@ -2576,7 +2730,7 @@ somehow changed Cartesian coordinates of orbitals."""
         site_names=None,
         show_model_info=True,
         ph_color="black",
-        ):
+    ):
         r"""
         Visualize a 3D tight-binding model using Plotly.
 
@@ -2594,10 +2748,14 @@ somehow changed Cartesian coordinates of orbitals."""
         * **fig** -- A Plotly Figure object.
         """
         return plot_tb_model_3d(
-            self, eig_dr=eig_dr, draw_hoppings=draw_hoppings, 
-            show_model_info=show_model_info, ph_color=ph_color, site_colors=site_colors,
-            site_names=site_names
-            )
+            self,
+            eig_dr=eig_dr,
+            draw_hoppings=draw_hoppings,
+            show_model_info=show_model_info,
+            ph_color=ph_color,
+            site_colors=site_colors,
+            site_names=site_names,
+        )
 
     def plot_bands(
         self,
@@ -2618,7 +2776,14 @@ somehow changed Cartesian coordinates of orbitals."""
         cbar=True,
     ):
         """
-
+        Plots band structure along a specified path in k-space. 
+        This function uses the `plot_bands` function from the `pythtb.plotting` module. 
+        It allows for customization of the plot, including projection of orbitals,
+        spin projection, figure and axis objects, title, scatter size, line width,
+        line color, line style, colormap, and whether to show a color bar.
+        This function is a wrapper around the `plot_bands` function in the `pythtb.plotting` module.
+        It is designed to be used with the `pythtb.TBModel` class.
+        
         Args:
             k_path (list): List of high symmetry points to plot bands through
             k_label (list[str], optional): Labels of high symmetry points. Defaults to None.
@@ -2630,4 +2795,21 @@ somehow changed Cartesian coordinates of orbitals."""
         Returns:
             fig, ax: matplotlib fig and ax
         """
-        return plot_bands(self, k_path, nk, k_label, proj_orb_idx, proj_spin, fig, ax, title, scat_size, lw, lc, ls, cmap, show, cbar)
+        return plot_bands(
+            self,
+            k_path,
+            nk,
+            k_label,
+            proj_orb_idx,
+            proj_spin,
+            fig,
+            ax,
+            title,
+            scat_size,
+            lw,
+            lc,
+            ls,
+            cmap,
+            show,
+            cbar,
+        )
