@@ -4,6 +4,7 @@ from .tb_model import TBModel
 
 __all__ = ["W90"]
 
+
 class W90:
     r"""
 
