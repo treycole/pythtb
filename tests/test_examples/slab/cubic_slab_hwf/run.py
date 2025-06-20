@@ -36,7 +36,7 @@ def run():
     bloch_arr = WFArray(slab_model, [nk, nk])
     bloch_arr.solve_on_grid([0.0, 0.0])
    
-    hwf_arr = bloch_arr.empty_like(nsta_arr=nl)
+    hwf_arr = bloch_arr.empty_like(nstates=nl)
     hwfc = np.zeros([nk, nk, nl])
 
     for ix in range(nk):

@@ -3,7 +3,6 @@ import numpy as np
 import json
 import datetime
 import platform
-from run import run
 from tests.utils import import_run
 
 OUTPUTDIR = "golden_outputs"
