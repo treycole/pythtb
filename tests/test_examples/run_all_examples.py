@@ -9,7 +9,7 @@ def find_tests():
         if not group.is_dir():
             continue
         for example in group.iterdir():
-            test_file = example / "test.py"
+            test_file = example / f"test_{example.name}.py"
             if test_file.exists():
                 test_files.append(test_file)
     return test_files
