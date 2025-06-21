@@ -1213,6 +1213,18 @@ class TBModel:
 
         return ham
 
+    
+    def get_periodic_H(self, H_flat, k_vals):
+        orb_vecs = self.get_orb()
+        orb_vec_diff = orb_vecs[:, None, :] - orb_vecs[None, :, :]
+        # orb_phase = np.exp(1j * 2 * np.pi * np.einsum('ijm, ...m->...ij', orb_vec_diff, k_vals))
+        orb_phase = np.exp(1j * 2 * np.pi * np.matmul(orb_vec_diff, k_vals.T)).transpose(
+            2, 0, 1
+        )
+        H_per_flat = H_flat * orb_phase
+        return H_per_flat
+    
+
     def _sol_ham(self, ham, return_eigvecs=False, keep_spin_ax=True):
         """Solves Hamiltonian and returns eigenvectors, eigenvalues"""
 
