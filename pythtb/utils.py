@@ -7,7 +7,59 @@ __all__ = [
     "finite_diff_coeffs",
     "is_Hermitian",
     "pauli_decompose",
+    "get_trial_wfs",
+    "get_periodic_H"
 ]
+
+
+def get_periodic_H(model, H_flat, k_vals):
+    orb_vecs = model.get_orb_vecs()
+    orb_vec_diff = orb_vecs[:, None, :] - orb_vecs[None, :, :]
+    # orb_phase = np.exp(1j * 2 * np.pi * np.einsum('ijm, ...m->...ij', orb_vec_diff, k_vals))
+    orb_phase = np.exp(1j * 2 * np.pi * np.matmul(orb_vec_diff, k_vals.T)).transpose(
+        2, 0, 1
+    )
+    H_per_flat = H_flat * orb_phase
+    return H_per_flat
+
+def get_trial_wfs(tf_list, norb, nspin=1):
+    """
+    Args:
+        tf_list: list[int | list[tuple]]
+            list of tuples defining the orbital and amplitude of the trial function
+            on that orbital. Of the form [ [(orb, amp), ...], ...]. If spin is included,
+            then the form is [ [(orb, spin, amp), ...], ...]
+
+    Returns:
+        tfs: np.ndarray
+            Array of trial functions
+    """
+
+    # number of trial functions to define
+    num_tf = len(tf_list)
+
+    if nspin == 2:
+        tfs = np.zeros([num_tf, norb, 2], dtype=complex)
+        for j, tf in enumerate(tf_list):
+            assert isinstance(
+                tf, (list, np.ndarray)
+            ), "Trial function must be a list of tuples"
+            for orb, spin, amp in tf:
+                tfs[j, orb, spin] = amp
+            tfs[j] /= np.linalg.norm(tfs[j])
+
+    elif nspin == 1:
+        # initialize array containing tfs = "trial functions"
+        tfs = np.zeros([num_tf, norb], dtype=complex)
+        for j, tf in enumerate(tf_list):
+            assert isinstance(
+                tf, (list, np.ndarray)
+            ), "Trial function must be a list of tuples"
+            for site, amp in tf:
+                tfs[j, site] = amp
+            tfs[j] /= np.linalg.norm(tfs[j])
+
+    return tfs
 
 
 def detect_degeneracies(eigenvalues, tol=1e-8):
@@ -238,3 +290,92 @@ def _offdiag_approximation_warning_and_stop():
 
 """
     )
+
+
+def compute_d4k_and_d2k(delta_k):
+    """
+    Computes the 4D volume element d^4k and the 2D plaquette areas d^2k for a given set of difference vectors in 4D space.
+
+    Parameters:
+    delta_k (numpy.ndarray): A 4x4 matrix where each row is a 4D difference vector.
+
+    Returns:
+    tuple: (d4k, plaquette_areas) where
+        - d4k is the absolute determinant of delta_k (4D volume element).
+        - plaquette_areas is a dictionary with keys (i, j) and values representing d^2k_{ij}.
+    """
+    # Compute d^4k as the determinant of the 4x4 difference matrix
+    d4k = np.abs(np.linalg.det(delta_k))
+
+    # Function to compute 2D plaquette area in 4D space
+    def compute_plaquette_area(v1, v2):
+        """Compute the 2D plaquette area spanned by two 4D vectors."""
+        area_squared = 0.0
+        # Sum over all unique (m, n) pairs where m < n
+        for m in range(4):
+            for n in range(m + 1, 4):
+                area_squared += (v1[m] * v2[n] - v1[n] * v2[m]) ** 2
+        return np.sqrt(area_squared)
+
+    # Compute all unique plaquette areas
+    plaquette_areas = {}
+    for i in range(4):
+        for j in range(i + 1, 4):
+            plaquette_areas[(i, j)] = compute_plaquette_area(delta_k[i], delta_k[j])
+
+    return d4k, plaquette_areas
+
+
+# def vel_op_fin_diff(model, H_flat, k_vals, dk, order_eps=1, mode='central'):
+#     """
+#     Compute velocity operators using finite differences.
+
+#     Parameters:
+#         H_mesh: ndarray of shape (Nk, M, M)
+#             The Hamiltonian on the parameter grid.
+#         dk: list of float
+#             Step sizes in each parameter direction.
+
+#     Returns:
+#         v_mu_fd: list of ndarray
+#             Velocity operators for each parameter direction.
+#     # """
+
+#     # recip_lat_vecs = model.get_recip_lat_vecs()
+#     # recip_basis = recip_lat_vecs/ np.linalg.norm(recip_lat_vecs, axis=1, keepdims=True)
+#     # g = recip_basis @ recip_basis.T
+#     # sqrt_mtrc = np.sqrt(np.linalg.det(g))
+#     # g_inv = np.linalg.inv(g)
+
+#     # dk = np.einsum("ij, j -> i", g_inv, dk)
+
+#     # assume only k for now
+#     dim_param = model._dim_k # Number of parameters (dimensions)
+#     # assume equal number of mesh points along each dimension
+#     nks = ( int(H_flat.shape[0]**(1/dim_param)),)*dim_param
+
+#     # Switch to periodic gauge H(k) = H(k+G)
+#     H_flat = get_periodic_H(model, H_flat, k_vals)
+#     H_mesh = H_flat.reshape(*nks, model._norb, model._norb)
+#     v_mu_fd = np.zeros((dim_param, *H_mesh.shape), dtype=complex)
+
+#     # Compute Jacobian
+#     recip_lat_vecs = model.get_recip_lat_vecs()
+#     inv_recip_lat = np.linalg.inv(recip_lat_vecs)
+
+#     for mu in range(dim_param):
+#         coeffs, stencil = finite_diff_coeffs(order_eps=order_eps, mode=mode)
+
+#         derivative_sum = np.zeros_like(H_mesh)
+
+#         for s, c in zip(stencil, coeffs):
+#             H_shifted = np.roll(H_mesh, shift=-s, axis=mu)
+#             derivative_sum += c * H_shifted
+
+#         v_mu_fd[mu] = derivative_sum / (dk[mu])
+
+#         # Ensure Hermitian symmetry
+#         v_mu_fd[mu] = 0.5 * (v_mu_fd[mu] + np.conj(v_mu_fd[mu].swapaxes(-1, -2)))
+
+#     return v_mu_fd
+
