@@ -625,8 +625,8 @@ class WFArray:
                 "Periodic boundary condition can be specified only along periodic directions!"
             )
 
-        # Compute phase factors
-        ffac = np.exp(-2.0j * np.pi * self._orb[:, k_dir])
+        # Compute phase factors from orbital vectors dotted with G parallel to k_dir
+        ffac = np.exp(-2j * np.pi * self._orb[:, k_dir])
         if self.nspin == 1:
             phase = ffac
         else:
@@ -635,31 +635,31 @@ class WFArray:
             phase[:, 0] = ffac
             phase[:, 1] = ffac
 
-        # Copy first eigenvector onto last one, multiplying by phase factors
-        # We can use numpy broadcasting since the orbital index is last
-
-        # avoide explicitly checking the mesh_dir
         if not _is_int(mesh_dir):
             raise TypeError("mesh_dir should be an integer!")
         if mesh_dir < 0 or mesh_dir >= self.dim_mesh:
             raise IndexError("mesh_dir outside the range!")
+
         # mesh_dir is the direction of the array along which we impose pbc
         # and it is also the direction of the k-vector along which we
-        # impose pbc
+        # impose pbc e.g.
         # mesh_dir=0 corresponds to kx, mesh_dir=1 to ky, etc.
         # mesh_dir=2 corresponds to lambda, etc.
 
-        # don't want hard-coded checks for mesh_dir, so use numpy slicing
-        # to set the last point in the mesh_dir direction equal to the first one
-        # multiplied by the phase factor
-        slc_lft = [slice(None)]*(mesh_dir+2)
-        slc_rt = [slice(None)]*(mesh_dir+2)
+        ### Define slices in a way that is general for arbitrary dimensions ###
+        # Example: mesh_dir = 2 (2 defines the axis in Python counting)
+        # add one for Python counting and one for ellipses 
+        slc_lft = [slice(None)]*(mesh_dir+2) # e.g., [:, :, :, :]
+        slc_rt = [slice(None)]*(mesh_dir+2) # e.g., [:, :, :, :]
+        # last element along mesh_dir axis
+        slc_lft[mesh_dir] = -1 # e.g., [:, :, -1, :]
+        # first element along mesh_dir axis
+        slc_rt[mesh_dir] = 0 # e.g., [:, :, 0, :]
+        # take all components of remaining axes with ellipses
+        slc_lft[mesh_dir+1] = Ellipsis # e.g., [:, :, -1, ...]
+        slc_rt[mesh_dir+1] = Ellipsis # e.g., [:, :, 0, ...]
 
-        slc_lft[mesh_dir] = -1
-        slc_rt[mesh_dir] = 0
-        slc_lft[mesh_dir+1] = Ellipsis
-        slc_rt[mesh_dir+1] = Ellipsis
-        # set the last point in the mesh_dir direction equal to the first one
+        # Set the last point along mesh_dir axis equal to first 
         # multiplied by the phase factor
         self._wfs[tuple(slc_lft)] = self._wfs[tuple(slc_rt)] * phase
 
@@ -710,10 +710,16 @@ class WFArray:
         states to be included, which can optionally be 'All')."""
 
         # Check for special case of parameter occ
-        if type(occ) is str and occ == "All":
-            occ = np.arange(self._nstates, dtype=int)
-        else:
+        if isinstance(occ, str) and occ.lower() == "all":
+            occ = np.arange(self.nstates, dtype=int)
+        elif isinstance(occ, (list, np.ndarray, tuple, range)):
+            occ = list(occ)
             occ = np.array(occ, dtype=int)
+        else:
+            raise TypeError(
+            "occ must be a list, numpy array, tuple, or 'all' defining "
+            "band indices of itnterest."
+            )
 
         if occ.ndim != 1:
             raise Exception(
@@ -721,7 +727,7 @@ class WFArray:
             )
 
         # check if model came from w90
-        if self._model._assume_position_operator_diagonal == False:
+        if not self._model._assume_position_operator_diagonal:
             _offdiag_approximation_warning_and_stop()
         #
         evec = self._wfs[tuple(key)][occ]
@@ -734,22 +740,28 @@ class WFArray:
         states to be included, which can optionally be 'All')."""
 
         # Check for special case of parameter occ
-        if type(occ) is str and occ == "All":
-            occ = np.arange(self._nstates, dtype=int)
-        else:
+        if isinstance(occ, str) and occ.lower() == "all":
+            occ = np.arange(self.nstates, dtype=int)
+        elif isinstance(occ, (list, np.ndarray, tuple, range)):
+            occ = list(occ)
             occ = np.array(occ, dtype=int)
+        else:
+            raise TypeError(
+            "occ must be a list, numpy array, tuple, or 'all' defining "
+            "band indices of itnterest."
+            )
 
         if occ.ndim != 1:
             raise Exception(
-                """\n\nParameter occ must be a one-dimensional array or string "All"."""
+                """\n\nParameter occ must be a one-dimensional array or string "all"."""
             )
 
         # check if model came from w90
-        if not self._model._assume_position_operator_diagonal:
+        if not self.model._assume_position_operator_diagonal:
             _offdiag_approximation_warning_and_stop()
     
-        evec = self._wfs[tuple(key)][occ]
-        return self._model.position_expectation(evec, dir)
+        evec = self.wfs[tuple(key)][occ]
+        return self.model.position_expectation(evec, dir)
 
     def position_hwf(self, key, occ, dir, hwf_evec=False, basis="wavefunction"):
         """Similar to :func:`pythtb.TBModel.position_hwf`, except that
@@ -760,24 +772,28 @@ class WFArray:
         For backwards compatibility the default value of *basis* here is different
         from that in :func:`pythtb.TBModel.position_hwf`.
         """
-
         # Check for special case of parameter occ
-        if type(occ) is str and occ == "All":
-            occ = np.arange(self._nstates, dtype=int)
-        else:
+        if isinstance(occ, str) and occ.lower() == "all":
+            occ = np.arange(self.nstates, dtype=int)
+        elif isinstance(occ, (list, np.ndarray, tuple, range)):
+            occ = list(occ)
             occ = np.array(occ, dtype=int)
-
+        else:
+            raise TypeError(
+            "occ must be a list, numpy array, tuple, or 'all' defining "
+            "band indices of itnterest."
+            )
         if occ.ndim != 1:
             raise Exception(
-                """\n\nParameter occ must be a one-dimensional array or string "All"."""
+                """\n\nParameter occ must be a one-dimensional array or string "all"."""
             )
 
         # check if model came from w90
-        if not self._model._assume_position_operator_diagonal:
+        if not self.model._assume_position_operator_diagonal:
             _offdiag_approximation_warning_and_stop()
 
-        evec = self._wfs[tuple(key)][occ]
-        return self._model.position_hwf(evec, dir, hwf_evec, basis)
+        evec = self.wfs[tuple(key)][occ]
+        return self.model.position_hwf(evec, dir, hwf_evec, basis)
 
     def berry_phase(self, occ="All", dir=None, contin=True, berry_evals=False):
         r"""
@@ -874,44 +890,56 @@ class WFArray:
 
         """
 
-        # special case requesting all states in the array
-        if (type(occ) is str and occ == "All") or occ is None:
-            # note that 'None' means 'not specified', not 'no states'
-            occ = np.arange(self._nstates, dtype=int)
-        else:
+        # Check for special case of parameter occ
+        if isinstance(occ, str) and occ.lower() == "all":
+            occ = np.arange(self.nstates, dtype=int)
+        elif isinstance(occ, (list, np.ndarray, tuple, range)):
+            occ = list(occ)
             occ = np.array(occ, dtype=int)
-
+        else:
+            raise TypeError(
+            "occ must be a list, numpy array, tuple, or 'all' defining "
+            "band indices of itnterest."
+            )
+        
         if occ.ndim != 1:
             raise Exception(
                 """\n\nParameter occ must be a one-dimensional array or string "All" or None."""
             )
 
         # check if model came from w90
-        if self._model._assume_position_operator_diagonal == False:
+        if not self.model._assume_position_operator_diagonal:
             _offdiag_approximation_warning_and_stop()
 
-        # if dir<0 or dir>self._dim_mesh-1:
-        #  raise Exception("\n\nDirection key out of range")
-        #
-        # This could be coded more efficiently, but it is hard-coded for now.
-        #
+        if dir is None and self.dim_mesh != 1:
+            raise ValueError(
+                """
+                If dir is not specified, then the parameter mesh must be one dimensional.          
+                """
+                )
+        
+        elif dir is not None and dir >= self.dim_mesh:
+            raise ValueError(
+                "dir cannot be larger than the number of parameter directions."
+            )
+
         # 1D case
-        if self._dim_mesh == 1:
+        if self.dim_mesh == 1:
             # pick which wavefunctions to use
-            wf_use = self._wfs[:, occ, :]
+            wf_use = self.wfs[:, occ, :]
             # calculate berry phase
             ret = _one_berry_loop(wf_use, berry_evals)
         # 2D case
-        elif self._dim_mesh == 2:
+        elif self.dim_mesh == 2:
             # choice along which direction you wish to calculate berry phase
             if dir == 0:
                 ret = []
-                for i in range(self._mesh_size[1]):
+                for i in range(self.mesh_size[1]):
                     wf_use = self._wfs[:, i, :, :][:, occ, :]
                     ret.append(_one_berry_loop(wf_use, berry_evals))
             elif dir == 1:
                 ret = []
-                for i in range(self._mesh_size[0]):
+                for i in range(self.mesh_size[0]):
                     wf_use = self._wfs[i, :, :, :][:, occ, :]
                     ret.append(_one_berry_loop(wf_use, berry_evals))
             else:
@@ -949,14 +977,14 @@ class WFArray:
             raise Exception("\n\nWrong dimensionality!")
 
         # convert phases to numpy array
-        if self._dim_mesh > 1 or berry_evals == True:
+        if self.dim_mesh > 1 or berry_evals:
             ret = np.array(ret, dtype=float)
 
         # make phases of eigenvalues continuous
-        if contin == True:
+        if contin:
             # iron out 2pi jumps, make the gauge choice such that first phase in the
             # list is fixed, others are then made continuous.
-            if berry_evals == False:
+            if not berry_evals:
                 # 2D case
                 if self._dim_mesh == 2:
                     ret = _one_phase_cont(ret, ret[0])
@@ -975,17 +1003,17 @@ class WFArray:
             # at neighboring points.
             else:
                 # 2D case
-                if self._dim_mesh == 2:
+                if self.dim_mesh == 2:
                     ret = _array_phases_cont(ret, ret[0, :])
                 # 3D case
-                elif self._dim_mesh == 3:
+                elif self.dim_mesh == 3:
                     for i in range(ret.shape[1]):
                         if i == 0:
                             clos = ret[0, 0, :]
                         else:
                             clos = ret[0, i - 1, :]
                         ret[:, i] = _array_phases_cont(ret[:, i], clos)
-                elif self._dim_mesh != 1:
+                elif self.dim_mesh != 1:
                     raise Exception("\n\nWrong dimensionality!")
         return ret
 
@@ -1032,15 +1060,20 @@ class WFArray:
 
         """
 
-        # special case requesting all states in the array
-        if (type(occ) is str and occ == "All") or occ is None:
-            # note that 'None' means 'not specified', not 'no states'
-            occ = np.arange(self._nstates, dtype=int)
-        else:
+       # Check for special case of parameter occ
+        if isinstance(occ, str) and occ.lower() == "all":
+            occ = np.arange(self.nstates, dtype=int)
+        elif isinstance(occ, (list, np.ndarray, tuple, range)):
+            occ = list(occ)
             occ = np.array(occ, dtype=int)
+        else:
+            raise TypeError(
+            "occ must be a list, numpy array, tuple, or 'all' defining "
+            "band indices of itnterest."
+            )
 
         # check if model came from w90
-        if self._model._assume_position_operator_diagonal == False:
+        if not self._model._assume_position_operator_diagonal:
             _offdiag_approximation_warning_and_stop()
 
         # default case is to take first two directions for flux calculation
@@ -1053,17 +1086,17 @@ class WFArray:
                 "Need to specify two different directions for Berry flux calculation."
             )
         if (
-            dirs[0] >= self._dim_mesh
-            or dirs[1] >= self._dim_mesh
+            dirs[0] >= self.dim_mesh
+            or dirs[1] >= self.dim_mesh
             or dirs[0] < 0
             or dirs[1] < 0
         ):
             raise Exception("Direction for Berry flux calculation out of bounds.")
 
         # 2D case
-        if self._dim_mesh == 2:
+        if self.dim_mesh == 2:
             # compute the fluxes through all plaquettes on the entire plane
-            ord = list(range(len(self._wfs.shape)))
+            ord = list(range(len(self.wfs.shape)))
             # select two directions from dirs
             ord[0] = dirs[0]
             ord[1] = dirs[1]
@@ -1075,24 +1108,24 @@ class WFArray:
             all_phases = _one_flux_plane(plane_wfs)
 
             # return either total flux or individual phase for each plaquete
-            if individual_phases == False:
+            if not individual_phases:
                 return all_phases.sum()
             else:
                 return all_phases
 
         # 3D or 4D case
-        elif self._dim_mesh in [3, 4]:
+        elif self.dim_mesh in [3, 4]:
             # compute the fluxes through all plaquettes on the entire plane
-            ord = list(range(len(self._wfs.shape)))
+            ord = list(range(len(self.wfs.shape)))
             # select two directions from dirs
             ord[0] = dirs[0]
             ord[1] = dirs[1]
 
             # find directions over which we wish to loop
-            ld = list(range(self._dim_mesh))
+            ld = list(range(self.dim_mesh))
             ld.remove(dirs[0])
             ld.remove(dirs[1])
-            if len(ld) != self._dim_mesh - 2:
+            if len(ld) != self.dim_mesh - 2:
                 raise Exception(
                     "Hm, this should not happen? Inconsistency with the mesh size."
                 )
@@ -1105,37 +1138,37 @@ class WFArray:
                 ord[3] = ld[1]
 
             # reorder wavefunctions
-            use_wfs = self._wfs.transpose(ord)
+            use_wfs = self.wfs.transpose(ord)
 
             # loop over the the remaining direction
-            if self._dim_mesh == 3:
+            if self.dim_mesh == 3:
                 slice_phases = np.zeros(
                     (
-                        self._mesh_size[ord[2]],
-                        self._mesh_size[dirs[0]] - 1,
-                        self._mesh_size[dirs[1]] - 1,
+                        self.mesh_size[ord[2]],
+                        self.mesh_size[dirs[0]] - 1,
+                        self.mesh_size[dirs[1]] - 1,
                     ),
                     dtype=float,
                 )
-                for i in range(self._mesh_size[ord[2]]):
+                for i in range(self.mesh_size[ord[2]]):
                     # take a 2d slice
                     plane_wfs = use_wfs[:, :, i]
                     # take bands of choice
                     plane_wfs = plane_wfs[:, :, occ]
                     # compute fluxes on the slice
                     slice_phases[i, :, :] = _one_flux_plane(plane_wfs)
-            elif self._dim_mesh == 4:
+            elif self.dim_mesh == 4:
                 slice_phases = np.zeros(
                     (
-                        self._mesh_size[ord[2]],
-                        self._mesh_size[ord[3]],
-                        self._mesh_size[dirs[0]] - 1,
-                        self._mesh_size[dirs[1]] - 1,
+                        self.mesh_size[ord[2]],
+                        self.mesh_size[ord[3]],
+                        self.mesh_size[dirs[0]] - 1,
+                        self.mesh_size[dirs[1]] - 1,
                     ),
                     dtype=float,
                 )
-                for i in range(self._mesh_size[ord[2]]):
-                    for j in range(self._mesh_size[ord[3]]):
+                for i in range(self.mesh_size[ord[2]]):
+                    for j in range(self.mesh_size[ord[3]]):
                         # take a 2d slice
                         plane_wfs = use_wfs[:, :, i, j]
                         # take bands of choice
@@ -1144,152 +1177,13 @@ class WFArray:
                         slice_phases[i, j, :, :] = _one_flux_plane(plane_wfs)
 
             # return either total flux or individual phase for each plaquete
-            if individual_phases == False:
+            if not individual_phases:
                 return slice_phases.sum(axis=(-2, -1))
             else:
                 return slice_phases
 
         else:
             raise Exception("\n\nWrong dimensionality!")
-
-
-def get_trial_wfs(tf_list, norb, nspin=1):
-    """
-    Args:
-        tf_list: list[int | list[tuple]]
-            list of tuples defining the orbital and amplitude of the trial function
-            on that orbital. Of the form [ [(orb, amp), ...], ...]. If spin is included,
-            then the form is [ [(orb, spin, amp), ...], ...]
-
-    Returns:
-        tfs: np.ndarray
-            Array of trial functions
-    """
-
-    # number of trial functions to define
-    num_tf = len(tf_list)
-
-    if nspin == 2:
-        tfs = np.zeros([num_tf, norb, 2], dtype=complex)
-        for j, tf in enumerate(tf_list):
-            assert isinstance(
-                tf, (list, np.ndarray)
-            ), "Trial function must be a list of tuples"
-            for orb, spin, amp in tf:
-                tfs[j, orb, spin] = amp
-            tfs[j] /= np.linalg.norm(tfs[j])
-
-    elif nspin == 1:
-        # initialize array containing tfs = "trial functions"
-        tfs = np.zeros([num_tf, norb], dtype=complex)
-        for j, tf in enumerate(tf_list):
-            assert isinstance(
-                tf, (list, np.ndarray)
-            ), "Trial function must be a list of tuples"
-            for site, amp in tf:
-                tfs[j, site] = amp
-            tfs[j] /= np.linalg.norm(tfs[j])
-
-    return tfs
-
-
-def get_periodic_H(model, H_flat, k_vals):
-    orb_vecs = model.get_orb_vecs()
-    orb_vec_diff = orb_vecs[:, None, :] - orb_vecs[None, :, :]
-    # orb_phase = np.exp(1j * 2 * np.pi * np.einsum('ijm, ...m->...ij', orb_vec_diff, k_vals))
-    orb_phase = np.exp(1j * 2 * np.pi * np.matmul(orb_vec_diff, k_vals.T)).transpose(
-        2, 0, 1
-    )
-    H_per_flat = H_flat * orb_phase
-    return H_per_flat
-
-
-# def vel_op_fin_diff(model, H_flat, k_vals, dk, order_eps=1, mode='central'):
-#     """
-#     Compute velocity operators using finite differences.
-
-#     Parameters:
-#         H_mesh: ndarray of shape (Nk, M, M)
-#             The Hamiltonian on the parameter grid.
-#         dk: list of float
-#             Step sizes in each parameter direction.
-
-#     Returns:
-#         v_mu_fd: list of ndarray
-#             Velocity operators for each parameter direction.
-#     # """
-
-#     # recip_lat_vecs = model.get_recip_lat_vecs()
-#     # recip_basis = recip_lat_vecs/ np.linalg.norm(recip_lat_vecs, axis=1, keepdims=True)
-#     # g = recip_basis @ recip_basis.T
-#     # sqrt_mtrc = np.sqrt(np.linalg.det(g))
-#     # g_inv = np.linalg.inv(g)
-
-#     # dk = np.einsum("ij, j -> i", g_inv, dk)
-
-#     # assume only k for now
-#     dim_param = model._dim_k # Number of parameters (dimensions)
-#     # assume equal number of mesh points along each dimension
-#     nks = ( int(H_flat.shape[0]**(1/dim_param)),)*dim_param
-
-#     # Switch to periodic gauge H(k) = H(k+G)
-#     H_flat = get_periodic_H(model, H_flat, k_vals)
-#     H_mesh = H_flat.reshape(*nks, model._norb, model._norb)
-#     v_mu_fd = np.zeros((dim_param, *H_mesh.shape), dtype=complex)
-
-#     # Compute Jacobian
-#     recip_lat_vecs = model.get_recip_lat_vecs()
-#     inv_recip_lat = np.linalg.inv(recip_lat_vecs)
-
-#     for mu in range(dim_param):
-#         coeffs, stencil = finite_diff_coeffs(order_eps=order_eps, mode=mode)
-
-#         derivative_sum = np.zeros_like(H_mesh)
-
-#         for s, c in zip(stencil, coeffs):
-#             H_shifted = np.roll(H_mesh, shift=-s, axis=mu)
-#             derivative_sum += c * H_shifted
-
-#         v_mu_fd[mu] = derivative_sum / (dk[mu])
-
-#         # Ensure Hermitian symmetry
-#         v_mu_fd[mu] = 0.5 * (v_mu_fd[mu] + np.conj(v_mu_fd[mu].swapaxes(-1, -2)))
-
-#     return v_mu_fd
-
-
-def compute_d4k_and_d2k(delta_k):
-    """
-    Computes the 4D volume element d^4k and the 2D plaquette areas d^2k for a given set of difference vectors in 4D space.
-
-    Parameters:
-    delta_k (numpy.ndarray): A 4x4 matrix where each row is a 4D difference vector.
-
-    Returns:
-    tuple: (d4k, plaquette_areas) where
-        - d4k is the absolute determinant of delta_k (4D volume element).
-        - plaquette_areas is a dictionary with keys (i, j) and values representing d^2k_{ij}.
-    """
-    # Compute d^4k as the determinant of the 4x4 difference matrix
-    d4k = np.abs(np.linalg.det(delta_k))
-
-    # Function to compute 2D plaquette area in 4D space
-    def compute_plaquette_area(v1, v2):
-        """Compute the 2D plaquette area spanned by two 4D vectors."""
-        area_squared = 0.0
-        # Sum over all unique (m, n) pairs where m < n
-        for m in range(4):
-            for n in range(m + 1, 4):
-                area_squared += (v1[m] * v2[n] - v1[n] * v2[m]) ** 2
-        return np.sqrt(area_squared)
-
-    # Compute all unique plaquette areas
-    plaquette_areas = {}
-    for i in range(4):
-        for j in range(i + 1, 4):
-            plaquette_areas[(i, j)] = compute_plaquette_area(delta_k[i], delta_k[j])
-
-    return d4k, plaquette_areas
 
 
 class Bloch(WFArray):
