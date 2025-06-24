@@ -281,7 +281,7 @@ class WFArray:
         # store orbitals from the model
         self._orb = model.orb_vecs
         # store entire model as well
-        self._model = copy.deepcopy(model)
+        self._model = model
         # store dimension of array of points on which to keep wavefunctions
         self._mesh_size = np.array(mesh_size)
         self._dim_mesh = len(self._mesh_size)
@@ -794,6 +794,85 @@ class WFArray:
 
         evec = self.wfs[tuple(key)][occ]
         return self.model.position_hwf(evec, dir, hwf_evec, basis)
+    
+
+    def berry_phase2(self, occ='all', dir=0):
+        """
+        Computes Berry phases for wavefunction arrays defined in parameter space.
+
+        Parameters:
+            wfs (np.ndarray): 
+                Wavefunction array of shape [*param_arr_lens, n_orb, n_orb] where
+                index -2 corresponds to the eigenvalue index and index -1 corresponds
+                to amplitude.
+            dir (int): 
+                The direction (axis) in the parameter space along which to compute the Berry phase.
+
+        Returns:
+            phase (np.ndarray): 
+                Berry phases for the specified parameter space direction.
+        """
+
+        # Check for special case of parameter occ
+        if isinstance(occ, str) and occ.lower() == "all":
+            occ = np.arange(self.nstates, dtype=int)
+        elif isinstance(occ, (list, np.ndarray, tuple, range)):
+            occ = list(occ)
+            occ = np.array(occ, dtype=int)
+        else:
+            raise TypeError(
+            "occ must be a list, numpy array, tuple, or 'all' defining "
+            "band indices of itnterest."
+            )
+        
+        if occ.ndim != 1:
+            raise Exception(
+                """\n\nParameter occ must be a one-dimensional array or string "All" or None."""
+            )
+
+         # check if model came from w90
+        if not self.model._assume_position_operator_diagonal:
+            _offdiag_approximation_warning_and_stop()
+
+        if dir is None and self.dim_mesh != 1:
+            raise ValueError(
+                """
+                If dir is not specified, then the parameter mesh must be one dimensional.          
+                """
+                )
+        
+        elif dir is not None and dir >= self.dim_mesh:
+            raise ValueError(
+                "dir cannot be larger than the number of parameter directions."
+            )
+
+        
+        wfs = self.wfs
+
+        dim_param = len(wfs.shape[:-2]) # dimensionality of parameter space
+        param_axes = np.arange(0, dim_param) # parameter axes
+        param_axes = np.setdiff1d(param_axes, dir) # remove direction from axes to loop
+        lens = [wfs.shape[ax] for ax in param_axes] # sizes of loop directions
+        idxs = np.ndindex(*lens) # index mesh
+        
+        phase = np.zeros((*lens, wfs.shape[-2]))
+        
+        for idx_set in idxs:
+            # take wfs along loop axis at given idex
+            sliced_wf = wfs.copy()
+            for ax, idx in enumerate(idx_set):
+                sliced_wf = np.take(sliced_wf, idx, axis=param_axes[ax])
+
+            # wf now has 3 indices: [phase ax, eigval idx, orb amp]
+            for n in range(sliced_wf.shape[-2]): # loop over eigval idxs
+                prod = np.prod(
+                    [ np.vdot(sliced_wf[i, n], sliced_wf[i+1, n]) 
+                    for i in range(sliced_wf.shape[0]-1) ] )
+                prod *= np.vdot(sliced_wf[-1, n], sliced_wf[0, n])
+                phase[idx_set][n] = -np.angle(prod)
+
+        return phase
+
 
     def berry_phase(self, occ="All", dir=None, contin=True, berry_evals=False):
         r"""
@@ -940,27 +1019,27 @@ class WFArray:
             elif dir == 1:
                 ret = []
                 for i in range(self.mesh_size[0]):
-                    wf_use = self._wfs[i, :, :, :][:, occ, :]
+                    wf_use = self.wfs[i, :, :, :][:, occ, :]
                     ret.append(_one_berry_loop(wf_use, berry_evals))
             else:
                 raise Exception("\n\nWrong direction for Berry phase calculation!")
         # 3D case
-        elif self._dim_mesh == 3:
+        elif self.dim_mesh == 3:
             # choice along which direction you wish to calculate berry phase
             if dir == 0:
                 ret = []
-                for i in range(self._mesh_size[1]):
+                for i in range(self.mesh_size[1]):
                     ret_t = []
-                    for j in range(self._mesh_size[2]):
-                        wf_use = self._wfs[:, i, j, :, :][:, occ, :]
+                    for j in range(self.mesh_size[2]):
+                        wf_use = self.wfs[:, i, j, :, :][:, occ, :]
                         ret_t.append(_one_berry_loop(wf_use, berry_evals))
                     ret.append(ret_t)
             elif dir == 1:
                 ret = []
-                for i in range(self._mesh_size[0]):
+                for i in range(self.mesh_size[0]):
                     ret_t = []
-                    for j in range(self._mesh_size[2]):
-                        wf_use = self._wfs[i, :, j, :, :][:, occ, :]
+                    for j in range(self.mesh_size[2]):
+                        wf_use = self.wfs[i, :, j, :, :][:, occ, :]
                         ret_t.append(_one_berry_loop(wf_use, berry_evals))
                     ret.append(ret_t)
             elif dir == 2:
@@ -1073,7 +1152,7 @@ class WFArray:
             )
 
         # check if model came from w90
-        if not self._model._assume_position_operator_diagonal:
+        if not self.model._assume_position_operator_diagonal:
             _offdiag_approximation_warning_and_stop()
 
         # default case is to take first two directions for flux calculation
@@ -1194,7 +1273,7 @@ class Bloch(WFArray):
         """
         super().__init__(model, param_dims)
         assert (
-            len(param_dims) >= model._dim_k
+            len(param_dims) >= model.dim_k
         ), "Number of dimensions must be >= number of reciprocal space dimensions"
 
         self.model: TBModel = model
@@ -1259,6 +1338,14 @@ class Bloch(WFArray):
                 self._wf_shape = (*self.nks, self._n_states, self._n_orb)
 
         # self.set_Bloch_ham()
+    @property
+    def u_wfs(self):
+        return self._u_wfs
+    
+    @property
+    def psi_wfs(self):
+        return self._psi_wfs
+
 
     def get_wf_axes(self):
         dict_axes = {
@@ -2155,76 +2242,5 @@ class Bloch(WFArray):
     def get_proj_ham(self):
         if not hasattr(self, "H_k_proj"):
             self.set_Bloch_ham()
-        H_k_proj = self._u_wfs.conj() @ self.H_k @ np.swapaxes(self._u_wfs, -1, -2)
+        H_k_proj = self.u_wfs.conj() @ self.H_k @ np.swapaxes(self.u_wfs, -1, -2)
         return H_k_proj
-
-    # TODO allow for subbands
-    def plot_interp_bands(
-        self,
-        k_path,
-        nk=101,
-        k_label=None,
-        red_lat_idx=None,
-        fig=None,
-        ax=None,
-        title=None,
-        scat_size=3,
-        lw=2,
-        lc="b",
-        ls="solid",
-        cmap="bwr",
-        show=False,
-        cbar=True,
-    ):
-        if fig is None and ax is None:
-            fig, ax = plt.subplots()
-
-        (k_vec, k_dist, k_node) = self.model.k_path(k_path, nk, report=False)
-        k_vec = np.array(k_vec)
-
-        if red_lat_idx is not None:
-            eigvals, eigvecs = self.interp_energy(k_vec, return_eigvecs=True)
-
-            n_eigs = eigvecs.shape[-2]
-            wt = abs(eigvecs) ** 2
-            col = np.sum([wt[..., i] for i in red_lat_idx], axis=0)
-
-            for n in range(n_eigs):
-                scat = ax.scatter(
-                    k_dist,
-                    eigvals[:, n],
-                    c=col[:, n],
-                    cmap=cmap,
-                    marker="o",
-                    s=scat_size,
-                    vmin=0,
-                    vmax=1,
-                    zorder=2,
-                )
-
-            if cbar:
-                cbar = fig.colorbar(scat, ticks=[1, 0])
-                cbar.ax.set_yticklabels([r"$\psi_2$", r"$\psi_1$"], size=12)
-
-        else:
-            eigvals = self.interp_energy(k_vec)
-
-            # continuous bands
-            for n in range(eigvals.shape[1]):
-                ax.plot(k_dist, eigvals[:, n], c=lc, lw=lw, ls=ls)
-
-        ax.set_xlim(0, k_node[-1])
-        ax.set_xticks(k_node)
-        for n in range(len(k_node)):
-            ax.axvline(x=k_node[n], linewidth=0.5, color="k", zorder=1)
-        if k_label is not None:
-            ax.set_xticklabels(k_label, size=12)
-
-        ax.set_title(title)
-        ax.set_ylabel(r"Energy $E(\mathbf{{k}})$", size=12)
-        ax.yaxis.labelpad = 10
-
-        if show:
-            plt.show()
-
-        return fig, ax
