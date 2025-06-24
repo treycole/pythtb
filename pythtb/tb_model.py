@@ -1,6 +1,5 @@
-from __future__ import print_function
-import numpy as np  # numerics for matrices
-import copy  # for deepcopying
+import numpy as np  
+import copy 
 import logging
 from itertools import product
 import warnings
@@ -19,25 +18,16 @@ SIGMAX = np.array([[0, 1], [1, 0]], dtype=complex)
 SIGMAY = np.array([[0, -1j], [1j, 0]], dtype=complex)
 SIGMAZ = np.array([[1, 0], [0, -1]], dtype=complex)
 
-class DeprecationWarning(Warning):
-    """
-    Custom exception for deprecation warnings.
-    This is used to raise warnings when deprecated features are used.
-    """
-    pass
-
-warnings.simplefilter('default', DeprecationWarning)
-
-def deprecated(message: str, category=DeprecationWarning):
+def deprecated(message: str, category=FutureWarning):
     """
     Decorator to mark a function as deprecated.
-    Raises a DeprecationWarning with the given message when the function is called.
+    Raises a FutureWarning with the given message when the function is called.
     """
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            warnings.warn(f"{func.__qualname__} is deprecated since v2.0. {message}",
-                          category,
+            warnings.warn(f"{func.__qualname__} is deprecated and will be removed in a future release: {message}",
+                          category=category,
                           stacklevel=2)
             return func(*args, **kwargs)
         return wrapper
@@ -232,13 +222,58 @@ class TBModel:
         """
         Returns a string representation of the TBModel object.
         """
-        return f"pythtb.TBModel(dim_r={self._dim_r}, dim_k={self._dim_k}, nspin={self._nspin})"
+        return (f"pythtb.TBModel(dim_r={self._dim_r}, dim_k={self._dim_k}, "
+                f"norb={self._norb}, nspin={self._nspin})")
 
     def __str__(self):
         """
         Returns a string representation of the TBModel object.
         """
         return self.report(show=False)
+
+    def __eq__(self, other):
+        """
+        Equality comparison: compares structural parameters, arrays, and hoppings.
+        """
+        if not isinstance(other, TBModel):
+            return NotImplemented
+        # Compare simple attributes
+        if (self._dim_r != other._dim_r or
+            self._dim_k != other._dim_k or
+            self._nspin != other._nspin or
+            self._norb != other._norb or
+            self._per != other._per):
+            return False
+        # Compare numpy arrays
+        if not np.allclose(self._lat, other._lat):
+            return False
+        if not np.allclose(self._orb, other._orb):
+            return False
+        if not np.allclose(self._site_energies, other._site_energies):
+            return False
+        # Compare hoppings list
+        if len(self._hoppings) != len(other._hoppings):
+            return False
+        for h1, h2 in zip(self._hoppings, other._hoppings):
+            amp1, i1, j1, *R1 = h1
+            amp2, i2, j2, *R2 = h2
+            if i1 != i2 or j1 != j2:
+                return False
+            if not np.allclose(amp1, amp2):
+                return False
+            if R1 and R2:
+                if not np.array_equal(R1[0], R2[0]):
+                    return False
+            elif R1 or R2:
+                return False
+        return True
+
+    
+    @deprecated(
+        "The 'display' method is deprecated and will be removed in a future release. Use 'print(model)' or 'model.report(show=True)' instead."
+    )
+    def display(self):
+        return self.report(show=True)
 
     def report(self, show=True):
         """
@@ -463,7 +498,19 @@ class TBModel:
         - j: index of the orbital to which the hopping goes
         - R: optional list of lattice vectors for the hopping
         """
-        return copy.deepcopy(self._hoppings)
+        raw = copy.deepcopy(self._hoppings)
+        formatted = []
+        for hop in raw:
+            amp, i, j, *R = hop
+            entry = {
+                "amplitude": amp,
+                "from_orbital": i,
+                "to_orbital": j,
+            }
+            if R:
+                entry["lattice_vector"] = R[0].tolist()
+            formatted.append(entry)
+        return formatted
 
     @property
     def assume_position_operator_diagonal(self):
@@ -483,12 +530,30 @@ class TBModel:
             raise ValueError("assume_position_operator_diagonal must be a boolean.")
         self._assume_position_operator_diagonal = value
 
+    def copy(self):
+        """
+        Returns a copy of the TBModel object.
+        This is useful for creating a new model with the same parameters.
+        """
+        return copy.deepcopy(self)
+    
+    def clear_hoppings(self):
+        """
+        Clears all hoppings in the model.
+        This is useful for resetting the model to a state without any hoppings.
+        """
+        self._hoppings.clear()
+
+    
+    @deprecated(
+        "Use 'norb' property instead."
+    )
     def get_num_orbitals(self):
         """
         Returns the number of orbitals in the model.
         This is equivalent to the property `norb`.
         """
-        return self._norb
+        return self.norb
 
     def get_orb(self, cartesian=False):
         """
@@ -497,17 +562,19 @@ class TBModel:
         Arg: cartesian (bool)
             Returns orbital vectors in Cartesian units.
         """
+        orbs = self.orb_vecs
         if cartesian:
-            return self._orb.copy() @ self._lat
+            return orbs @ self.lat_vecs
         else:
-            return self._orb.copy()
+            return orbs
+
 
     def get_lat(self):
         """
         Returns lattice vectors in format [vector, coordinate].
         Vectors are in Cartesian units.
         """
-        return self._lat.copy()
+        return self.lat_vecs
 
     # TODO: Fix to work with systems where not all lattice vectors are periodic
     def get_recip_lat(self):
@@ -515,20 +582,20 @@ class TBModel:
         Returns reciprocal lattice vectors in format [vector, coordinate].
         Vectors are in Cartesian units.
         """
-        if self._dim_k == 0:
+        if self.dim_k == 0:
             logger.warning(
                 "Reciprocal lattice vectors are not defined for zero-dimensional k-space."
             )
-            return np.zeros((0, self._dim_r))
+            return np.zeros((0, self.dim_r))
 
-        if self._dim_k != self._dim_r:
+        if self.dim_k != self.dim_r:
             logger.warning(
                 "Reciprocal lattice vectors are not defined for systems where k-space and real-space dimensions differ."
             )
-            return np.zeros((self._dim_k, self._dim_r))
+            return np.zeros((self.dim_k, self.dim_r))
 
         # Calculate the reciprocal lattice vectors
-        A = self._lat  # shape (dim_r, dim_r)
+        A = self.lat_vecs  # shape (dim_r, dim_r)
         if np.linalg.det(A) == 0:
             raise ValueError("Lattice vectors are not linearly independent.")
         # Calculate the inverse of the lattice matrix
@@ -1405,14 +1472,13 @@ class TBModel:
                     eigvals = eigvals[0]
             return eigvals
     
-    @deprecated("Use .solve_ham() instead. This will be removed in a future version.")
+    @deprecated("use .solve_ham() instead (since v2.0).", category=FutureWarning)
     def solve_one(self, k_list=None, eig_vectors=False):
         return self.solve_ham(k_list=k_list, return_eigvecs=eig_vectors, keep_spin_ax=True)
-    
-    @deprecated("Use .solve_ham() instead. This will be removed in a future version.")
+
+    @deprecated("use .solve_ham() instead (since v2.0).", category=FutureWarning)
     def solve_all(self, k_list=None, eig_vectors=False):
         return self.solve_ham(k_list=k_list, return_eigvecs=eig_vectors, keep_spin_ax=True)
-
 
     def cut_piece(self, num, fin_dir, glue_edgs=False):
         r"""
