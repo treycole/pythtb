@@ -3,6 +3,8 @@ import numpy as np  # numerics for matrices
 import copy  # for deepcopying
 import logging
 from itertools import product
+import warnings
+import functools
 from .plotting import plot_bands, plot_tb_model, plot_tb_model_3d
 from .k_mesh import k_path, k_uniform_mesh
 from .utils import _is_int, _offdiag_approximation_warning_and_stop, is_Hermitian
@@ -16,6 +18,30 @@ SIGMA0 = np.array([[1, 0], [0, 1]], dtype=complex)
 SIGMAX = np.array([[0, 1], [1, 0]], dtype=complex)
 SIGMAY = np.array([[0, -1j], [1j, 0]], dtype=complex)
 SIGMAZ = np.array([[1, 0], [0, -1]], dtype=complex)
+
+class DeprecationWarning(Warning):
+    """
+    Custom exception for deprecation warnings.
+    This is used to raise warnings when deprecated features are used.
+    """
+    pass
+
+warnings.simplefilter('default', DeprecationWarning)
+
+def deprecated(message: str, category=DeprecationWarning):
+    """
+    Decorator to mark a function as deprecated.
+    Raises a DeprecationWarning with the given message when the function is called.
+    """
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            warnings.warn(f"{func.__qualname__} is deprecated since v2.0. {message}",
+                          category,
+                          stacklevel=2)
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 
 class TBModel:
@@ -1378,6 +1404,15 @@ class TBModel:
                 if eigvals.shape[0] == 1:
                     eigvals = eigvals[0]
             return eigvals
+    
+    @deprecated("Use .solve_ham() instead. This will be removed in a future version.")
+    def solve_one(self, k_list=None, eig_vectors=False):
+        return self.solve_ham(k_list=k_list, return_eigvecs=eig_vectors, keep_spin_ax=True)
+    
+    @deprecated("Use .solve_ham() instead. This will be removed in a future version.")
+    def solve_all(self, k_list=None, eig_vectors=False):
+        return self.solve_ham(k_list=k_list, return_eigvecs=eig_vectors, keep_spin_ax=True)
+
 
     def cut_piece(self, num, fin_dir, glue_edgs=False):
         r"""
@@ -2810,18 +2845,18 @@ somehow changed Cartesian coordinates of orbitals."""
         return plot_bands(
             self,
             k_path,
-            nk,
-            k_label,
-            proj_orb_idx,
-            proj_spin,
-            fig,
-            ax,
-            title,
-            scat_size,
-            lw,
-            lc,
-            ls,
-            cmap,
-            show,
-            cbar,
+            nk=nk,
+            k_label=k_label,
+            proj_orb_idx=proj_orb_idx,
+            proj_spin=proj_spin,
+            fig=fig,
+            ax=ax,
+            title=title,
+            scat_size=scat_size,
+            lw=lw,
+            lc=lc,
+            ls=ls,
+            cmap=cmap,
+            show=show,
+            cbar=cbar,
         )
