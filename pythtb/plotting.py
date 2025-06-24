@@ -830,6 +830,8 @@ def plot_bands(
     model,
     k_path,
     nk=101,
+    evals=None, 
+    evecs=None,
     k_label=None,
     proj_orb_idx=None,
     proj_spin=False,
@@ -866,8 +868,9 @@ def plot_bands(
 
     # scattered bands with sublattice color
     if proj_orb_idx is not None:
-        # diagonalize model on path
-        evals, evecs = model.solve_ham(k_vec, return_eigvecs=True)
+        if evals is None or evecs is None:
+            # diagonalize model on path
+            evals, evecs = model.solve_ham(k_vec, return_eigvecs=True)
         n_eigs = evals.shape[-1]
         wt = abs(evecs) ** 2
 
@@ -902,7 +905,9 @@ def plot_bands(
             )
 
     elif proj_spin:
-        evals, evecs = model.solve_ham(k_vec, return_eigvecs=True)
+        if evals is None or evecs is None:
+            # diagonalize model on path
+            evals, evecs = model.solve_ham(k_vec, return_eigvecs=True)
         n_eigs = evals.shape[-1]
 
         if model._nspin <= 1:
@@ -934,7 +939,8 @@ def plot_bands(
         )
 
     else:
-        evals = model.solve_ham(k_vec, return_eigvecs=False)
+        if evals is None:
+            evals = model.solve_ham(k_vec, return_eigvecs=False)
         n_eigs = evals.shape[-1]
 
         # continuous bands
