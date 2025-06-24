@@ -2146,6 +2146,40 @@ somehow changed Cartesian coordinates of orbitals."""
                     if self._hoppings[h][2] == i:
                         self._hoppings[h][3] += disp_vec
 
+
+    def add_orbital(self, coord: list|np.ndarray):
+        r"""
+        Adds a new orbital to the model with the specified
+        coordinate. The orbital coordinate must be given in reduced
+        coordinates, i.e. in units of the real-space lattice vectors
+        of the model. The new orbital is added at the end of the list
+        of orbitals, and the orbital index is set to the next available
+        index.
+
+        :param coord: List or numpy array of length *dim_r* specifying
+          the reduced coordinates of the new orbital. The coordinates
+          must be given in units of the real-space lattice vectors of
+          the model.
+        """
+        # Validate coordinate shape
+        coord = np.array(coord, float)
+        if coord.shape != (self._dim_r,):
+            raise ValueError(f"Orbital coordinate must be length {self._dim_r}, got {coord.shape}")
+        # Append orbital coordinate
+        self._orb = np.vstack([self._orb, coord])
+        # Update number of orbitals and states
+        self._norb += 1
+        self._nstate = self._norb * self._nspin
+        # Append default site energy and specified flag
+        if self._nspin == 1:
+            self._site_energies = np.append(self._site_energies, 0.0)
+        else:
+            new_block = np.zeros((1, 2, 2), dtype=complex)
+            self._site_energies = np.vstack([self._site_energies, new_block])
+        self._site_energies_specified = np.append(self._site_energies_specified, False)
+        # No hoppings are added by default
+
+
     def remove_orb(self, to_remove):
         r"""
 
