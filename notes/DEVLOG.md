@@ -4,7 +4,7 @@ This file contains explains the design decisions and rationales behind each majo
 
 ## v2.0.0 – Major Updates & API Modernization
 
-These changes were made to improve the long-term health of the codebase, facilitate contributions, and align with modern Python practices. Below is an overview of the thematic changes of the package and breif motivations for 
+These changes were made to improve the long-term health of the codebase, facilitate contributions, and align with modern Python practices. Below is an overview of the thematic changes of the package.
 
 Below is a summary
 
@@ -22,7 +22,7 @@ Below is a summary
 ### 1. Project Structure and Modularization
 
 **What Changed:**
-- Split the monolithic `pythtb.py` (4000+ lines)into a package in the `pythtb/` directory with smaller, purpose-driven modules:
+- Split the monolithic `pythtb.py` (4000+ lines) into a package in the `pythtb/` directory with smaller, purpose-driven modules:
     - `tb_model.py` (tight-binding model class - `TBModel`)
     - `wf_array.py` (wavefunction array - `WFArray`)
     - `k_mesh.py` (k-point mesh construction and related routines)
