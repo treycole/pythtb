@@ -9,7 +9,7 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ---
 
 ### Changed
-- Renamed public classes (see [DEVLOG](notes/DEVELOPMENT.md) for more details)
+- Renamed public classes (see [DEVLOG](notes/DEVLOG.md) for more details)
     - `tb_model` -> `TBModel`
     - `wf_array` -> `WFArray`
     - `w90` -> `W90`
