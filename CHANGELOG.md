@@ -7,14 +7,13 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [2.0.0] - 2025-06-03
 ---
-
 ### Changed
 - Renamed public classes (see [DEVLOG](notes/DEVLOG.md) for more details)
     - `tb_model` -> `TBModel`
     - `wf_array` -> `WFArray`
     - `w90` -> `W90`
 
-##### TBModel
+#### TBModel
 
 - `TBModel.get_orb`:
     - Added `cartesian` boolean flag to return orbitals in Cartesian coordinates. It is `False` by default.
@@ -50,7 +49,7 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `TBModel.get_velocity`: Computes $dH/dk$ (velocity operator) in the orbital basis.
 - `TBModel.berry_curv`: Computes Berry curvature from $dH/dk$ elements using the Kubo formula. Accepts occupied band indices. Assumes there is a global gap that defines the occupied and unoccupied bands. 
 - `TBModel.chern`: Returns Chern number for a given set of occupied bands using the Berry curvature from above. Assumes there is a global gap that defines the occupied and unoccupied bands. 
--  `TBModel.visualize3d`: For 3-dimensional tight-binding models, displays a 3d figure using `plotly` that prints a brief summary of the model terms (onsite energies, orbital positions). The figure can be rotated, and zoomed in. When highlighting an orbital or bond, the onsite or hopping terms appear. 
+-  `TBModel.visualize3d`: For 3-dimensional tight-binding models, displays a 3d figure of the tight-binding orbitals using `plotly`. Also prints a legend with the model terms (onsite energies, orbital positions). The figure can be rotated and zoomed in. When highlighting an orbital or bond, the onsite or hopping terms appear. 
 - `TBModel.get_recip_lat`: Returns reciprocal lattice vectors.
 - Added read-only retrieval of core TBModel attributes (e.g., `dim_r`, `dim_k`, `nspin`, `per`, `norb`, `nstate`, `lat`, `orb`, `site_energies`, and `hoppings`) using e.g. `my_model.dim_r` preventing unintended modification of internal model parameters.
 
