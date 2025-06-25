@@ -52,8 +52,9 @@ Below is a summary
 
 **What Changed:**
 
-- Merged `tb_model.solve_one` and `tb_model.solve_all` into `TBModel.solve_ham
-    - In cases where `solve_one` would have been used, `solve_ham` reproduces `solve_one` when a single k-point is passed. This returns the eigenvalues (and eigenvectors) without an additional axis for k-points. 
+_Example_
+- Merged `tb_model.solve_one` and `tb_model.solve_all` into `TBModel.solve_ham`
+    - In cases where `solve_one` would have been used, `solve_ham` reproduces `solve_one` if a single k-point is passed. This returns the eigenvalues (and eigenvectors) without an additional axis for k-points. 
     - Example:
         - Before:  
         ```python
