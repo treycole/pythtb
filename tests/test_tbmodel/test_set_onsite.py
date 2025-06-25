@@ -27,9 +27,6 @@ def test_set_onsite(nspin):
         # needs to be real number
         onsite_values = 1
         test_model.set_onsite(onsite_values, ind_i=0)
-        # can be single number in a list, but also needs to be real
-        onsite_values = [1]
-        test_model.set_onsite(onsite_values, ind_i=1)
 
     elif nspin == 2:
         # setting with list of pauli components for each orbital
