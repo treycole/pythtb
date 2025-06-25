@@ -8,7 +8,6 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [2.0.0] - 2025-06-03
 ---
 ### Changed
-
 - Renamed public classes (see [DEVLOG](notes/DEVLOG.md) for more details)
     - `tb_model` -> `TBModel`
     - `wf_array` -> `WFArray`
