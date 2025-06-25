@@ -649,27 +649,24 @@ class TBModel:
     def set_onsite(self, onsite_en, ind_i=None, mode="set"):
         r"""
         Defines on-site energies for tight-binding orbitals. One can
-        either set energy for one tight-binding orbital, or all at
-        once.
+        either set energy for a single orbital (ind_i specified), or all 
+        orbitals at once (onsite_en is a list).
 
-        :param onsite_en: Either a list of on-site energies (in
-          arbitrary units) for each orbital, or a single on-site
-          energy (in this case *ind_i* parameter must be given). In
-          the case when *nspin* is *1* (spinless) then each on-site
-          energy is a single number.  If *nspin* is *2* then on-site
-          energy can be given either as a single number, an
-          array of four numbers, or 2x2 matrix. If a single number is
-          given, it is interpreted as on-site energy for both up and
-          down spin component. If an array of four numbers is given,
-          these are the coefficients of I, sigma_x, sigma_y, and
-          sigma_z (that is, the 2x2 identity and the three Pauli spin
-          matrices) respectively. 
+        :param onsite_en: 
+            For spinless models (nspin=1):
+                - A real scalar, or a list/array of real scalars (one per orbital).
+            For spinful models (nspin=2):
+                - A scalar a: interpreted as a * I for both spin components.
+                - A 4-vector [a, b, c, d]: interpreted as a * I + b * sigma_x + c * sigma_y + d * sigma_z.
+                    [[ a + d,  b - i*c ],
+                     [ b + i*c,  a - d ]]
+                - A full 2x2 Hermitian matrix.
+            If 'ind_i' is None, 'onsite_en' must be a list/array of length 'norb'.
+            Otherwise, it may be a single value or a 2x2 matrix.
 
-        :param ind_i: Index of tight-binding orbital whose on-site
-          energy you wish to change. This parameter should be
-          specified only when *onsite_en* is a single number (not a
-          list).
-
+        :param ind_i: Index of tight-binding orbital to update. 
+            If None, all orbitals are updated.
+          
         :param mode: Similar to parameter *mode* in function set_hop*.
           Speficies way in which parameter *onsite_en* is
           used. It can either set value of on-site energy from scratch,
@@ -678,10 +675,6 @@ class TBModel:
           * "set" -- Default value. On-site energy is set to value of
             *onsite_en* parameter. One can use "set" on each
             tight-binding orbital only once.
-
-          * "reset" -- Specifies on-site energy to given value. This
-            function can be called multiple times for the same
-            orbital(s).
 
           * "add" -- Adds to the previous value of on-site
             energy. This function can be called multiple times for the
@@ -701,7 +694,8 @@ class TBModel:
 
         """
         # Handle deprecated 'reset' mode
-        if mode.lower() == "reset":
+        mode = mode.lower()
+        if mode == "reset":
             logger.warning(
                 "The 'reset' mode is deprecated as of v2.0. Use 'set' instead to set the onsite energy." \
                 "This will be removed in a future version."
@@ -738,8 +732,6 @@ class TBModel:
                 )
             processed = [process(onsite_en)]
             indices = [ind_i]
-
-        mode = mode.lower()
 
         if mode == "set":
             for idx, block in zip(indices, processed):
@@ -976,52 +968,37 @@ class TBModel:
 
     def _val_to_block(self, val):
         """
+        If nspin=1 then just returns val (should be a real number).
         If nspin=2 then returns a 2 by 2 matrix from the input parameters.
-        If only one real number is given in the input then  assume that this is multiplied by the identity.
-        If array with up to four elements is given then these are multiplied by the Pauli matrices
-        at each respective index.
-        If given a 2 by 2  matrix, just return it.
-
-        If nspin=1 then just returns val.
+            - If only one real number is given in the input then  assume that this is multiplied by the identity.
+            - If array with up to four elements is given then these are multiplied by the Pauli matrices
+              at each respective index.
+            - If given a 2 by 2  matrix, just return it.
         """
         # spinless case
         if self._nspin == 1:
-            if not isinstance(val, (int, np.integer, float, complex)):
+            if not isinstance(val, (int,  np.integer, np.floating, float, complex, np.complexfloating)):
                 raise TypeError(
-                    "For spinless case, onsite energy for a given orbital must be an integer or float."
+                    "For spinless case, value must be a scalar."
                 )
             return val
-        # spinful case
-        elif self._nspin == 2:
-            paulis = [SIGMA0, SIGMAX, SIGMAY, SIGMAZ]
-
-            if isinstance(val, (int, np.integer, float)):
-                return val * SIGMA0
-            elif not isinstance(val, (list, np.ndarray)):
-                raise ValueError(
-                    "For spin=2, value should be a 2x2 array or list of 4 numbers."
-                )
-
-            use_val = np.array(val)
-
-            if use_val.ndim == 2:
-                if not (use_val.shape[0] == 2 and use_val.shape[1] == 2):
-                    raise ValueError(
-                        "For spin=2, value should be a 2x2 array or list of 4 numbers."
-                    )
-                return use_val
-            elif use_val.ndim == 1:
-                if use_val.shape[0] != 4:
-                    raise ValueError(
-                        "For spin=2, value should be a 2x2 array or list of 4 numbers."
-                    )
-                return sum([val * paulis[i] for i, val in enumerate(use_val)])
-            elif use_val.ndim == 0:
-                raise ValueError(
-                    "For spin=2, value should be a 2x2 array or list of 4 numbers."
-                )
-            else:
-                raise ValueError("Value has incorrect dimensions. ")
+        
+        # spinful case: construct 2x2 matrix
+        coeffs = np.array(val, dtype=complex)
+        paulis = [SIGMA0, SIGMAX, SIGMAY, SIGMAZ]
+        if coeffs.shape == ():
+            # scalar -> identity
+            return coeffs * SIGMA0
+        elif coeffs.shape == (4,):
+            block = sum([val * paulis[i] for i, val in enumerate(coeffs)])
+        elif coeffs.shape == (2, 2):
+            block = coeffs
+        else:
+            raise TypeError(
+                "For spinful models, value should be a scalar, length-4 iterable, or 2x2 array."
+            )
+        return block
+    
 
     def get_velocity(self, k_pts, cartesian=False):
         """
