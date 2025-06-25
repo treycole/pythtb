@@ -275,7 +275,7 @@ class TBModel:
     def display(self):
         return self.report(show=True)
 
-    def report(self, show=True):
+    def report(self, show: bool=True, short: bool=False):
         """
         Prints information about the tight-binding model.
         """
@@ -293,76 +293,78 @@ class TBModel:
         )
         output.append(header)
 
-        formatter = {
-            "float_kind": lambda x: f"{0:^7.0f}" if abs(x) < 1e-10 else f"{x:^7.3f}"
-        }
-        output.append("Lattice vectors (Cartesian):")
-        for i, vec in enumerate(self._lat):
-            # print(f"  # {i} ===> {np.array2string(vec, formatter=formatter, separator=', ')}")
-            output.append(
-                f"  # {i} ===> {np.array2string(vec, formatter=formatter, separator=', ')}"
-            )
+        # Print Lattice and Orbital Vectors
+        if not short:
+            formatter = {
+                "float_kind": lambda x: f"{0:^7.0f}" if abs(x) < 1e-10 else f"{x:^7.3f}"
+            }
+            output.append("Lattice vectors (Cartesian):")
+            for i, vec in enumerate(self._lat):
+                # print(f"  # {i} ===> {np.array2string(vec, formatter=formatter, separator=', ')}")
+                output.append(
+                    f"  # {i} ===> {np.array2string(vec, formatter=formatter, separator=', ')}"
+                )
 
-        output.append("Orbital vectors (dimensionless):")
-        for i, orb in enumerate(self._orb):
-            # print(f"  # {i} ===> {np.array2string(orb, formatter=formatter, separator=', ')}")
-            output.append(
-                f"  # {i} ===> {np.array2string(orb, formatter=formatter, separator=', ')}"
-            )
+            output.append("Orbital vectors (dimensionless):")
+            for i, orb in enumerate(self._orb):
+                # print(f"  # {i} ===> {np.array2string(orb, formatter=formatter, separator=', ')}")
+                output.append(
+                    f"  # {i} ===> {np.array2string(orb, formatter=formatter, separator=', ')}"
+                )
 
-        # Print Site Energies
-        output.append("Site energies:")
-        for i, site in enumerate(self._site_energies):
-            if self._nspin == 1:
-                energy_str = f"{site:^7.3f}"
-            elif self._nspin == 2:
-                energy_str = str(site).replace("\n", " ")
+            # Print Site Energies
+            output.append("Site energies:")
+            for i, site in enumerate(self._site_energies):
+                if self._nspin == 1:
+                    energy_str = f"{site:^7.3f}"
+                elif self._nspin == 2:
+                    energy_str = str(site).replace("\n", " ")
 
-            output.append(f"  # {i} ===> {energy_str}")
+                output.append(f"  # {i} ===> {energy_str}")
 
-        output.append("Hoppings:")
-        for i, hopping in enumerate(self._hoppings):
-            out_str = f"  < {hopping[1]:^1} | H | {hopping[2]:^1}"
-            if len(hopping) == 4:
-                out_str += " + ["
-                for j, v in enumerate(hopping[3]):
-                    out_str += f"{v:^5.1f}"
-                    if j != len(hopping[3]) - 1:
-                        out_str += ", "
-                    else:
-                        out_str += "] >  ===> "
-            if self._nspin == 1:
-                out_str += f"{hopping[0]:^7.4f}"
-            elif self._nspin == 2:
-                out_str += str(hopping[0].round(4)).replace("\n", " ")
-            output.append(out_str)
+            output.append("Hoppings:")
+            for i, hopping in enumerate(self._hoppings):
+                out_str = f"  < {hopping[1]:^1} | H | {hopping[2]:^1}"
+                if len(hopping) == 4:
+                    out_str += " + ["
+                    for j, v in enumerate(hopping[3]):
+                        out_str += f"{v:^5.1f}"
+                        if j != len(hopping[3]) - 1:
+                            out_str += ", "
+                        else:
+                            out_str += "] >  ===> "
+                if self._nspin == 1:
+                    out_str += f"{hopping[0]:^7.4f}"
+                elif self._nspin == 2:
+                    out_str += str(hopping[0].round(4)).replace("\n", " ")
+                output.append(out_str)
 
-        output.append("Hopping distances:")
+            output.append("Hopping distances:")
 
-        for i, hopping in enumerate(self._hoppings):
-            hop_from = hopping[1]
-            hop_to = hopping[2]
+            for i, hopping in enumerate(self._hoppings):
+                hop_from = hopping[1]
+                hop_to = hopping[2]
 
-            pos_i = np.dot(self._orb[hopping[1]], self._lat)
-            pos_j = np.dot(self._orb[hopping[2]], self._lat)
+                pos_i = np.dot(self._orb[hopping[1]], self._lat)
+                pos_j = np.dot(self._orb[hopping[2]], self._lat)
 
-            out_str = f"  | pos({hop_from:^1}) - pos({hop_to:^1}"
+                out_str = f"  | pos({hop_from:^1}) - pos({hop_to:^1}"
 
-            if len(hopping) == 4:
-                pos_j += np.dot(hopping[3], self._lat)
+                if len(hopping) == 4:
+                    pos_j += np.dot(hopping[3], self._lat)
 
-                out_str += " + ["
-                for j, Rv in enumerate(hopping[3]):
-                    out_str += f"{Rv:^5.1f}"
-                    if j != len(hopping[3]) - 1:
-                        out_str += ", "
-                    else:
-                        out_str += "]"
+                    out_str += " + ["
+                    for j, Rv in enumerate(hopping[3]):
+                        out_str += f"{Rv:^5.1f}"
+                        if j != len(hopping[3]) - 1:
+                            out_str += ", "
+                        else:
+                            out_str += "]"
 
-            distance = np.linalg.norm(pos_j - pos_i)
+                distance = np.linalg.norm(pos_j - pos_i)
 
-            out_str += f") | = {distance:^7.3f}"
-            output.append(out_str)
+                out_str += f") | = {distance:^7.3f}"
+                output.append(out_str)
 
         if show:
             print("\n".join(output))
@@ -543,7 +545,16 @@ class TBModel:
         This is useful for resetting the model to a state without any hoppings.
         """
         self._hoppings.clear()
+        logger.info("Cleared all hoppings.")
 
+    def clear_onsite(self):
+        """
+        Clears all on-site energies in the model.
+        This is useful for resetting the model to a state without any on-site energies.
+        """
+        self._site_energies.fill(0)
+        self._site_energies_specified.fill(False)
+        logger.info("Cleared all on-site energies.")
     
     @deprecated(
         "Use 'norb' property instead."
@@ -646,15 +657,13 @@ class TBModel:
           energy (in this case *ind_i* parameter must be given). In
           the case when *nspin* is *1* (spinless) then each on-site
           energy is a single number.  If *nspin* is *2* then on-site
-          energy can be given either as a single number, or as an
+          energy can be given either as a single number, an
           array of four numbers, or 2x2 matrix. If a single number is
           given, it is interpreted as on-site energy for both up and
           down spin component. If an array of four numbers is given,
           these are the coefficients of I, sigma_x, sigma_y, and
           sigma_z (that is, the 2x2 identity and the three Pauli spin
-          matrices) respectively. Finally, full 2x2 matrix can be
-          given as well. If this function is never called, on-site
-          energy is assumed to be zero.
+          matrices) respectively. 
 
         :param ind_i: Index of tight-binding orbital whose on-site
           energy you wish to change. This parameter should be
@@ -691,124 +700,63 @@ class TBModel:
           tb.set_onsite([2.0, 3.0, 4.0], mode="set")
 
         """
-
-        if ind_i is None:
-            if not isinstance(onsite_en, (list, np.ndarray)):
-                raise TypeError(
-                    "When ind_i is not specified, onsite_en must be a list or array."
-                )
-            if len(onsite_en) != self._norb:
-                raise ValueError(
-                    "List of onsite energies must "
-                    "include a value for every orbital when `ind_i` is unspecified."
-                )
-            if self.nspin == 1:
-                for ons in onsite_en:
-                    if not isinstance(ons, (int, float)):
-                        raise TypeError(
-                            "Onsite energies for spinless model must be a single number."
-                        )
-            elif self.nspin == 2:
-                for ons in onsite_en:
-                    if isinstance(ons, (int, float)):
-                        # If onsite_en is a single number, it is interpreted as the onsite energy for both spin components
-                        # ons = np.array([[ons, 0], [0, ons]], dtype=complex) # will be done by _val_to_block
-                        continue
-                    elif isinstance(ons, (list, np.ndarray)):
-                        if len(ons) != 4 and ons.shape != (2, 2):
-                            raise ValueError(
-                                "Onsite energies for spinful model must be either an array of four numbers multiplying each Pauli matrix, or a 2x2 matrix."
-                            )
-                        ons = np.array(ons, dtype=complex)
-                    else:
-                        raise TypeError(
-                            "Onsite energies for spinful model must be an array of four numbers or a 2x2 matrix."
-                        )
-        else:
-            if ind_i < 0 or ind_i >= self._norb:
-                raise ValueError(
-                    "Index ind_i is not within the range of number of orbitals."
-                )
-            if isinstance(onsite_en, (list, np.ndarray)) and self.nspin == 2:
-                if len(onsite_en) != 4 and onsite_en.shape != (2, 2):
-                    raise ValueError(
-                        "Onsite energies for spinful model must " \
-                        "be either an array of four numbers multiplying each Pauli matrix, or a 2x2 matrix."
-                    )
-            elif isinstance(onsite_en, (list, np.ndarray)) and self.nspin == 1:
-                # If onsite_en is a list or array, it should be a single number for spinless model
-                if len(onsite_en) != 1:
-                    raise ValueError(
-                        "Onsite energies for spinless model must be a single number when specifying ind_i."
-                    )
-                onsite_en = onsite_en[0]
-                if not isinstance(onsite_en, (int, float)):
-                    raise TypeError(
-                        "Onsite energies for spinless model must be a single number."
-                    )
-            elif isinstance(onsite_en, complex) and self.nspin == 1:
-                raise ValueError(
-                    "Onsite energies for spinless model must be a real number."
-                )
-            elif isinstance(onsite_en, (int, float)):
-                # If onsite_en is a single number, it is interpreted as the onsite energy for both spin components
-                if self._nspin == 2:
-                    onsite_en = np.array([[onsite_en, 0], [0, onsite_en]], dtype=complex)
-            
-            else:
-                raise TypeError(
-                    "When specifying ind_i, onsite energies must be a single number, an array of four numbers, or a 2x2 matrix."
-                )
-
-        # deprecation warning
+        # Handle deprecated 'reset' mode
         if mode.lower() == "reset":
             logger.warning(
                 "The 'reset' mode is deprecated as of v2.0. Use 'set' instead to set the onsite energy." \
                 "This will be removed in a future version."
             )
             mode = "set"
+        
+        def process(val):
+            block =  self._val_to_block(val)
+            if not is_Hermitian(block):
+                raise ValueError(
+                    "Onsite terms should be real, or in case where it is a matrix, Hermitian."
+                )
+            return block
 
-        if mode.lower() == "set":
-            if ind_i is not None:
-                if self._site_energies_specified[ind_i]:
+        # prechecks 
+        if ind_i is None:
+            # when ind_i is not specified, onsite_en should be a list or array
+            if not isinstance(onsite_en, (list, np.ndarray)):
+                raise TypeError(
+                    "When ind_i is not specified, onsite_en must be a list or array."
+                )
+            # the number of onsite energies must match the number of orbitals,
+            if len(onsite_en) != self._norb:
+                raise ValueError(
+                    "List of onsite energies must include a value for every orbital."
+                )
+            
+            processed = [process(val) for val in onsite_en]
+            indices = np.arange(self._norb)
+        else:
+            if ind_i < 0 or ind_i >= self._norb:
+                raise ValueError(
+                    "Index ind_i is not within the range of number of orbitals."
+                )
+            processed = [process(onsite_en)]
+            indices = [ind_i]
+
+        mode = mode.lower()
+
+        if mode == "set":
+            for idx, block in zip(indices, processed):
+                if self._site_energies_specified[idx]:
                     logger.warning(
-                        f"Onsite energy for site {ind_i} was already set; resetting to the specified values."
+                        f"Onsite energy for site {idx} was already set; resetting to the specified values."
                     )
+                self._site_energies[idx] = block
+                self._site_energies_specified[idx] = True
 
-                term = self._val_to_block(onsite_en)
-
-                if not is_Hermitian(term):
-                    raise ValueError(
-                        "Onsite terms should be real, or in case where it is a matrix, Hermitian."
-                    )
-
-                self._site_energies[ind_i] = term
-                self._site_energies_specified[ind_i] = True
-            else:
-                if True in self._site_energies_specified:
-                    logger.warning(
-                        "Some or all of the onsite energies were already set; resetting to the specified values."
-                    )
-
-                for i in range(self._norb):
-                    term = self._val_to_block(onsite_en[i])
-                    if not is_Hermitian(term):
-                        raise ValueError(
-                            "Onsite terms should be real, or in case where it is a matrix, Hermitian."
-                        )
-                    self._site_energies[i] = term
-                    self._site_energies_specified[i] = True
-
-        elif mode.lower() == "add":
-            if ind_i is not None:
-                self._site_energies[ind_i] += self._val_to_block(onsite_en)
-                self._site_energies_specified[ind_i] = True
-            else:
-                for i in range(self._norb):
-                    self._site_energies[i] += self._val_to_block(onsite_en[i])
-                self._site_energies_specified[:] = True
+        elif mode == "add":
+            for idx, block in zip(indices, processed):
+                self._site_energies[idx] += block
+                self._site_energies_specified[idx] = True
         else:
             raise ValueError("Mode should be either 'set' or 'add'.")
+        
 
     def set_hop(
         self, hop_amp, ind_i, ind_j, ind_R=None, mode="set", allow_conjugate_pair=False
@@ -853,13 +801,12 @@ class TBModel:
         :param hop_amp: Hopping amplitude; can be real or complex
           number, equals :math:`H_{ij}({\bf R})`. If *nspin* is *2*
           then hopping amplitude can be given either as a single
-          number, or as an array of four numbers, or as 2x2 matrix. If
+          number, an array of four numbers, or a 2x2 matrix. If
           a single number is given, it is interpreted as hopping
-          amplitude for both up and down spin component.  If an array
-          of four numbers is given, these are the coefficients of I,
+          amplitude for both up and down spin component, proportional to the identity.
+          If an array of four numbers is given, these are the coefficients of I,
           sigma_x, sigma_y, and sigma_z (that is, the 2x2 identity and
-          the three Pauli spin matrices) respectively. Finally, full
-          2x2 matrix can be given as well.
+          the three Pauli spin matrices) respectively.
 
         :param ind_i: Index of bra orbital from the bracket :math:`\langle
           \phi_{{\bf 0} i} \vert H \vert \phi_{{\bf R},j} \rangle`. This
