@@ -8,12 +8,15 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [2.0.0] - 2025-06-03
 ---
 ### Changed
+
 - Renamed public classes (see [DEVLOG](notes/DEVLOG.md) for more details)
     - `tb_model` -> `TBModel`
     - `wf_array` -> `WFArray`
     - `w90` -> `W90`
 
-#### TBModel
+- Examples are now separated categorically into folders
+
+##### `TBModel`
 
 - `TBModel.get_orb`:
     - Added `cartesian` boolean flag to return orbitals in Cartesian coordinates. It is `False` by default.
@@ -37,12 +40,23 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
       - If finite (no k axis): (n_state, ...) and spin axes are as before
     - Handles single-k-point input automatically and reproduces `solve_one`.
 
-#### WFArray
+##### `WFArray`
 
 
 ---
 
 ### Added
+
+##### Models
+- Added a [folder of example models](pythtb/models) that is importable using, e.g.,
+  ```
+  from pythtb.models import haldane
+  my_model = haldane(delta, t, t2)
+  ```
+##### Examples
+- Added an example, [visualize_3d.py](examples/visualize/visualize_3d.py), for the 3D visualization feature 
+
+##### `TBModel`
 - `TBModel.__repr__`: Object representation now displays `rdim`, `kdim`, and `nspin`. 
 - `TBModel.__str__`: Printing a `TBModel` instance using `print(TBModel)` calls the `report()` (formerly `dislplay`) method and prints model information.
 - `TBModel.get_ham`: Generates Hamiltonians for both single and multiple k-points.
