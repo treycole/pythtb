@@ -29,10 +29,13 @@ binaries of python you wish to use in the test.  Note that tox does NOT work
 with anaconda version of python at this point (Dec 2016).
 
 ## Note by David on 11/18/12
-If you enounter an error like
+
+If you encounter an error like
+```
   ------------------------------------------------------
   ERROR: Error in "xxx" directive: invalid option block.
   ------------------------------------------------------
+```
 Then (a) leave a blank line between the directive and text block,
 and/or (b) make sure no line in text block starts with a colon
 by rewrapping the text in some way.
