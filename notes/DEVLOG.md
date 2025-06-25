@@ -18,7 +18,7 @@ Below is a summary
 6. [Logging & Messaging](#6-logging-vs-print-statements)
 7. [Packaging and Distribution](#7-packaging-and-distribution)
 8. [Python Version Support](#8-python-version-support)
-9. [Tests](#9-testing)
+9. [Testing and Continuous Integration](#9-testing-and-continuous-integration)
 
 ### 1. Project Structure and Modularization
 
