@@ -18,6 +18,7 @@ Below is a summary
 6. [Logging & Messaging](#6-logging-vs-print-statements)
 7. [Packaging and Distribution](#7-packaging-and-distribution)
 8. [Python Version Support](#8-python-version-support)
+9. [Tests](#9-testing)
 
 ### 1. Project Structure and Modularization
 
@@ -137,12 +138,26 @@ Transitioned from `setup.py` to `pyproject.toml`, added standard files (`LICENSE
 ### 8. Python Version Support
 
 **What Changed:**  
-Dropped support for Python <3.10. Now require Python 3.10+.
+- Dropped support for Python <3.10. Now require Python 3.10+.
 
 **Rationale:**
 - Allows use of latest syntax and features (match-case, improved typing, etc.).
 - Many scientific libraries have support fordropped older versions.
 - Follows [SPEC-0](https://scientific-python.org/specs/spec-0000/): Scientific Python minimum standards.
+
+### 9. Testing and Continuous Integration
+
+**What Changed:**
+- Added a [tests/test_examples](tests/test_examples) directory with pytest-based regression tests for all examples
+- Each test runs the example scripts and compares outputs to reference data from v1.8.
+- Added a [tests/test_examples/make_test_example.py](tests/test_examples/make_test_example.py) to automatically generate a skeleton for new tests to be made in the future.
+- Added a [tests/report_test_status.py](tests/test_examples/make_test_example.py) to print a summary of which tests are passing and the date/time of last pass/fail.
+- See [tests/test_examples/README.md](tests/test_examples/README.md) for more information.
+
+**Rationale:**
+- Ensures backward compatibility and prevents regressions during refactors or feature additions
+- Encourages contributors to include tests alongside new code
+
 
 **If you have questions or want to propose a change, please open an issue or start a discussion.**  
 For contributing guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
