@@ -23,4 +23,4 @@ After each run of `pytest`, the pass/fail status will be written to `status.json
 ```bash
 python report_test_status.py
 ```
-in the terminal. 
+in the terminal. The status is also visible is PASSING.md.  
