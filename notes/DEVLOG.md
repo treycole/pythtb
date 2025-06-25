@@ -22,7 +22,7 @@ Below is a summary
 ### 1. Project Structure and Modularization
 
 **What Changed:**
-- Split the monolithic `pythtb.py` (4000+ lines)into a package in the `pythtb/` directory with smaller, purpose-driven modules:
+- Split the monolithic `pythtb.py` (4000+ lines) into a package in the `pythtb/` directory with smaller, purpose-driven modules:
     - `tb_model.py` (tight-binding model class - `TBModel`)
     - `wf_array.py` (wavefunction array - `WFArray`)
     - `k_mesh.py` (k-point mesh construction and related routines)
