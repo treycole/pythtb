@@ -6,7 +6,7 @@ from pythtb import TBModel, WFArray
 import numpy as np
 
 
-def test_answer():
+def test_centers():
 
     # define lattice vectors
     lat = [[2.3, -0.2], [1.9, 2.4]]

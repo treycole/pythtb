@@ -1,11 +1,7 @@
-import sys
+from pythtb import TBModel
+from generic_run import generic_test_of_models
 
-sys.path.append("../")
-
-from pythtb import TBModel, WFArray
-import numpy as np
-
-def test_answer():
+def test_slab():
 
     # these are three equivalent models that should ideally behave in an equivalent way
 
@@ -40,44 +36,3 @@ def test_answer():
         [model0, model1, model2], use_dir=[2, 1, 1], use_occ=[[0], [0], [0]]
     )
 
-
-def generic_test_of_models(models: list[TBModel], use_dir, use_occ):
-
-    # check that berry phases are the same
-    val = []
-    for ii, mod in enumerate(models):
-        my_array = WFArray(mod, [11, 11])
-        my_array.solve_on_grid([-0.5, -0.5])
-        val.append(my_array.berry_phase(use_occ[ii], 1, contin=True))
-    val = np.array(val)
-    passed = []
-    for i in range(1, val.shape[0]):
-        passed.append(np.isclose(val[0], val[i]))
-    passed = np.array(passed)
-    assert np.all(passed)
-
-    # check that energies are the same at some random point
-    val = []
-    for ii, mod in enumerate(models):
-        val.append(mod.solve_ham([0.123, 0.523]))
-    val = np.array(val)
-    passed = []
-    for i in range(1, val.shape[0]):
-        passed.append(np.isclose(val[0], val[i]))
-    passed = np.array(passed)
-    assert np.all(passed)
-
-    # check finitely cut models
-    val = []
-    for ii, mod in enumerate(models):
-        mod_cut = mod.cut_piece(4, use_dir[ii], glue_edgs=False)
-        evalu, evec = mod_cut.solve_ham([0.214], return_eigvecs=True)
-        print(evec.shape)
-        val.append(mod_cut.position_expectation(evec, use_dir[ii]))
-    val = np.array(val)
-    passed = []
-    for i in range(1, val.shape[0]):
-        print(val[0], val[i])
-        passed.append(np.isclose(val[0], val[i]))
-    passed = np.array(passed)
-    assert np.all(passed)
