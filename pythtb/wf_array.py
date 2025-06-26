@@ -489,14 +489,6 @@ class WFArray:
         self._start_k = start_k
         self._nks = (nk-1 for nk in self.mesh_size)  # number of k-points in each direction
 
-        # to return gaps at all k-points
-        if self.nstates <= 1:
-            all_gaps = None  # trivial case since there is only one band
-        else:
-            gap_dim = np.copy(self.mesh_size) - 1
-            gap_dim = np.append(gap_dim, self.nstates - 1)
-            all_gaps = np.zeros(gap_dim, dtype=float)
-
         # generate k-mesh
         k_pts = [
             np.linspace(start_k[idx], start_k[idx] + 1, nk-1, endpoint=False)
@@ -512,7 +504,10 @@ class WFArray:
         # reshape to square mesh: (nk-1, nk-1, ..., nk-1, nstate) for evals
         evals = evals.reshape(tuple([nk-1 for nk in self.mesh_size]) + evals.shape[1:])
         # set gaps
-        all_gaps = evals[..., 1:] - evals[..., :-1]
+        if self.nstates <= 1:
+            all_gaps = None  # trivial case since there is only one band
+        else:
+            all_gaps = evals[..., 1:] - evals[..., :-1]
         self._energies = evals  # store energies in the WFArray
 
         # reshape to square mesh: (nk1-1, nk2-1, ..., nkd-1, nstate, nstate) for evecs
