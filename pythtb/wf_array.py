@@ -243,8 +243,7 @@ class WFArray:
         wfs_dim = np.append(wfs_dim, self._norb)
         if self._nspin == 2:
             wfs_dim = np.append(wfs_dim, self._nspin)
-        # store wavefunctions in the form
-        #   _wfs[kx_index,ky_index, ... ,state,orb,spin]
+        # store wavefunctions in the form [kx_index, ky_index,..., state, orb, spin]
         self._wfs = np.zeros(wfs_dim, dtype=complex)
     
     def __getitem__(self, key):
@@ -439,7 +438,7 @@ class WFArray:
 
     #TODO: Clarify the role of start_k. When would it be anything other than [0, 0] 
     # or [-0.5, -0.5]? 
-    def solve_on_grid(self, start_k):
+    def solve_on_grid(self, start_k, impose_pbc=True):
         r"""
 
         Solve a tight-binding model on a regular mesh of k-points covering
@@ -490,36 +489,35 @@ class WFArray:
         self._nks = (nk-1 for nk in self.mesh_size)  # number of k-points in each direction
 
         # generate k-mesh
-        k_pts = [
-            np.linspace(start_k[idx], start_k[idx] + 1, nk-1, endpoint=False)
-            for idx, nk in enumerate(self.mesh_size)
+        # we use a mesh size of (nk-1) because the last point in each direction will be
+        # the same as the first one, so we only need (nk-1) points
+        mesh_size = tuple(nk-1 for nk in self.mesh_size)
+        k_axes = [
+            np.linspace(start_k[idx], start_k[idx] + 1, nk, endpoint=False)
+            for idx, nk in enumerate(mesh_size)
         ]
-        k_pts_sq = np.stack(np.meshgrid(*k_pts, indexing="ij"), axis=-1)
+        # stack into a grid of shape (nk1-1, nk2-1, ..., nkd-1, dim_k)
+        k_pts_sq = np.stack(np.meshgrid(*k_axes, indexing="ij"), axis=-1)
         k_pts = k_pts_sq.reshape(-1, self.dim_mesh)
-        self._k_mesh_square = k_pts_sq  # store square mesh for later use
-        self._k_mesh_flat = k_pts  # store flat mesh for later use
 
+        # store for later
+        self._k_mesh_square = k_pts_sq  
+        self._k_mesh_flat = k_pts 
+
+        # solve the model on the k-mesh
         evals, evecs = self._model.solve_ham(k_pts, return_eigvecs=True)
 
-        # reshape to square mesh: (nk-1, nk-1, ..., nk-1, nstate) for evals
-        evals = evals.reshape(tuple([nk-1 for nk in self.mesh_size]) + evals.shape[1:])
-        # set gaps
-        if self.nstates <= 1:
-            all_gaps = None  # trivial case since there is only one band
-        else:
-            all_gaps = evals[..., 1:] - evals[..., :-1]
+        # reshape to back into a full (nk1, nk2, ..., nkd, nstate) mesh
+        full_shape = tuple(mesh_size) + (self.nstates,)
+        evals = evals.reshape(full_shape)
+        evecs = evecs.reshape(full_shape + (self.norb,) + ((self.nspin,) if self.nspin>1 else ()))
+            
         self._energies = evals  # store energies in the WFArray
 
-        # reshape to square mesh: (nk1-1, nk2-1, ..., nkd-1, nstate, nstate) for evecs
-        evecs = evecs.reshape(tuple([nk-1 for nk in self.mesh_size]) + evecs.shape[1:])
+        # reshape to square mesh: (nk1, nk2, ..., nkd-1, nstate, nstate) for evecs
 
-        # getting multi-dimensional index: (nk1-1, nk2-1, ..., nkd-1)
-        axes = [np.arange(nk-1) for nk in self.mesh_size]
-        idx_arr = np.array(np.meshgrid(*axes, indexing='ij'))
-        idx_arr = idx_arr.reshape(idx_arr.shape[0], -1).T
-        idx_arr = np.array(idx_arr, dtype=int)
-
-        # set wavefunctions in the array
+        # Store all wavefunctions in the WFArray
+        idx_arr = np.ndindex(*mesh_size)
         for idx in idx_arr:
             self[*idx] = evecs[*idx]
 
@@ -528,8 +526,9 @@ class WFArray:
             # impose periodic boundary conditions
             self.impose_pbc(dir, self.model.per[dir])
 
-        if all_gaps is not None:
-            return all_gaps.min(axis=tuple(range(self.dim_mesh)))
+        if self.nstates > 1:
+            gaps = evals[..., 1:] - evals[..., :-1]
+            return gaps.min(axis=tuple(range(self.dim_mesh)))
         else:
             return None
 
@@ -766,15 +765,8 @@ class WFArray:
         self._pbc_axes.append(mesh_dir)
 
         # Compute phase factors from orbital vectors dotted with G parallel to k_dir
-        ffac = np.exp(-2j * np.pi * self._orb[:, k_dir])
-        if self.nspin == 1:
-            phase = ffac
-        else:
-            # for spinors, same phase multiplies both components
-            phase = np.zeros((self.norb, 2), dtype=complex)
-            phase[:, 0] = ffac
-            phase[:, 1] = ffac
-
+        phase = np.exp(-2j * np.pi * self._orb[:, k_dir])
+        phase = phase if self.nspin == 1 else phase[:, np.newaxis]
 
         # mesh_dir is the direction of the array along which we impose pbc
         # and it is also the direction of the k-vector along which we
@@ -988,10 +980,6 @@ class WFArray:
         if dirs is None:
             # If no specific directions are provided, compute links for all directions
             dirs = list(range(self.dim_mesh))
-
-        # n_states = wfs.shape[-2]
-        # n_param = self.mesh_size
-        # wfs_flat = wfs.reshape(*n_param, n_states, -1)
 
         U_forward = []
         for mu in dirs:
