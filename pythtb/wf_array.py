@@ -295,6 +295,16 @@ class WFArray:
         return self._dim_mesh
     
     @property
+    def pbc_axes(self):
+        r"""Returns the axes along which periodic boundary conditions are imposed."""
+        return self._pbc_axes
+    
+    @property
+    def loop_axes(self):
+        r"""Returns the axes along which loops are imposed."""
+        return self._loop_axes
+    
+    @property
     def nstates(self):
         r"""Returns the number of states (or bands) stored in the *WFArray* object."""
         return self._nstates
@@ -319,7 +329,21 @@ class WFArray:
         r"""Returns the parameter path (e.g., k-points) along which the model was solved.
         This is only set if the model was solved along a path using `solve_on_path`."""
         return getattr(self, '_param_path', None)
+
+    @property
+    def flat_k_mesh(self):
+        r"""Returns a flattened version of the k-mesh used in the *WFArray*."""
+        return getattr(self, '_k_mesh_flat', None)
     
+    @property
+    def k_mesh(self):
+        r"""Returns the KMesh object associated with the *WFArray*."""
+        return getattr(self, '_k_mesh_square', None)
+    
+    @property
+    def energies(self):
+        r"""Returns the energies of the states stored in the *WFArray*."""
+        return getattr(self, '_energies', None)
 
     def get_states(self, flatten_spin=False):
         """Returns dictionary containing Bloch and cell-periodic eigenstates."""
@@ -409,7 +433,7 @@ class WFArray:
 
         eigvals, eigvecs = self.model.solve_ham(k_arr, return_eigvecs=True)
         for idx, pt in enumerate(k_arr):
-            self.energies[idx] = eigvals[idx]
+            self._energies[idx] = eigvals[idx]
             self._wfs[(idx,)] =  eigvecs[idx]
 
 
@@ -463,6 +487,7 @@ class WFArray:
 
         # store start_k
         self._start_k = start_k
+        self._nks = (nk-1 for nk in self.mesh_size)  # number of k-points in each direction
 
         # to return gaps at all k-points
         if self.nstates <= 1:
@@ -472,24 +497,28 @@ class WFArray:
             gap_dim = np.append(gap_dim, self.nstates - 1)
             all_gaps = np.zeros(gap_dim, dtype=float)
 
+        # generate k-mesh
         k_pts = [
             np.linspace(start_k[idx], start_k[idx] + 1, nk-1, endpoint=False)
             for idx, nk in enumerate(self.mesh_size)
         ]
         k_pts_sq = np.stack(np.meshgrid(*k_pts, indexing="ij"), axis=-1)
         k_pts = k_pts_sq.reshape(-1, self.dim_mesh)
+        self._k_mesh_square = k_pts_sq  # store square mesh for later use
+        self._k_mesh_flat = k_pts  # store flat mesh for later use
 
         evals, evecs = self._model.solve_ham(k_pts, return_eigvecs=True)
 
         # reshape to square mesh: (nk-1, nk-1, ..., nk-1, nstate) for evals
         evals = evals.reshape(tuple([nk-1 for nk in self.mesh_size]) + evals.shape[1:])
-        # reshape to square mesh: (nk-1, nk-1, ..., nk-1, nstate, nstate) for evecs
-        evecs = evecs.reshape(tuple([nk-1 for nk in self.mesh_size]) + evecs.shape[1:])
-
         # set gaps
         all_gaps = evals[..., 1:] - evals[..., :-1]
+        self._energies = evals  # store energies in the WFArray
 
-        # mapping from 1d index to multi-dimensional index
+        # reshape to square mesh: (nk1-1, nk2-1, ..., nkd-1, nstate, nstate) for evecs
+        evecs = evecs.reshape(tuple([nk-1 for nk in self.mesh_size]) + evecs.shape[1:])
+
+        # getting multi-dimensional index: (nk1-1, nk2-1, ..., nkd-1)
         axes = [np.arange(nk-1) for nk in self.mesh_size]
         idx_arr = np.array(np.meshgrid(*axes, indexing='ij'))
         idx_arr = idx_arr.reshape(idx_arr.shape[0], -1).T
