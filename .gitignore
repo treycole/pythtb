@@ -180,4 +180,4 @@ _build/
 .DS_Store
 
 *.egg-info/
-dev
+scrap
