@@ -235,6 +235,8 @@ class WFArray:
             raise Exception(
                 "\n\nDimension of WFArray object in each direction must be 2 or larger."
             )
+        self._pbc_axes = []  # axes along which periodic boundary conditions are imposed
+        self._loop_axes = []  # axes along which loops are imposed
         # generate temporary array used later to generate object ._wfs
         wfs_dim = np.copy(self._mesh_size)
         wfs_dim = np.append(wfs_dim, self._nstates)
@@ -717,6 +719,13 @@ class WFArray:
             raise Exception(
                 "Periodic boundary condition can be specified only along periodic directions!"
             )
+        
+        if not _is_int(mesh_dir):
+            raise TypeError("mesh_dir should be an integer!")
+        if mesh_dir < 0 or mesh_dir >= self.dim_mesh:
+            raise IndexError("mesh_dir outside the range!")
+        
+        self._pbc_axes.append(mesh_dir)
 
         # Compute phase factors from orbital vectors dotted with G parallel to k_dir
         ffac = np.exp(-2j * np.pi * self._orb[:, k_dir])
@@ -728,10 +737,6 @@ class WFArray:
             phase[:, 0] = ffac
             phase[:, 1] = ffac
 
-        if not _is_int(mesh_dir):
-            raise TypeError("mesh_dir should be an integer!")
-        if mesh_dir < 0 or mesh_dir >= self.dim_mesh:
-            raise IndexError("mesh_dir outside the range!")
 
         # mesh_dir is the direction of the array along which we impose pbc
         # and it is also the direction of the k-vector along which we
@@ -786,6 +791,15 @@ class WFArray:
           # do wf.impose_loop(mesh_dir=2)
 
         """
+        if not _is_int(mesh_dir):
+            raise TypeError("mesh_dir must be an integer.")
+        if mesh_dir < 0 or mesh_dir >= self.dim_mesh:
+            raise ValueError(
+                f"mesh_dir must be between 0 and {self.dim_mesh-1}, got {mesh_dir}."
+            )
+        
+        self._loop_axes.append(mesh_dir)
+
         slc_lft = [slice(None)]*(mesh_dir+2) # e.g., [:, :, :, :]
         slc_rt = [slice(None)]*(mesh_dir+2) # e.g., [:, :, :, :]
 
@@ -891,38 +905,71 @@ class WFArray:
         evec = self.wfs[tuple(key)][occ]
         return self.model.position_hwf(evec, dir, hwf_evec, basis)
     
-    def get_links(self, state_idx):
-        wfs = self.get_states(flatten_spin=True)
-        print(wfs.shape)
+    def get_links(self, state_idx=None, dirs=None):
+        """
+        Compute the links (unitary matrices) for the wavefunctions
+        in the *WFArray* object along a given direction.
+        The links are computed as the unitary part of the overlap between the 
+        wavefunctions at neighboring points in each mesh direction.
 
-        n_param = self.mesh_size
-        dim = self.dim_mesh
+        The links are computed for all states in the *WFArray* object,
+        and the resulting unitary matrices are returned in an array
+        of shape [dim, nk1, nk2, ..., nkd, n_states, n_states],
+        where dim is the number of dimensions of the mesh, nk1, nk2, ..., nkd
+        are the sizes of the mesh in each dimension, and n_states is the number of states
+        in the *WFArray* object.
+
+        Args:
+            state_idx (int or list of int):
+                Index or indices of the states for which to compute the links.
+                If an integer is provided, only that state will be considered.
+                If a list is provided, links for all specified states will be computed.
+            dirs (list of int, optional):
+                List of directions along which to compute the links.
+                If not provided, links will be computed for all directions in the mesh.
+        Returns:
+            U_forward (np.ndarray):
+                Array of shape [dim, nk1, nk2, ..., nkd, n_states, n_states]
+                containing the unitary matrices for the forward links in each direction.
+        """
+        wfs = self.get_states(flatten_spin=True)
 
         # State selection
         if state_idx is not None:
+            if isinstance(state_idx, (list, np.ndarray)):
+                # If state_idx is a list or array, select those states
+                state_idx = np.array(state_idx, dtype=int)
+            elif isinstance(state_idx, int):
+                # If state_idx is a single integer, convert to array
+                state_idx = np.array([state_idx], dtype=int)
+            else:
+                raise TypeError("state_idx must be an integer, list, or numpy array.")
+            
             wfs = np.take(wfs, state_idx, axis=-2)
-            if isinstance(state_idx, int):
-                wfs = np.expand_dims(wfs, -2)
 
-        n_states = wfs.shape[-2]
+        if dirs is None:
+            # If no specific directions are provided, compute links for all directions
+            dirs = list(range(self.dim_mesh))
+
+        # n_states = wfs.shape[-2]
+        # n_param = self.mesh_size
+        # wfs_flat = wfs.reshape(*n_param, n_states, -1)
 
         U_forward = []
-        wfs_flat = wfs.reshape(*n_param, n_states, -1)
-        for mu in range(dim):
-            print(f"Computing links for direction: mu={mu}")
+        for mu in dirs:
+            print(f"Computing links for direction mu={mu}")
             wfs_shifted = np.roll(wfs, -1, axis=mu)
             
             # <u_nk| u_m k+delta_mu>
-            ovr_mu = wfs_flat.conj() @ wfs_shifted.swapaxes(-2, -1)
+            ovr_mu = wfs.conj() @ wfs_shifted.swapaxes(-2, -1)
 
             U_forward_mu = np.zeros_like(ovr_mu, dtype=complex)
-            V, _, Wd = np.linalg.svd(ovr_mu, full_matrices=False)
-            U_forward_mu = V @ Wd
+            V, _, Wh = np.linalg.svd(ovr_mu, full_matrices=False)
+            U_forward_mu = V @ Wh
             U_forward.append(U_forward_mu)
 
         return np.array(U_forward)
     
-    # works in all cases
     @staticmethod
     def wilson_loop(wfs_loop, evals=False):
         """Compute Wilson loop unitary matrix and its eigenvalues for multiband Berry phases.
@@ -963,12 +1010,12 @@ class WFArray:
         if evals:
             evals = np.linalg.eigvals(U_wilson)  # Wilson loop eigenvalues
             eval_pha = -np.angle(evals)  # Multiband  Berrry phases
-            # eval_pha = np.sort(eval_pha)  # sort phases to be continuous
             return U_wilson, eval_pha
         else:
             return U_wilson
         
-    def berry_loop(self, wfs_loop, evals=False, contin=True):
+    @staticmethod
+    def berry_loop(wfs_loop, evals=False):
         r"""
         Computes the Berry phase along a one-dimensional loop of
         wavefunctions. The loop is assumed to be one-dimensional,
@@ -1004,7 +1051,7 @@ class WFArray:
                 which is a single number.
         """
 
-        U_wilson = self.wilson_loop(wfs_loop, evals=evals)
+        U_wilson = WFArray.wilson_loop(wfs_loop, evals=evals)
 
         if evals:
             hwf_centers = U_wilson[1]
@@ -1107,6 +1154,9 @@ class WFArray:
         :ref:`cone-example`, :ref:`3site_cycle-example`,
 
         """
+        # Get wavefunctions in the array, flattening spin if necessary
+        # wfs is of shape [nk1, nk2, ..., nkd, nstate, nstate]
+        wfs = self.get_states(flatten_spin=True)
 
         # Check for special case of parameter occ
         if isinstance(occ, str) and occ.lower() == "all":
@@ -1128,11 +1178,10 @@ class WFArray:
         if not self.model._assume_position_operator_diagonal:
             _offdiag_approximation_warning_and_stop()
 
-        # Validate dir parameter
+
         # number of mesh dimensions is total dims minus band and orbital axes
-        wfs = self.get_states(flatten_spin=True)
         mesh_axes = wfs.ndim - 2
-      
+        # Validate dir parameter
         if dir is None:
             if mesh_axes != 1:
                 raise ValueError("If dir is not specified, the mesh must be one-dimensional.")
@@ -1144,54 +1193,162 @@ class WFArray:
         wf = wfs[..., occ, :]
         wf = np.moveaxis(wf, dir, 0)  # shape: (N_loop, *rest, nbands)
         N_loop, *rest_shape, nbands, norb = wf.shape
+        # Flatten redundant param dimensions intermediately
         wf_flat = wf.reshape(N_loop, -1, nbands, norb)  # shape: (N_loop, rest_shape, nbands, norb)
 
         # Compute Berry phase for each slice along other dimensions
         results = []
+        # loop over all other parameter values other than the loop dimension
         for idx in range(wf_flat.shape[1]):
             slice_wf = wf_flat[:, idx, :, :]
-            results.append(self.berry_loop(slice_wf, evals=berry_evals, contin=contin))
-        
+            results.append(self.berry_loop(slice_wf, evals=berry_evals))
+
         ret = np.array(results)
 
         if contin:
-            # Make phases continuous
+            # Make phases continuous 
             ret = np.unwrap(ret, axis=0)
                 
         return ret
 
-    def berry_flux_plaq(self, state_idx=None, non_abelian=False):
-        """Compute fluxes on a two-dimensional plane of states.
+    def berry_flux(self, state_idx=None, plane=None, abelian=True):
+        r"""
 
-        For a given set of states, returns the band summed Berry curvature
-        rank-2 tensor for all combinations of surfaces in reciprocal space.
-        By convention, the Berry curvature is reported at the point where the loop
-        started, which is the lower left corner of a plaquette.
+        In the case of a 2-dimensional *WFArray* array calculates the
+        integral of Berry curvature over the entire plane.  In higher
+        dimensional case (3 or 4) it will compute integrated curvature
+        over all 2-dimensional slices of a higher-dimensional
+        *WFArray*.
+
+        :param state_idx: Optional array of indices of states to be included
+          in the subsequent calculations, typically the indices of
+          bands considered occupied. If not specified, or None, all bands are
+          included.
+
+        :param plane: Array or tuple of two indices defining the axes in the
+            WFArray mesh which the Berry flux is computed over. By default, 
+            all directions are considered, and the full Berry flux tensor is
+            returned.
+
+        :param abelian: If *True* then the Berry flux is computed
+          using the abelian formula, which corresponds to the band-traced
+          non-Abelian Berry curvature. If *False* then the non-Abelian Berry
+          flux tensor is computed. Default value is *True*.
+
+        :param integrate: If *True* then the plaquette fluxes are summed to 
+          return the integrated Berry flux over the entire plane.
+          If *False* then the function returns the Berry phase around each
+          plaquette in the array. In the 2-dimensional case this
+          corresponds to the integral of Berry curvature over the entire
+          plane, while in higher dimensions it corresponds to the integral of
+          Berry curvature over all slices defined with directions *dirs*.
+
+        :returns:
+
+          * **flux** -- 
+            The Berry flux tensor, which is an array of general shape
+            [dim_mesh, dim_mesh, *flux_shape, n_states, n_states]. The 
+            shape will depend on the parameters passed to the function.
+
+            If plane is *None* (default), then the first two axes 
+            (dim_mesh, dim_mesh) correspond to the plane directions, otherwise, 
+            these axes are absent. 
+
+            If *abelian* is *False* then the last two axes are the band indices
+            running over the selected *state_idx* indices.
+            If *abelian* is *True* (default) then the last two axes are absent, and
+            the returned flux is a scalar value, not a matrix. 
+
+        Example usage::
+
+          # Computes Berry curvature of first three bands in 2D model
+          flux = wf.berry_flux([0, 1, 2]) # shape: (dim1, dim2, nk1, nk2)
+          flux = wf.berry_flux([0, 1, 2], plane=(0, 1)) # shape: (nk1, nk2)
+          flux = wf.berry_flux([0, 1, 2], plane=(0, 1), abelian=False) # shape: (nk1, nk2, n_states, n_states)
+
+          # 3D model example
+          flux = wf.berry_flux([0, 1, 2], plane=(0, 1)) # shape: (nk1, nk2, nk3)
         """
-        n_states = len(state_idx)  # Number of states considered
-        n_param = self.mesh_size  # Number of points in adiabatic mesh
-        dim = self.dim_mesh  # Total dimensionality of adiabatic space
+        # Validate state_idx
+        if state_idx is None:
+            state_idx = np.arange(self.nstates)
+        elif isinstance(state_idx, (list, np.ndarray, tuple)):
+            state_idx = np.array(state_idx, dtype=int)
+            if state_idx.ndim != 1:
+                raise ValueError("state_idx must be a one-dimensional array.")
+            if np.any(state_idx < 0) or np.any(state_idx >= self.nstates):
+                raise ValueError(f"state_idx must be between 0 and {self.nstates-1}.")
+        else:
+            raise TypeError("state_idx must be None, a list, tuple, or numpy array.")
+        if len(state_idx) == 0:
+            raise ValueError("state_idx cannot be empty.")
+        if np.any(np.diff(state_idx) < 0):
+            raise ValueError("state_idx must be sorted in ascending order.")
+        
 
-        # Initialize Berry flux array
-        shape = (
-            (dim, dim, *n_param, n_states, n_states)
-            if non_abelian
-            else (dim, dim, *n_param)
-        )
-        Berry_flux = np.zeros(shape, dtype=complex)
+        n_states = len(state_idx) # Number of states considered
+        dim_mesh = self.dim_mesh  # Total dimensionality of adiabatic space: d
+        n_param = list(self.mesh_size)  # Number of points in adiabatic mesh: (nk1, nk2, ..., nkd)
 
-        # Overlaps <u_{nk} | u_{n, k+delta k_mu}>
-        U_forward = self.get_links(state_idx=state_idx)
-        # Wilson loops W = U_{mu}(k_0) U_{nu}(k_0 + delta_mu) U^{-1}_{mu}(k_0 + delta_mu + delta_nu) U^{-1}_{nu}(k_0)
-        for mu in range(dim):
-            for nu in range(mu + 1, dim):
+        # Validate plane
+        if plane is not None and not isinstance(plane, (list, tuple, np.ndarray)):
+            raise TypeError("plane must be None, a list, tuple, or numpy array.")
+        if len(plane) != 2:
+            raise ValueError("plane must contain exactly two directions.")
+        if any(p < 0 or p >= dim_mesh for p in plane):
+            raise ValueError(f"Plane indices must be between 0 and {dim_mesh-1}.")
+        if plane[0] == plane[1]:
+            raise ValueError("Plane indices must be different.")
+
+        # Unique axes for periodic boundary conditions and loops
+        pbc_axes = list(set(self._pbc_axes + self._loop_axes))
+        flux_shape = n_param
+        for ax in pbc_axes:
+            flux_shape[ax] -= 1  # Remove last link in each periodic direction
+
+        # Initialize the Berry flux array
+        if plane is None:
+            shape = (
+                (dim_mesh, dim_mesh, *flux_shape, n_states, n_states)
+                if not abelian
+                else (dim_mesh, dim_mesh, *flux_shape)
+            )
+            berry_flux = np.zeros(shape, dtype=complex)
+            dirs = list(range(dim_mesh))
+            plane_idxs = dim_mesh
+        else:
+            p, q = plane  # Unpack plane directions
+
+            shape = (
+                (*flux_shape, n_states, n_states)
+                if not abelian
+                else (*flux_shape,)
+            )
+            berry_flux = np.zeros(shape, dtype=float)
+
+            dirs = [p, q]
+            plane_idxs = 2
+
+        # U_forward: Overlaps <u_{nk} | u_{n, k+delta k_mu}>
+        U_forward = self.get_links(state_idx=state_idx, dirs=dirs)
+
+        # remove last links in mesh if pbc or loop is imposed along plane directions
+        for ax in pbc_axes:
+            # remove ax+1 (+1 skips first axis, which is the loop direction)
+            U_forward = np.delete(U_forward, -1, axis=ax+1)
+
+        # Compute Berry flux for each pair of states
+        for mu in range(plane_idxs):
+            for nu in range(mu + 1, plane_idxs):
                 print(f"Computing flux in plane: mu={mu}, nu={nu}")
                 U_mu = U_forward[mu]
                 U_nu = U_forward[nu]
 
+                # Shift the wavefunctions along the mu and nu directions
                 U_nu_shift_mu = np.roll(U_nu, -1, axis=mu)
                 U_mu_shift_nu = np.roll(U_mu, -1, axis=nu)
 
+                # Wilson loops: W = U_{mu}(k_0) U_{nu}(k_0+delta_mu) U^{-1}_{mu}(k_0+delta_mu+delta_nu) U^{-1}_{nu}(k_0)
                 U_wilson = np.matmul(
                     np.matmul(
                         np.matmul(U_mu, U_nu_shift_mu),
@@ -1200,7 +1357,7 @@ class WFArray:
                     U_nu.conj().swapaxes(-1, -2),
                 )
 
-                if non_abelian:
+                if not abelian:
                     eigvals, eigvecs = np.linalg.eig(U_wilson)
                     angles = -np.angle(eigvals)
                     angles_diag = np.einsum(
@@ -1214,179 +1371,52 @@ class WFArray:
                     det_U = np.linalg.det(U_wilson)
                     phases_plane = -np.angle(det_U)
 
-                Berry_flux[mu, nu] = phases_plane
-                Berry_flux[nu, mu] = -phases_plane
-
-        return Berry_flux
+                if plane is None:
+                    # Store the Berry flux in a 2D array for each pair of directions
+                    berry_flux[mu, nu] = phases_plane
+                    berry_flux[nu, mu] = -phases_plane
+                else:   
+                    berry_flux = phases_plane.real
+       
+        return berry_flux
     
-
-    def berry_flux(self, occ="All", dirs=None, individual_phases=False):
+    
+    def chern_num(self, plane=(0, 1), state_idx=None):
         r"""
+        Computes the Chern number for a *WFArray* in the specified plane.
+        The Chern number is computed as the integral of the Berry flux
+        over the specified plane, divided by 2 * pi.
+        The plane is specified by a tuple of two indices, which correspond
+        to the directions in the parameter mesh. 
 
-        In the case of a 2-dimensional *WFArray* array calculates the
-        integral of Berry curvature over the entire plane.  In higher
-        dimensional case (3 or 4) it will compute integrated curvature
-        over all 2-dimensional slices of a higher-dimensional
-        *WFArray*.
+        :param plane: Tuple of two indices specifying the plane in which
+            the Chern number is computed. The indices should be between 0
+            and the number of mesh dimensions minus 1. If None, the
+            Chern number is computed for the first two dimensions of the mesh.
 
-        :param occ: Optional array of indices of states to be included
-          in the subsequent calculations, typically the indices of
-          bands considered occupied.  If not specified or specified as
-          'All', all bands are included.
+        :param state_idx: Optional array of indices of states to be included
+          in the Chern number calculation. If None, all states are included.
 
-        :param dirs: Array of indices of two WFArray directions on which
-          the Berry flux is computed. This parameter needs not be
-          specified for a two-dimensional WFArray.  By default *dirs* takes
-          first two directions in the array.
-
-        :param individual_phases: If *True* then returns Berry phase
-          for each plaquette (small square) in the array. Default
-          value is *False*.
-
-        :returns:
-
-          * **flux** -- In a 2-dimensional case returns and integral
-            of Berry curvature (if *individual_phases* is *True* then
-            returns integral of Berry phase around each plaquette).
-            In higher dimensional case returns integral of Berry
-            curvature over all slices defined with directions *dirs*.
-            Returned value is an array over the remaining indices of
-            *WFArray*.  (If *individual_phases* is *True* then it
-            returns again phases around each plaquette for each
-            slice. First indices define the slice, last two indices
-            index the plaquette.)
+        :returns: The Chern number for the specified plane. If the WFArray
+            is defined in a higher-dimensional space, the Chern number
+            is computed for each 2D slice of the higher-dimensional space. 
+            The shape of the returned array is (nk3, ..., nkd) if the plane is (0, 1),
+            where nk3, ..., nkd are the sizes of the mesh in the remaining dimensions.
 
         Example usage::
-
-          # Computes integral of Berry curvature of first three bands
-          flux = wf.berry_flux([0, 1, 2])
+            chern = wfs.chern_num(plane=(0, 1), state_idx=np.arange(n_occ))
+            # shape: (nk3, nk4, ..., nkd)
 
         """
+        if state_idx is None:
+            state_idx = np.arange(self.nstates)  # assume half-filled occupied
 
-       # Check for special case of parameter occ
-        if isinstance(occ, str) and occ.lower() == "all":
-            occ = np.arange(self.nstates, dtype=int)
-        elif isinstance(occ, (list, np.ndarray, tuple, range)):
-            occ = list(occ)
-            occ = np.array(occ, dtype=int)
-        else:
-            raise TypeError(
-            "occ must be a list, numpy array, tuple, or 'all' defining "
-            "band indices of itnterest."
-            )
+        # shape of the Berry flux array: (nk1, nk2, ..., nkd)
+        berry_flux = self.berry_flux(state_idx=state_idx, plane=plane, abelian=True)
+        # shape of chern (if plane is (0,1)): (nk3, ..., nkd) 
+        chern = np.sum(berry_flux, axis=plane) / (2 * np.pi)
 
-        # check if model came from w90
-        if not self.model._assume_position_operator_diagonal:
-            _offdiag_approximation_warning_and_stop()
-
-        # default case is to take first two directions for flux calculation
-        if dirs is None:
-            dirs = [0, 1]
-
-        # consistency checks
-        if dirs[0] == dirs[1]:
-            raise Exception(
-                "Need to specify two different directions for Berry flux calculation."
-            )
-        if (
-            dirs[0] >= self.dim_mesh
-            or dirs[1] >= self.dim_mesh
-            or dirs[0] < 0
-            or dirs[1] < 0
-        ):
-            raise Exception("Direction for Berry flux calculation out of bounds.")
-
-        # 2D case
-        if self.dim_mesh == 2:
-            # compute the fluxes through all plaquettes on the entire plane
-            ord = list(range(len(self.wfs.shape)))
-            # select two directions from dirs
-            ord[0] = dirs[0]
-            ord[1] = dirs[1]
-            plane_wfs = self._wfs.transpose(ord)
-            # take bands of choice
-            plane_wfs = plane_wfs[:, :, occ]
-
-            # compute fluxes
-            all_phases = _one_flux_plane(plane_wfs)
-
-            # return either total flux or individual phase for each plaquete
-            if not individual_phases:
-                return all_phases.sum()
-            else:
-                return all_phases
-
-        # 3D or 4D case
-        elif self.dim_mesh in [3, 4]:
-            # compute the fluxes through all plaquettes on the entire plane
-            ord = list(range(len(self.wfs.shape)))
-            # select two directions from dirs
-            ord[0] = dirs[0]
-            ord[1] = dirs[1]
-
-            # find directions over which we wish to loop
-            ld = list(range(self.dim_mesh))
-            ld.remove(dirs[0])
-            ld.remove(dirs[1])
-            if len(ld) != self.dim_mesh - 2:
-                raise Exception(
-                    "Hm, this should not happen? Inconsistency with the mesh size."
-                )
-
-            # add remaining indices
-            if self._dim_mesh == 3:
-                ord[2] = ld[0]
-            if self._dim_mesh == 4:
-                ord[2] = ld[0]
-                ord[3] = ld[1]
-
-            # reorder wavefunctions
-            use_wfs = self.wfs.transpose(ord)
-
-            # loop over the the remaining direction
-            if self.dim_mesh == 3:
-                slice_phases = np.zeros(
-                    (
-                        self.mesh_size[ord[2]],
-                        self.mesh_size[dirs[0]] - 1,
-                        self.mesh_size[dirs[1]] - 1,
-                    ),
-                    dtype=float,
-                )
-                for i in range(self.mesh_size[ord[2]]):
-                    # take a 2d slice
-                    plane_wfs = use_wfs[:, :, i]
-                    # take bands of choice
-                    plane_wfs = plane_wfs[:, :, occ]
-                    # compute fluxes on the slice
-                    slice_phases[i, :, :] = _one_flux_plane(plane_wfs)
-            elif self.dim_mesh == 4:
-                slice_phases = np.zeros(
-                    (
-                        self.mesh_size[ord[2]],
-                        self.mesh_size[ord[3]],
-                        self.mesh_size[dirs[0]] - 1,
-                        self.mesh_size[dirs[1]] - 1,
-                    ),
-                    dtype=float,
-                )
-                for i in range(self.mesh_size[ord[2]]):
-                    for j in range(self.mesh_size[ord[3]]):
-                        # take a 2d slice
-                        plane_wfs = use_wfs[:, :, i, j]
-                        # take bands of choice
-                        plane_wfs = plane_wfs[:, :, occ]
-                        # compute fluxes on the slice
-                        slice_phases[i, j, :, :] = _one_flux_plane(plane_wfs)
-
-            # return either total flux or individual phase for each plaquete
-            if not individual_phases:
-                return slice_phases.sum(axis=(-2, -1))
-            else:
-                return slice_phases
-
-        else:
-            raise Exception("\n\nWrong dimensionality!")
+        return chern
 
 
 class Bloch(WFArray):
