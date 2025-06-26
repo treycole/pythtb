@@ -751,7 +751,7 @@ class TBModel:
         
 
     def set_hop(
-        self, hop_amp, ind_i, ind_j, ind_R=None, mode="set", allow_conjugate_pair=False
+        self, hop_amp, ind_i: int, ind_j: int, ind_R=None, mode="set", allow_conjugate_pair=False
     ):
         r"""
 
@@ -1180,9 +1180,9 @@ class TBModel:
                 else:
                     raise ValueError("Invalid spin value.")
 
+        amps = np.array([h[0] for h in hoppings], dtype=complex)
         i_indices = np.array([h[1] for h in hoppings])
         j_indices = np.array([h[2] for h in hoppings])
-        amps = np.array([h[0] for h in hoppings], dtype=complex)
 
         # Compute phase factors for all k-points and hoppings
         orb_i = orb_red[i_indices]  # Shape: (n_hoppings, dim_r)
@@ -1199,7 +1199,7 @@ class TBModel:
         n_hops = len(hoppings)
         if nspin == 1:
             T_f = np.zeros((n_hops, norb, norb), complex)
-            T_r = np.zeros((n_hops, norb, norb), complex)
+            T_r = np.zeros_like(T_f)
             idx = np.arange(n_hops)
             T_f[idx, i_indices, j_indices] = amps
             T_r[idx, j_indices, i_indices] = amps.conj()
