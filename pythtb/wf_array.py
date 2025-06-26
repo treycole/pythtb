@@ -359,6 +359,20 @@ class WFArray:
         }
         return return_states
 
+     
+    def get_projectors(self, return_Q=False):
+
+        u_wfs = self.get_states(flatten_spin=True)
+
+        # band projectors
+        P = np.einsum("...ni, ...nj -> ...ij", u_wfs, u_wfs.conj())
+        Q = np.eye(self.nstates) - P
+
+        if return_Q:
+            return P, Q
+        return P
+
+
     def solve_on_path(self, k_arr):
         """
         Solve the model along a 1D parameter path (e.g., k-points).
@@ -1788,54 +1802,6 @@ class Bloch(WFArray):
             # band projectors
             self._set_projectors()
 
-    def _get_pbc_wfs(self):
-
-        dim_k = self.k_mesh.dim
-        orb_vecs = self.model.get_orb_vecs(Cartesian=False)
-
-        # Initialize the extended array by padding with an extra element along each k-axis
-        pbc_uwfs = np.pad(
-            self._u_wfs,
-            pad_width=[
-                (0, 1) if i < dim_k else (0, 0) for i in range(self._u_wfs.ndim)
-            ],
-            mode="wrap",
-        )
-        pbc_psiwfs = np.pad(
-            self._psi_wfs,
-            pad_width=[
-                (0, 1) if i < dim_k else (0, 0) for i in range(self._psi_wfs.ndim)
-            ],
-            mode="wrap",
-        )
-
-        # Compute the reciprocal lattice vectors (unit vectors for each dimension)
-        G_vectors = list(product([0, 1], repeat=dim_k))
-        # Remove the zero vector
-        G_vectors = [np.array(vector) for vector in G_vectors if any(vector)]
-
-        for G in G_vectors:
-            phase = np.exp(-1j * 2 * np.pi * (orb_vecs @ G.T)).T[np.newaxis, :]
-            slices_new = []
-            slices_old = []
-
-            for i, value in enumerate(G):
-                if value == 1:
-                    slices_new.append(
-                        slice(-1, None)
-                    )  # Take the last element along this axis
-                    slices_old.append(slice(0, None))
-                else:
-                    slices_new.append(slice(None))  # Take all elements along this axis
-                    slices_old.append(slice(None))  # Take all elements along this axis
-
-            # Add slices for any remaining dimensions (m, n) if necessary
-            slices_new.extend([slice(None)] * (pbc_uwfs.ndim - len(G)))
-            slices_old.extend([slice(None)] * (pbc_uwfs.ndim - len(G)))
-            pbc_uwfs[tuple(slices_new)] *= phase
-
-        return pbc_psiwfs, pbc_uwfs
-
     # Works with and without spin and lambda
     def _apply_phase(self, wfs, inverse=False):
         """
@@ -1970,55 +1936,6 @@ class Bloch(WFArray):
             )
 
         return M
-
-    # TODO: Not working
-    def berry_phase(self, dir=0, state_idx=None, evals=False):
-        """
-        Computes Berry phases for wavefunction arrays defined in parameter space.
-
-        Parameters:
-            wfs (np.ndarray):
-                Wavefunction array of shape [*param_arr_lens, n_orb, n_orb] where
-                axis -2 corresponds to the eigenvalue index and axis -1 corresponds
-                to amplitude.
-            dir (int):
-                The direction (axis) in the parameter space along which to compute the Berry phase.
-
-        Returns:
-            phase (np.ndarray):
-                Berry phases for the specified parameter space direction.
-        """
-        wfs = self.get_states()["Cell periodic"]
-        if state_idx is not None:
-            wfs = np.take(wfs, state_idx, axis=self.state_axis)
-        orb_vecs = self.model.get_orb_vecs()
-        dim_param = self.k_mesh.dim  # dimensionality of parameter space
-        param_axes = np.arange(0, dim_param)  # parameter axes
-        param_axes = np.setdiff1d(param_axes, dir)  # remove dir from axes to loop
-        lens = [wfs.shape[ax] for ax in param_axes]  # sizes of loop directions
-        idxs = np.ndindex(*lens)  # index mesh
-
-        phase = np.zeros((*lens, wfs.shape[dim_param]))
-
-        G = np.zeros(dim_param)
-        G[0] = 1
-        phase_shift = np.exp(-1j * 2 * np.pi * (orb_vecs @ G.T))
-        print(param_axes)
-        for idx_set in idxs:
-            # print(idx_set)
-            # take wfs along loop axis at given idex
-            sliced_wf = wfs.copy()
-            for ax, idx in enumerate(idx_set):
-                # print(param_axes[ax])
-                sliced_wf = np.take(sliced_wf, idx, axis=param_axes[ax])
-
-            # print(sliced_wf.shape)
-            end_state = sliced_wf[0, ...] * phase_shift[np.newaxis, :, np.newaxis]
-            sliced_wf = np.append(sliced_wf, end_state[np.newaxis, ...], axis=0)
-            phases = self.berry_loop(sliced_wf, evals=evals)
-            phase[idx_set] = phases
-
-        return phase
 
     # works in all cases
     def wilson_loop(self, wfs_loop, evals=False):
