@@ -1475,11 +1475,9 @@ class Bloch(WFArray):
 
         self.model: TBModel = model
         # model attributes
-        self._n_orb = model.get_num_orbitals()
+        self._n_orb = model.norb
         self._nspin = self.model.nspin
-        self._n_states = self._n_orb * self._nspin
-
-        # reciprocal space dimensions
+        self._n_states = self.nstates
         self.dim_k = model.dim_k
         self.nks = param_dims[: self.dim_k]
         # set k_mesh
@@ -1709,40 +1707,6 @@ class Bloch(WFArray):
         self.energies = energies
         self.is_energy_eigstate = True
 
-    def solve_on_path(self, k_arr):
-        """
-        Solves on model passed when initialized. Not suitable for
-        adiabatic parameters in the model beyond k.
-        """
-        eigvals, eigvecs = self.model.solve_ham(k_arr, return_eigvecs=True)
-        self.set_wfs(eigvecs)
-        self.energies = eigvals
-
-    ###### Retrievers  #######
-
-    def get_states(self, flatten_spin=False):
-        """Returns dictionary containing Bloch and cell-periodic eigenstates."""
-        assert hasattr(
-            self, "_psi_wfs"
-        ), "Need to call `solve_model` or `set_wfs` to initialize Bloch states"
-        psi_wfs = self._psi_wfs
-        u_wfs = self._u_wfs
-
-        if flatten_spin:
-            # shape is [nk1, ..., nkd, [n_lambda,] n_state, n_orb, n_spin], flatten last two axes
-            psi_wfs = psi_wfs.reshape((*psi_wfs.shape[:-2], -1))
-            u_wfs = u_wfs.reshape((*u_wfs.shape[:-2], -1))
-
-        return {"Bloch": psi_wfs, "Cell periodic": u_wfs}
-
-    def get_projector(self, return_Q=False):
-        assert hasattr(
-            self, "_P"
-        ), "Need to call `solve_model` or `set_wfs` to initialize Bloch states"
-        if return_Q:
-            return self._P, self._Q
-        else:
-            return self._P
 
     def get_nbr_projector(self, return_Q=False):
         assert hasattr(
@@ -1830,51 +1794,6 @@ class Bloch(WFArray):
             self._M = self._get_self_overlap_mat()
             # band projectors
             self._set_projectors()
-
-    # Works with and without spin and lambda
-    def _apply_phase(self, wfs, inverse=False):
-        """
-        Change between cell periodic and Bloch wfs by multiplying exp(\pm i k . tau)
-
-        Args:
-        wfs (pythtb.WFArray): Bloch or cell periodic wfs [k, nband, norb]
-
-        Returns:
-        wfsxphase (np.ndarray):
-            wfs with orbitals multiplied by phase factor
-
-        """
-        lam = -1 if inverse else 1  # overall minus if getting cell periodic from Bloch
-        per_dir = list(
-            range(self.k_mesh.flat_mesh.shape[-1])
-        )  # list of periodic dimensions
-        # slice second dimension to only keep only periodic dimensions in orb
-        per_orb = self.model.orb_vecs[:, per_dir]
-
-        # compute a list of phase factors: exp(pm i k . tau) of shape [k_val, orbital]
-        phases = np.exp(
-            lam * 1j * 2 * np.pi * per_orb @ self.k_mesh.flat_mesh.T, dtype=complex
-        ).T
-        phases = phases.reshape(*self.k_mesh.nks, self._n_orb)
-
-        if hasattr(self, "n_lambda") and self.n_lambda:
-            phases = phases[..., np.newaxis, :]
-
-        # if len(self._wf_shape) != len(wfs.shape):
-        wfs = wfs.reshape(*self._wf_shape)
-
-        # broadcasting to match dimensions
-        if self._nspin == 1:
-            # reshape to have each k-dimension as an axis
-            # wfs = wfs.reshape(*self.k_mesh.nks, self._n_states, self._n_orb)
-            # newaxis along state dimension
-            phases = phases[..., np.newaxis, :]
-        elif self._nspin == 2:
-            # reshape to have each k-dimension as an axis
-            # newaxis along state and spin dimension
-            phases = phases[..., np.newaxis, :, np.newaxis]
-
-        return wfs * phases
 
     # TODO: allow for projectors onto subbands
     # TODO: possibly get rid of nbr by storing boundary states
@@ -1965,168 +1884,6 @@ class Bloch(WFArray):
             )
 
         return M
-
-    # works in all cases
-    def wilson_loop(self, wfs_loop, evals=False):
-        """Compute Wilson loop unitary matrix and its eigenvalues for multiband Berry phases.
-
-        Multiband Berry phases always returns numbers between -pi and pi.
-
-        Args:
-            wfs_loop (np.ndarray):
-                Has format [loop_idx, band, orbital, spin] and loop has to be one dimensional.
-                Assumes that first and last loop-point are the same. Therefore if
-                there are n wavefunctions in total, will calculate phase along n-1
-                links only!
-            berry_evals (bool):
-                If berry_evals is True then will compute phases for
-                individual states, these corresponds to 1d hybrid Wannier
-                function centers. Otherwise just return one number, Berry phase.
-        """
-
-        wfs_loop = wfs_loop.reshape(wfs_loop.shape[0], wfs_loop.shape[1], -1)
-        ovr_mats = wfs_loop[:-1].conj() @ wfs_loop[1:].swapaxes(-2, -1)
-        V, _, Wh = np.linalg.svd(ovr_mats, full_matrices=False)
-        U_link = V @ Wh
-        U_wilson = U_link[0]
-        for i in range(1, len(U_link)):
-            U_wilson = U_wilson @ U_link[i]
-
-        # calculate phases of all eigenvalues
-        if evals:
-            evals = np.linalg.eigvals(U_wilson)  # Wilson loop eigenvalues
-            eval_pha = -np.angle(evals)  # Multiband  Berrry phases
-            return U_wilson, eval_pha
-        else:
-            return U_wilson
-
-
-    # works in all cases
-    def berry_loop(self, wfs_loop, evals=False):
-        U_wilson = self.wilson_loop(wfs_loop, evals=evals)
-
-        if evals:
-            return U_wilson[1]
-        else:
-            return -np.angle(np.linalg.det(U_wilson))  # total Berry phase
-
-
-    # Works in all cases
-    def get_links(self, state_idx):
-        wfs = self.get_states()["Cell periodic"]
-
-        orb_vecs = self.model.orb_vecs  # Orbital position vectors (reduced units)
-        n_param = self.n_adia  # Number of points in adiabatic mesh
-        dim = self.dim_adia  # Total dimensionality of adiabatic space
-        n_spin = getattr(self, "_nspin", 1)  # Number of spin components
-
-        # State selection
-        if state_idx is not None:
-            wfs = np.take(wfs, state_idx, axis=self.state_axis)
-            if isinstance(state_idx, int):
-                wfs = np.expand_dims(wfs, self.state_axis)
-
-        n_states = wfs.shape[self.state_axis]
-
-        U_forward = []
-        wfs_flat = wfs.reshape(*n_param, n_states, -1)
-        for mu in range(dim):
-            # print(f"Computing links for direction: mu={mu}")
-            wfs_shifted = np.roll(wfs, -1, axis=mu)
-
-            # Apply phase factor e^{-i G.r} to shifted u_nk states at the boundary (now 0th state)
-            if mu < self.k_mesh.dim:
-                mask = np.zeros(n_param, dtype=bool)
-                idx = [slice(None)] * dim
-                idx[mu] = n_param[mu] - 1
-                mask[tuple(idx)] = True
-
-                G = np.zeros(self.k_mesh.dim)
-                G[mu] = 1
-                phase = np.exp(-2j * np.pi * G @ orb_vecs.T)
-
-                if n_spin == 1:
-                    phase_broadcast = phase[np.newaxis, :]
-                    mask_expanded = mask[..., np.newaxis, np.newaxis]
-                else:
-                    phase_broadcast = phase[np.newaxis, :, np.newaxis]
-                    mask_expanded = mask[..., np.newaxis, np.newaxis, np.newaxis]
-
-                wfs_shifted = np.where(
-                    mask_expanded, wfs_shifted * phase_broadcast, wfs_shifted
-                )
-
-            # Flatten along spin
-            wfs_shifted_flat = wfs_shifted.reshape(*n_param, n_states, -1)
-            # <u_nk| u_m k+delta_mu>
-            ovr_mu = wfs_flat.conj() @ wfs_shifted_flat.swapaxes(-2, -1)
-
-            U_forward_mu = np.zeros_like(ovr_mu, dtype=complex)
-            V, _, Wd = np.linalg.svd(ovr_mu, full_matrices=False)
-            U_forward_mu = V @ Wd
-            U_forward.append(U_forward_mu)
-
-        return np.array(U_forward)
-
-
-    def berry_flux_plaq(self, state_idx=None, non_abelian=False):
-        """Compute fluxes on a two-dimensional plane of states.
-
-        For a given set of states, returns the band summed Berry curvature
-        rank-2 tensor for all combinations of surfaces in reciprocal space.
-        By convention, the Berry curvature is reported at the point where the loop
-        started, which is the lower left corner of a plaquette.
-        """
-        n_states = len(state_idx)  # Number of states considered
-        n_param = self.n_adia  # Number of points in adiabatic mesh
-        dim = self.dim_adia  # Total dimensionality of adiabatic space
-
-        # Initialize Berry flux array
-        shape = (
-            (dim, dim, *n_param, n_states, n_states)
-            if non_abelian
-            else (dim, dim, *n_param)
-        )
-        Berry_flux = np.zeros(shape, dtype=complex)
-
-        # Overlaps <u_{nk} | u_{n, k+delta k_mu}>
-        U_forward = self.get_links(state_idx=state_idx)
-        # Wilson loops W = U_{mu}(k_0) U_{nu}(k_0 + delta_mu) U^{-1}_{mu}(k_0 + delta_mu + delta_nu) U^{-1}_{nu}(k_0)
-        for mu in range(dim):
-            for nu in range(mu + 1, dim):
-                print(f"Computing flux in plane: mu={mu}, nu={nu}")
-                U_mu = U_forward[mu]
-                U_nu = U_forward[nu]
-
-                U_nu_shift_mu = np.roll(U_nu, -1, axis=mu)
-                U_mu_shift_nu = np.roll(U_mu, -1, axis=nu)
-
-                U_wilson = np.matmul(
-                    np.matmul(
-                        np.matmul(U_mu, U_nu_shift_mu),
-                        U_mu_shift_nu.conj().swapaxes(-1, -2),
-                    ),
-                    U_nu.conj().swapaxes(-1, -2),
-                )
-
-                if non_abelian:
-                    eigvals, eigvecs = np.linalg.eig(U_wilson)
-                    angles = -np.angle(eigvals)
-                    angles_diag = np.einsum(
-                        "...i, ij -> ...ij", angles, np.eye(angles.shape[-1])
-                    )
-                    eigvecs_inv = np.linalg.inv(eigvecs)
-                    phases_plane = np.matmul(
-                        np.matmul(eigvecs, angles_diag), eigvecs_inv
-                    )
-                else:
-                    det_U = np.linalg.det(U_wilson)
-                    phases_plane = -np.angle(det_U)
-
-                Berry_flux[mu, nu] = phases_plane
-                Berry_flux[nu, mu] = -phases_plane
-
-        return Berry_flux
 
 
     def berry_curv(
@@ -2236,17 +1993,6 @@ class Bloch(WFArray):
             return Berry_curv, Berry_flux
         else:
             return Berry_curv
-
-
-    def chern_num(self, dirs=(0, 1), band_idxs=None):
-        if band_idxs is None:
-            n_occ = int(self._n_states / 2)
-            band_idxs = np.arange(n_occ)  # assume half-filled occupied
-
-        berry_flux = self.berry_flux_plaq(state_idx=band_idxs)
-        Chern = np.sum(berry_flux[dirs] / (2 * np.pi))
-
-        return Chern
 
 
     # TODO allow for subbands
