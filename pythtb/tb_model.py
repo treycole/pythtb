@@ -1098,7 +1098,7 @@ class TBModel:
 
         return vel
 
-    def get_ham(self, k_pts=None):
+    def get_ham(self, k_pts=None, loop=True):
         """
         Generate Bloch Hamiltonian for an array of k-points in reduced coordinates.
         The Hamiltonian is defined as
@@ -1130,6 +1130,7 @@ class TBModel:
         nspin = self._nspin
         per = np.asarray(self._per)
         orb_red = np.asarray(self._orb)  # shape (norb, dim_r)
+        orb_idxs = np.arange(norb)
         site_energies = np.asarray(self._site_energies)
         hoppings = self._hoppings
 
@@ -1183,11 +1184,27 @@ class TBModel:
         amps = np.array([h[0] for h in hoppings], dtype=complex)
         i_indices = np.array([h[1] for h in hoppings])
         j_indices = np.array([h[2] for h in hoppings])
+        n_hops = len(hoppings)
 
-        # Compute phase factors for all k-points and hoppings
-        orb_i = orb_red[i_indices]  # Shape: (n_hoppings, dim_r)
-        orb_j = orb_red[j_indices]  # Shape: (n_hoppings, dim_r)
-        if dim_k != 0:
+        if dim_k == 0:
+            if nspin == 1:
+                ham  = np.zeros((norb, norb), complex)
+                np.add.at(ham, (i_indices, j_indices), amps)
+                np.add.at(ham, (j_indices, i_indices), amps.conj())
+                np.fill_diagonal(ham, site_energies)
+            elif nspin == 2:
+                ham = np.zeros((norb, 2, norb, 2), dtype=complex)
+                for h in range(n_hops):
+                    ham[i_indices[h], :, j_indices[h], :] += amps[h]
+                for orb in orb_idxs:
+                    ham[orb, :, orb, :] += site_energies[orb]
+
+            return ham
+
+        else:
+            # Compute phase factors for all k-points and hoppings
+            orb_i = orb_red[i_indices]  # Shape: (n_hoppings, dim_r)
+            orb_j = orb_red[j_indices]  # Shape: (n_hoppings, dim_r)
             ind_Rs = np.array([h[3] for h in hoppings], dtype=float)
 
             delta_r = ind_Rs - orb_i + orb_j  # Shape: (n_hoppings, dim_r)
@@ -1196,41 +1213,32 @@ class TBModel:
             k_dot_r = k_arr @ delta_r_per.T  # Shape: (n_kpts, n_hoppings)
             phases = np.exp(1j * 2 * np.pi * k_dot_r)  # Shape: (n_kpts, n_hoppings)
 
-        n_hops = len(hoppings)
-        if nspin == 1:
-            T_f = np.zeros((n_hops, norb, norb), complex)
-            T_r = np.zeros_like(T_f)
-            idx = np.arange(n_hops)
-            T_f[idx, i_indices, j_indices] = amps
-            T_r[idx, j_indices, i_indices] = amps.conj()
-        else:
-            # spinful: each amp is a 2×2 block
-            T_f = np.zeros((n_hops, norb, 2, norb, 2), complex)
-            T_r = np.zeros_like(T_f)
-            for h in range(n_hops):
-                T_f[h, i_indices[h], :, j_indices[h], :] = amps[h]
-                T_r[h, j_indices[h], :, i_indices[h], :] = amps[h].conj().T
+            if nspin == 1:
+                T_f = np.zeros((n_hops, norb, norb), complex)
+                T_r = np.zeros((n_hops, norb, norb), complex)
+                idx = np.arange(n_hops)
+                T_f[idx, i_indices, j_indices] = amps
+                T_r[idx, j_indices, i_indices] = amps.conj()
+            elif nspin == 2:
+                T_f = np.zeros((n_hops, norb, 2, norb, 2), complex)
+                T_r = np.zeros((n_hops, norb, 2, norb, 2), complex)
+                for h in range(n_hops):
+                    T_f[h, i_indices[h], :, j_indices[h], :] = amps[h]
+                    T_r[h, j_indices[h], :, i_indices[h], :] = amps[h].conj().T
 
-        if dim_k != 0:
             ham = np.tensordot(phases, T_f, axes=([1], [0]))
             ham_hc = np.tensordot(phases.conj(), T_r, axes=([1], [0]))
             np.add(ham, ham_hc, out=ham)
-        else:
-            ham = np.sum(T_f, axis=0)
-            ham_hc = np.sum(T_r, axis=0)
-            np.add(ham, ham_hc, out=ham)
 
-        # fill diagonal elements with onsite energies
-        orb_idxs = np.arange(norb)
-        for orb in orb_idxs:
-            if nspin == 1:
-                ham[..., orb, orb] += site_energies[orb]
-            elif nspin == 2:
-                ham[..., orb, :, orb, :] += site_energies[orb]
+            # fill diagonal elements with onsite energies
+            for orb in orb_idxs:
+                if nspin == 1:
+                    ham[..., orb, orb] += site_energies[orb]
+                elif nspin == 2:
+                    ham[..., orb, :, orb, :] += site_energies[orb]
 
-        return ham
+            return ham
 
-    
     def get_periodic_H(self, H_flat, k_vals):
         orb_vecs = self.get_orb()
         orb_vec_diff = orb_vecs[:, None, :] - orb_vecs[None, :, :]
@@ -1248,27 +1256,24 @@ class TBModel:
         # shape(ham): (Nk, n_orb, n_orb), (Nk, n_orb, n_spin, n_orb, n_spin)
         # or in finite cases (n_orb, n_orb), (n_orb, n_spin, n_orb, n_spin)
         # flatten spin axes
-        if ham.ndim == 2 * self._nspin + 1:
+        if ham.ndim == 2 * self.nspin + 1:
             # have k points
-            new_shape = (ham.shape[0],) + (
-                self._nspin * self._norb,
-                self._nspin * self._norb,
-            )
-            if self._nspin == 1:
-                shape_evecs = (ham.shape[0],) + (self._norb, self._norb)
-            elif self._nspin == 2:
+            new_shape = (ham.shape[0],) + (self.nstate, self.nstate)
+            if self.nspin == 1:
+                shape_evecs = (ham.shape[0],) + (self.norb, self.norb)
+            elif self.nspin == 2:
                 shape_evecs = (ham.shape[0],) + (
-                    self._nspin * self._norb,
-                    self._norb,
-                    self._nspin,
+                    self.nstate,
+                    self.norb,
+                    self.nspin,
                 )
-        elif ham.ndim == 2 * self._nspin:
+        elif ham.ndim == 2 * self.nspin:
             # must be a finite sample, no k-points
-            new_shape = (self._nspin * self._norb, self._nspin * self._norb)
-            if self._nspin == 1:
-                shape_evecs = (self._norb, self._norb)
-            elif self._nspin == 2:
-                shape_evecs = (self._nspin * self._norb, self._norb, self._nspin)
+            new_shape = (self.nstate, self.nstate)
+            if self.nspin == 1:
+                shape_evecs = (self.norb, self.norb)
+            elif self.nspin == 2:
+                shape_evecs = (self.nstate, self.norb, self.nspin)
         else:
             raise ValueError("Hamiltonian has wrong shape.")
 
