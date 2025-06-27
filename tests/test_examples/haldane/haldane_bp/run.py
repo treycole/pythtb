@@ -36,7 +36,7 @@ def run():
     phi_a_1 = my_array_1.berry_phase([0], 0, contin=True)
     phi_b_1 = my_array_1.berry_phase([1], 0, contin=True)
     phi_c_1 = my_array_1.berry_phase([0, 1], 0, contin=True)
-    flux_a_1 = my_array_1.berry_flux([0])
+    flux_a_1 = np.sum(my_array_1.berry_flux([0], plane=(0, 1)))
 
     # plot Berry phases
     ky = np.linspace(0.0, 1.0, len(phi_a_1))
@@ -53,7 +53,7 @@ def run():
     my_array_2.impose_pbc(0, 0)
     my_array_2.impose_pbc(1, 1)
 
-    flux_a_2 = my_array_2.berry_flux([0])
+    flux_a_2 = np.sum(my_array_2.berry_flux([0], plane=(0, 1)))
 
     return phi_a_1, phi_b_1, phi_c_1, flux_a_1, flux_a_2
 

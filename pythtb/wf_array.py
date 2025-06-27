@@ -486,7 +486,7 @@ class WFArray:
 
         # store start_k
         self._start_k = start_k
-        self._nks = (nk-1 for nk in self.mesh_size)  # number of k-points in each direction
+        self._nks = tuple(nk-1 for nk in self.mesh_size)  # number of k-points in each direction
 
         # generate k-mesh
         # we use a mesh size of (nk-1) because the last point in each direction will be
@@ -937,17 +937,21 @@ class WFArray:
     
     def get_links(self, state_idx=None, dirs=None):
         """
-        Compute the links (unitary matrices) for the wavefunctions
-        in the *WFArray* object along a given direction.
-        The links are computed as the unitary part of the overlap between the 
-        wavefunctions at neighboring points in each mesh direction.
+        Compute the links (unitary matrices) for the wavefunctions in the *WFArray* object 
+        along a given direction. The links are defined as the unitary part of the overlap 
+        between the wavefunctions and their neighbors in the forward direction along each
+        mesh directions. Specifcally, the links are computed as
 
-        The links are computed for all states in the *WFArray* object,
-        and the resulting unitary matrices are returned in an array
-        of shape [dim, nk1, nk2, ..., nkd, n_states, n_states],
-        where dim is the number of dimensions of the mesh, nk1, nk2, ..., nkd
-        are the sizes of the mesh in each dimension, and n_states is the number of states
-        in the *WFArray* object.
+        :math:`U_{nk}^{\mu} = \langle u_{nk} | u_{n, k + \delta k_{\mu}} \rangle`
+
+        where :math:`\mu` is the direction along which the link is computed, and
+        :math:`\delta k_{\mu}` is the shift in the wavevector along that direction. The
+        :math:`k` here could also be a parameter path.
+
+        The neighbor at the boundary is defined with periodic boundary conditions by default.
+        If the *WFArray* object does not have periodic boundary conditions or a loop
+        imposed in a given link direction :math:`\mu`, then the neighbor at the boundary is 
+        undefined and the value of :math:`U_{nk}^{\mu}` at the boundary can be disregarded.
 
         Args:
             state_idx (int or list of int):
@@ -960,7 +964,8 @@ class WFArray:
         Returns:
             U_forward (np.ndarray):
                 Array of shape [dim, nk1, nk2, ..., nkd, n_states, n_states]
-                containing the unitary matrices for the forward links in each direction.
+                where dim is the number of dimensions of the mesh, (nk1, nk2, ..., nkd) are the sizes
+                of the mesh in each dimension, and n_states is the number of states in the *WFArray* object.
         """
         wfs = self.get_states(flatten_spin=True)
 
@@ -983,7 +988,7 @@ class WFArray:
 
         U_forward = []
         for mu in dirs:
-            print(f"Computing links for direction mu={mu}")
+            # print(f"Computing links for direction mu={mu}")
             wfs_shifted = np.roll(wfs, -1, axis=mu)
             
             # <u_nk| u_m k+delta_mu>
@@ -1317,19 +1322,20 @@ class WFArray:
         n_param = list(self.mesh_size)  # Number of points in adiabatic mesh: (nk1, nk2, ..., nkd)
 
         # Validate plane
-        if plane is not None and not isinstance(plane, (list, tuple, np.ndarray)):
-            raise TypeError("plane must be None, a list, tuple, or numpy array.")
-        if len(plane) != 2:
-            raise ValueError("plane must contain exactly two directions.")
-        if any(p < 0 or p >= dim_mesh for p in plane):
-            raise ValueError(f"Plane indices must be between 0 and {dim_mesh-1}.")
-        if plane[0] == plane[1]:
-            raise ValueError("Plane indices must be different.")
+        if plane is not None:
+            if not isinstance(plane, (list, tuple, np.ndarray)):
+                raise TypeError("plane must be None, a list, tuple, or numpy array.")
+            if len(plane) != 2:
+                raise ValueError("plane must contain exactly two directions.")
+            if any(p < 0 or p >= dim_mesh for p in plane):
+                raise ValueError(f"Plane indices must be between 0 and {dim_mesh-1}.")
+            if plane[0] == plane[1]:
+                raise ValueError("Plane indices must be different.")
 
         # Unique axes for periodic boundary conditions and loops
-        pbc_axes = list(set(self._pbc_axes + self._loop_axes))
+        # pbc_axes = list(set(self._pbc_axes + self._loop_axes))
         flux_shape = n_param
-        for ax in pbc_axes:
+        for ax in range(dim_mesh):
             flux_shape[ax] -= 1  # Remove last link in each periodic direction
 
         # Initialize the Berry flux array
@@ -1358,19 +1364,14 @@ class WFArray:
         # U_forward: Overlaps <u_{nk} | u_{n, k+delta k_mu}>
         U_forward = self.get_links(state_idx=state_idx, dirs=dirs)
 
-        # remove last links in mesh if pbc or loop is imposed along plane directions
-        for ax in pbc_axes:
-            # remove ax+1 (+1 skips first axis, which is the loop direction)
-            U_forward = np.delete(U_forward, -1, axis=ax+1)
-
         # Compute Berry flux for each pair of states
         for mu in range(plane_idxs):
             for nu in range(mu + 1, plane_idxs):
-                print(f"Computing flux in plane: mu={mu}, nu={nu}")
+                # print(f"Computing flux in plane: mu={mu}, nu={nu}")
                 U_mu = U_forward[mu]
                 U_nu = U_forward[nu]
 
-                # Shift the wavefunctions along the mu and nu directions
+                # Shift the links along the mu and nu directions
                 U_nu_shift_mu = np.roll(U_nu, -1, axis=mu)
                 U_mu_shift_nu = np.roll(U_mu, -1, axis=nu)
 
@@ -1383,6 +1384,11 @@ class WFArray:
                     U_nu.conj().swapaxes(-1, -2),
                 )
 
+                # Remove edge loop, if pbc or loop is imposed then this is an extra plaquette that isn't wanted
+                # without pbc or loop, this loop has no physical meaning 
+                for ax in range(dim_mesh):
+                    U_wilson = np.delete(U_wilson, -1, axis=ax)
+              
                 if not abelian:
                     eigvals, eigvecs = np.linalg.eig(U_wilson)
                     angles = -np.angle(eigvals)

@@ -32,11 +32,11 @@ def run(t, delta):
             wf_kpt_lambda[i_lambda, i_kpt] = evec[i_kpt]
 
     fluxes = np.array([
-        wf_kpt_lambda.berry_flux([0]),
-        wf_kpt_lambda.berry_flux([1]),
-        wf_kpt_lambda.berry_flux([2]),
-        wf_kpt_lambda.berry_flux([0, 1]),
-        wf_kpt_lambda.berry_flux([0, 1, 2])
+        np.sum(wf_kpt_lambda.berry_flux([0], plane=(0,1))),
+        np.sum(wf_kpt_lambda.berry_flux([1], plane=(0,1))),
+        np.sum(wf_kpt_lambda.berry_flux([2], plane=(0,1))),
+        np.sum(wf_kpt_lambda.berry_flux([0, 1], plane=(0,1))),
+        np.sum(wf_kpt_lambda.berry_flux([0, 1, 2], plane=(0,1)))
     ])
 
     path_steps = 241
