@@ -5,7 +5,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb.tb_model import *  # import TB model class
+from pythtb.tb_model import TBModel  # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -15,7 +15,7 @@ lat = [[1.0, 0.0], [0.5, np.sqrt(3.0) / 2.0]]
 orb = [[1.0 / 3.0, 1.0 / 3.0], [2.0 / 3.0, 2.0 / 3.0]]
 
 # make two dimensional tight-binding Haldane model
-my_model = tb_model(2, 2, lat, orb)
+my_model = TBModel(2, 2, lat, orb)
 
 # set model parameters
 delta = 0.2
@@ -83,10 +83,8 @@ ax.set_title("Haldane model band structure")
 ax.set_xlabel("Path in k-space")
 ax.set_ylabel("Band energy")
 
-# plot first band
-ax.plot(k_dist, evals[:, 0])
-# plot second band
-ax.plot(k_dist, evals[:, 1])
+# plot bands
+ax.plot(k_dist, evals)
 
 # make an PDF figure of a plot
 fig.tight_layout()

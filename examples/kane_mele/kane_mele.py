@@ -6,7 +6,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pytb.txt)
 
-from pythtb import TBModel, WFArray  # import TB model class
+from pythtb import WFArray  # import TB model class
 from pythtb.models import kane_mele
 import numpy as np
 import matplotlib.pyplot as plt
@@ -99,6 +99,5 @@ for top_index in ["even", "odd"]:
     fig.savefig("kane_mele_" + top_index + ".pdf")
 
     plt.show()
-
 
 print("Done.\n")

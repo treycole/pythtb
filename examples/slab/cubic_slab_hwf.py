@@ -3,8 +3,9 @@
 # Construct and compute Berry phases of hybrid Wannier functions
 # for a simple slab model
 
-from pythtb.tb_model import *  # import TB model class
+from pythtb import TBModel, WFArray
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 # set up model on bcc motif (CsCl structure)
@@ -12,7 +13,7 @@ import matplotlib.pyplot as plt
 def set_model(delta, ta, tb):
     lat = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
     orb = [[0.0, 0.0, 0.0], [0.5, 0.5, 0.5]]
-    model = tb_model(3, 3, lat, orb)
+    model = TBModel(3, 3, lat, orb)
     model.set_onsite([-delta, delta])
     for lvec in ([-1, 0, 0], [0, 0, -1], [-1, -1, 0], [0, -1, -1]):
         model.set_hop(ta, 0, 1, lvec)
@@ -60,11 +61,11 @@ print("CB min,max = %6.3f , %6.3f" % (np.min(e_cb), np.max(e_cb)))
 
 # initialize and fill wf_array object for Bloch functions
 nk = 9
-bloch_arr = wf_array(slab_model, [nk, nk])
+bloch_arr = WFArray(slab_model, [nk, nk])
 bloch_arr.solve_on_grid([0.0, 0.0])
-#
+
 # initalize wf_array to hold HWFs, and Numpy array for HWFCs
-hwf_arr = bloch_arr.empty_like(nsta_arr=nl)
+hwf_arr = bloch_arr.empty_like(nstates=nl)
 hwfc = np.zeros([nk, nk, nl])
 
 # loop over k points and fill arrays with HW centers and vectors
