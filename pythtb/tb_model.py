@@ -1196,6 +1196,8 @@ class TBModel:
                 ham = np.zeros((norb, 2, norb, 2), dtype=complex)
                 for h in range(n_hops):
                     ham[i_indices[h], :, j_indices[h], :] += amps[h]
+                    ham[j_indices[h], :, i_indices[h], :] += amps[h].conj().T
+
                 for orb in orb_idxs:
                     ham[orb, :, orb, :] += site_energies[orb]
 
@@ -2111,7 +2113,6 @@ somehow changed Cartesian coordinates of orbitals."""
 
     def remove_orb(self, to_remove):
         r"""
-
         Returns a model with some orbitals removed.  Note that this
         will reindex the orbitals with indices higher than those that
         are removed.  For example.  If model has 6 orbitals and one
