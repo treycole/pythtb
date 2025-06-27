@@ -158,6 +158,5 @@ Transitioned from `setup.py` to `pyproject.toml`, added standard files (`LICENSE
 - Ensures backward compatibility and prevents regressions during refactors or feature additions
 - Encourages contributors to include tests alongside new code
 
-
 **If you have questions or want to propose a change, please open an issue or start a discussion.**  
 For contributing guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).

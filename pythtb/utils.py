@@ -379,3 +379,78 @@ def compute_d4k_and_d2k(delta_k):
 
 #     return v_mu_fd
 
+
+def _wf_dpr(wf1, wf2):
+    """calculate dot product between two wavefunctions.
+    wf1 and wf2 are of the form [orbital,spin]"""
+    return np.dot(wf1.flatten().conjugate(), wf2.flatten())
+
+
+def _one_berry_loop(wf, berry_evals=False):
+    """Do one Berry phase calculation (also returns a product of M
+    matrices).  Always returns numbers between -pi and pi.  wf has
+    format [kpnt,band,orbital,spin] and kpnt has to be one dimensional.
+    Assumes that first and last k-point are the same. Therefore if
+    there are n wavefunctions in total, will calculate phase along n-1
+    links only!  If berry_evals is True then will compute phases for
+    individual states, these corresponds to 1d hybrid Wannier
+    function centers. Otherwise just return one number, Berry phase."""
+    # number of occupied states
+    nocc = wf.shape[1]
+    # temporary matrices
+    prd = np.identity(nocc, dtype=complex)
+    ovr = np.zeros([nocc, nocc], dtype=complex)
+    # go over all pairs of k-points, assuming that last point is overcounted!
+    for i in range(wf.shape[0] - 1):
+        # generate overlap matrix, go over all bands
+        for j in range(nocc):
+            for k in range(nocc):
+                ovr[j, k] = _wf_dpr(wf[i, j, :], wf[i + 1, k, :])
+        # only find Berry phase
+        if not berry_evals:
+            # multiply overlap matrices
+            prd = np.dot(prd, ovr)
+        # also find phases of individual eigenvalues
+        else:
+            # cleanup matrices with SVD then take product
+            matU, sing, matV = np.linalg.svd(ovr)
+            prd = np.dot(prd, np.dot(matU, matV))
+    # calculate Berry phase
+    if not berry_evals:
+        det = np.linalg.det(prd)
+        pha = (-1.0) * np.angle(det)
+        return pha
+    # calculate phases of all eigenvalues
+    else:
+        evals = np.linalg.eigvals(prd)
+        eval_pha = (-1.0) * np.angle(evals)
+        # sort these numbers as well
+        eval_pha = np.sort(eval_pha)
+        return eval_pha
+
+def _one_flux_plane(wfs2d):
+    "Compute fluxes on a two-dimensional plane of states."
+    # size of the mesh
+    nk0 = wfs2d.shape[0]
+    nk1 = wfs2d.shape[1]
+    # number of bands (will compute flux of all bands taken together)
+    nbnd = wfs2d.shape[2]
+
+    # here store flux through each plaquette of the mesh
+    all_phases = np.zeros((nk0 - 1, nk1 - 1), dtype=float)
+
+    # go over all plaquettes
+    for i in range(nk0 - 1):
+        for j in range(nk1 - 1):
+            # generate a small loop made out of four pieces
+            wf_use = []
+            wf_use.append(wfs2d[i, j])
+            wf_use.append(wfs2d[i + 1, j])
+            wf_use.append(wfs2d[i + 1, j + 1])
+            wf_use.append(wfs2d[i, j + 1])
+            wf_use.append(wfs2d[i, j])
+            wf_use = np.array(wf_use, dtype=complex)
+            # calculate phase around one plaquette
+            all_phases[i, j] = _one_berry_loop(wf_use)
+
+    return all_phases

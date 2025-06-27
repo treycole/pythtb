@@ -6,7 +6,7 @@ from pythtb import TBModel, WFArray
 from tests.test_tbmodel.test_dimr_dimk_different import generic_test_of_models
 
 
-def test_answer():
+def test_spin():
 
     # these are three equivalent models that should ideally behave in an equivalent way
 

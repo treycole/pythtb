@@ -1,17 +1,9 @@
 import numpy as np
-from pythtb import TBModel, WFArray
-
+from pythtb import WFArray
+from pythtb.models import kane_mele
 
 def get_kane_mele(topological):
     "Return a Kane-Mele model in the normal or topological phase."
-
-    # define lattice vectors
-    lat = [[1.0, 0.0], [0.5, np.sqrt(3.0) / 2.0]]
-    # define coordinates of orbitals
-    orb = [[1.0 / 3.0, 1.0 / 3.0], [2.0 / 3.0, 2.0 / 3.0]]
-
-    # make two dimensional tight-binding Kane-Mele model
-    ret_model = TBModel(2, 2, lat, orb, nspin=2)
 
     # set model parameters depending on whether you are in the topological
     # phase or not
@@ -19,45 +11,13 @@ def get_kane_mele(topological):
         esite = 2.5
     elif topological == "odd":
         esite = 1.0
+
     # set other parameters of the model
     thop = 1.0
     spin_orb = 0.6 * thop * 0.5
     rashba = 0.25 * thop
 
-    # set on-site energies
-    ret_model.set_onsite([esite, (-1.0) * esite])
-
-    # set hoppings (one for each connected pair of orbitals)
-    # (amplitude, i, j, [lattice vector to cell containing j])
-
-    # useful definitions
-    sigma_x = np.array([0.0, 1.0, 0.0, 0])
-    sigma_y = np.array([0.0, 0.0, 1.0, 0])
-    sigma_z = np.array([0.0, 0.0, 0.0, 1])
-
-    # spin-independent first-neighbor hoppings
-    ret_model.set_hop(thop, 0, 1, [0, 0])
-    ret_model.set_hop(thop, 0, 1, [0, -1])
-    ret_model.set_hop(thop, 0, 1, [-1, 0])
-
-    # second-neighbour spin-orbit hoppings (s_z)
-    ret_model.set_hop(-1.0j * spin_orb * sigma_z, 0, 0, [0, 1])
-    ret_model.set_hop(1.0j * spin_orb * sigma_z, 0, 0, [1, 0])
-    ret_model.set_hop(-1.0j * spin_orb * sigma_z, 0, 0, [1, -1])
-    ret_model.set_hop(1.0j * spin_orb * sigma_z, 1, 1, [0, 1])
-    ret_model.set_hop(-1.0j * spin_orb * sigma_z, 1, 1, [1, 0])
-    ret_model.set_hop(1.0j * spin_orb * sigma_z, 1, 1, [1, -1])
-
-    # Rashba first-neighbor hoppings: (s_x)(dy)-(s_y)(d_x)
-    r3h = np.sqrt(3.0) / 2.0
-    # bond unit vectors are (r3h,half) then (0,-1) then (-r3h,half)
-    ret_model.set_hop(
-        1.0j * rashba * (0.5 * sigma_x - r3h * sigma_y), 0, 1, [0, 0], mode="add"
-    )
-    ret_model.set_hop(1.0j * rashba * (-1.0 * sigma_x), 0, 1, [0, -1], mode="add")
-    ret_model.set_hop(
-        1.0j * rashba * (0.5 * sigma_x + r3h * sigma_y), 0, 1, [-1, 0], mode="add"
-    )
+    ret_model = kane_mele(esite, thop, spin_orb, rashba)
 
     return ret_model
 
@@ -85,7 +45,12 @@ def run():
         evals = evals.T # transpose for v2
         evals_list.append(evals)
 
-        wan_cent = my_array.berry_phase([0, 1], dir=1, contin=False, berry_evals=True)
+        wan_cent = my_array.berry_phase([0, 1], dir=1, contin=False, berry_evals=True) 
+        # NOTE: the wan_cent must be sorted to match v1 output. This is not an intedended 
+        # feature, because the bands of phases switches discontinuously, instead of simply
+        # shifting by 2pi.
+        wan_cent = np.sort(wan_cent)
+
         wan_cent /= 2.0 * np.pi
         wan_cent_list.append(wan_cent)
 

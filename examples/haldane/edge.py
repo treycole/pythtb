@@ -57,7 +57,7 @@ fin_model_half = tmp_model_half.cut_piece(10, 1, glue_edgs=False)
 (evals_half, evecs_half) = fin_model_half.solve_ham(return_eigvecs=True)
 
 # pick index of state in the middle of the gap
-ed = fin_model.get_num_orbitals() // 2
+ed = fin_model.norb // 2
 
 # draw one of the edge states in both cases
 (fig, ax) = fin_model.visualize(proj_plane=[0, 1], eig_dr=evecs[ed, :], draw_hoppings=False)
@@ -68,7 +68,7 @@ ax.set_ylabel("y coordinate")
 fig.tight_layout()
 plt.show()
 fig.savefig("edge_state.pdf")
-#
+
 (fig, ax) = fin_model_half.visualize(
     proj_plane=[0, 1], eig_dr=evecs_half[ed, :], draw_hoppings=False
 )

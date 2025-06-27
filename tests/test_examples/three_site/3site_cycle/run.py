@@ -34,6 +34,6 @@ def run(t, delta):
     wf_kpt_lambda.impose_pbc(0, 0)
     phase = wf_kpt_lambda.berry_phase([0], 0)
     wann_center = phase / (2.0 * np.pi)
-    final = wf_kpt_lambda.berry_flux([0])
+    final = np.sum(wf_kpt_lambda.berry_flux([0], plane=(0,1)))
 
     return wann_center, final

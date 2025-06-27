@@ -9,7 +9,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb import *  # import TB model class
+from pythtb import TBModel, WFArray  # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -117,7 +117,7 @@ ax1.set_ylim(-2.3, 2.3)
 
 # plot bulk hybrid Wannier center positions and their periodic images
 for j in range(-1, len_1 + 1):
-    ax2.plot(k_vec, float(j) + phi_1 / (2.0 * np.pi), "k-", zorder=-50)
+    ax2.plot(k_vec, float(j) + phi_1 / (2 * np.pi), "k-", zorder=-50)
 
 # plot finite centers of ribbon along direction 1
 for i in range(rib_evec.shape[0]):

@@ -6,7 +6,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb import *  # import TB model class
+from pythtb import TBModel, WFArray  # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -63,7 +63,7 @@ phi_b_1 = my_array_1.berry_phase([1], 0, contin=True)
 phi_c_1 = my_array_1.berry_phase([0, 1], 0, contin=True)
 
 # Berry flux for lower band
-flux_a_1 = my_array_1.berry_flux([0])
+flux_a_1 = np.sum(my_array_1.berry_flux([0], plane=(0,1)))
 
 # plot Berry phases
 fig, ax = plt.subplots()
@@ -105,7 +105,7 @@ for i in range(nkx):
 my_array_2.impose_pbc(0, 0)
 my_array_2.impose_pbc(1, 1)
 # calculate Berry flux for lower band
-flux_a_2 = my_array_2.berry_flux([0])
+flux_a_2 = np.sum(my_array_2.berry_flux([0], plane=(0,1)))
 
 # print out info about curvature
 print(" Berry flux= ", flux_a_2)

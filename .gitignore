@@ -3,7 +3,10 @@
 ## can be found here: https://git-scm.com/docs/gitignore#_pattern_format
 
 # Ignore example outputs
-examples/*.pdf
+examples/**/*.pdf
+
+# Ignore docs for now
+docs
 
 # Compiled source #
 ###################
@@ -180,4 +183,4 @@ _build/
 .DS_Store
 
 *.egg-info/
-dev
+scrap

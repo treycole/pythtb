@@ -6,9 +6,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from __future__ import print_function
-from pythtb.tb_model import *  # import TB model class
-import numpy as np
+from pythtb.tb_model import TBModel 
 import matplotlib.pyplot as plt
 
 # real space is 3D
@@ -18,7 +16,7 @@ lat = [[1.0, 0.0, 0.0], [0.0, 1.25, 0.0], [0.0, 0.0, 3.0]]
 orb = [[0.0, 0.0, -0.15], [0.5, 0.5, 0.15]]
 
 # only first two lattice vectors repeat, so k-space is 2D
-my_model = tb_model(2, 3, lat, orb)
+my_model = TBModel(2, 3, lat, orb)
 
 # set model parameters
 delta = 1.1
@@ -61,7 +59,7 @@ label = (r"$\Gamma $", r"$X$", r"$M$", r"$\Gamma $")
 # do bandstructure calculation
 # ----------------------------------------
 print("Calculating bandstructure...")
-evals = my_model.solve_all(k_vec)
+evals = my_model.solve_ham(k_vec)
 
 # ----------------------------------------
 # plot band structure
@@ -83,8 +81,8 @@ for n in range(len(k_node)):
     ax.axvline(x=k_node[n], linewidth=0.5, color="k")
 
 # Plot two bands
-ax.plot(k_dist, evals[0])
-ax.plot(k_dist, evals[1])
+ax.plot(k_dist, evals)
+# ax.plot(k_dist, evals[1])
 
 # save as PDF
 fig.tight_layout()

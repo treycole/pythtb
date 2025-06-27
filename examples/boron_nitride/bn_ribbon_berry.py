@@ -5,8 +5,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016, 2021
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from __future__ import print_function
-from pythtb.tb_model import *  # import TB model class
+from pythtb import TBModel, WFArray
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -15,10 +14,8 @@ lat = [[1.0, 0.0], [0.5, np.sqrt(3.0) / 2.0]]
 # define coordinates of orbitals
 orb = [[1.0 / 3.0, 1.0 / 3.0], [2.0 / 3.0, 2.0 / 3.0]]
 
-# ------
-
 # make two dimensional tight-binding boron nitride model
-my_model = tb_model(2, 2, lat, orb)
+my_model = TBModel(2, 2, lat, orb)
 
 # set periodic model
 delta = 0.4
@@ -61,23 +58,23 @@ fig, ax = plt.subplots(1, 2, figsize=(6.5, 2.8))
 def run_model(model, panel):
     numk = 41
     (k_vec, k_dist, k_node) = model.k_path([[-0.5], [0.5]], numk, report=False)
-    (eval, evec) = model.solve_all(k_vec, eig_vectors=True)
+    (eval, evec) = model.solve_ham(k_vec, return_eigvecs=True)
     #
     # plot band structure
     ax[panel].set_title("Band structure - " + ["original", "modified"][panel])
     ax[panel].set_xlabel("Reduced wavevector")
     ax[panel].set_ylabel("Band energy")
     ax[panel].set_xlim(-0.5, 0.5)
-    n_bands = eval.shape[0]
+    n_bands = eval.shape[-1]
     for band in range(n_bands):
-        ax[panel].plot(k_vec, eval[band, :], "k-", linewidth=0.5)
+        ax[panel].plot(k_vec, eval[:, band], "k-", linewidth=0.5)
     #
     # compute and print Berry phase at half filling
-    wf = wf_array(model, [numk])
+    wf = WFArray(model, [numk])
     wf.solve_on_grid([0.0])
     n_occ = n_bands // 2
     berry_phase = wf.berry_phase(range(n_occ), dir=0)
-    print("  Berry phase = %10.7f\n" % (berry_phase,))
+    print(f"  Berry phase = {berry_phase}\n")
     return ()
 
 
@@ -97,6 +94,7 @@ run_model(model_perp, 1)
 # save figure
 fig.tight_layout()
 fig.savefig("bn_ribbon_berry.pdf")
+plt.show()
 print('Band structures have been saved to "bn_ribbon_berry.pdf"\n')
 
 # Notes

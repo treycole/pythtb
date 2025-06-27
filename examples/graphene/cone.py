@@ -88,16 +88,16 @@ for i in range(square_step):
 # compute Berry flux on this square patch
 print("Berry flux on square patch with length: ", square_length)
 print("  centered at k-point: ", square_center)
-print("  for band 0 equals    : ", w_square.berry_flux([0]))
-print("  for band 1 equals    : ", w_square.berry_flux([1]))
-print("  for both bands equals: ", w_square.berry_flux([0, 1]))
+print("  for band 0 equals    : ", np.sum(w_square.berry_flux([0], plane=(0,1))))
+print("  for band 1 equals    : ", np.sum(w_square.berry_flux([1], plane=(0,1))))
+print("  for both bands equals: ", np.sum(w_square.berry_flux([0, 1], plane=(0,1))))
 print()
 
 # also plot Berry phase on each small plaquette of the mesh
-# plaq=w_square.berry_flux([0],individual_phases=True)
-k_flat = all_kpt.reshape(square_step**2, 2)
-plaq = my_model.berry_curvature(k_flat, dirs=(0, 1), abelian="True")
-plaq = plaq.reshape(square_step, square_step)
+plaq = w_square.berry_flux([0], plane=(0,1))
+# k_flat = all_kpt.reshape(square_step**2, 2)
+# plaq = my_model.berry_curvature(k_flat, dirs=(0, 1), abelian="True")
+# plaq = plaq.reshape(square_step, square_step)
 
 fig, ax = plt.subplots()
 img = ax.imshow(

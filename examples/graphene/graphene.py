@@ -5,8 +5,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from __future__ import print_function
-from pythtb import *  # import TB model class
+from pythtb import TBModel 
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -42,10 +41,7 @@ label = (r"$\Gamma $", r"$K$", r"$M$", r"$\Gamma $")
 nk = 121
 
 # call function k_path to construct the actual path
-(k_vec, k_dist, k_node) = my_model.k_path(path, nk)
-# inputs:
-#   path, nk: see above
-#   my_model: the pythtb model
+k_vec, k_dist, k_node = my_model.k_path(path, nk)
 # outputs:
 #   k_vec: list of interpolated k-points
 #   k_dist: horizontal axis position of each k-point in the list
@@ -61,16 +57,14 @@ evals = my_model.solve_ham(k_vec)
 
 # figure for bandstructure
 fig, ax = plt.subplots()
-# specify horizontal axis details
-# set range of horizontal axis
+
 ax.set_xlim(k_node[0], k_node[-1])
-# put tickmarks and labels at node positions
 ax.set_xticks(k_node)
 ax.set_xticklabels(label)
-# add vertical lines at node positions
+
 for n in range(len(k_node)):
     ax.axvline(x=k_node[n], linewidth=0.5, color="k")
-# put title
+    
 ax.set_title("Graphene band structure")
 ax.set_xlabel("Path in k-space")
 ax.set_ylabel("Band energy")

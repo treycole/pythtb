@@ -58,10 +58,10 @@ def run():
             (eval, evec) = my_model.solve_ham(kpt, return_eigvecs=True)
             w_square[i, j] = evec
 
-    berr_flux_square_0 = w_square.berry_flux([0])
-    berr_flux_square_1 = w_square.berry_flux([1])
-    berr_flux_square_01 = w_square.berry_flux([0, 1])
-    plaq = w_square.berry_flux([0], individual_phases=True)
+    berr_flux_square_0 = np.sum(w_square.berry_flux([0], plane=[0, 1]))
+    berr_flux_square_1 = np.sum(w_square.berry_flux([1], plane=[0, 1]))
+    berr_flux_square_01 = np.sum(w_square.berry_flux([0, 1], plane=[0, 1]))
+    plaq = w_square.berry_flux([0], plane=[0, 1])
 
     return (
         berry_phase_circ_0,

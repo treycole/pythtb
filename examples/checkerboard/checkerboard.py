@@ -5,9 +5,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from __future__ import print_function
-from pythtb.tb_model import *  # import TB model class
-import numpy as np
+from pythtb.tb_model import TBModel
 import matplotlib.pyplot as plt
 
 # define lattice vectors
@@ -16,7 +14,7 @@ lat = [[1.0, 0.0], [0.0, 1.0]]
 orb = [[0.0, 0.0], [0.5, 0.5]]
 
 # make two dimensional tight-binding checkerboard model
-my_model = tb_model(2, 2, lat, orb)
+my_model = TBModel(2, 2, lat, orb)
 
 # set model parameters
 delta = 1.1
@@ -48,10 +46,8 @@ print("Calculating bands...")
 # the set of k-points from above
 evals = my_model.solve_ham(k_vec)
 
-# plotting of band structure
 print("Plotting bandstructure...")
 
-# First make a figure object
 fig, ax = plt.subplots()
 
 # specify horizontal axis details
@@ -64,13 +60,9 @@ for n in range(len(k_node)):
 # plot bands
 ax.plot(k_dist, evals)
 
-# for n in range(2):
-#   ax.plot(k_dist, evals[:, n])
-# put title
 ax.set_title("Checkerboard band structure")
 ax.set_xlabel("Path in k-space")
 ax.set_ylabel("Band energy")
-# make an PDF figure of a plot
 fig.tight_layout()
 fig.savefig("checkerboard_band.pdf")
 plt.show()

@@ -5,8 +5,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb.tb_model import *  # import TB model class
-import numpy as np
+from pythtb.tb_model import TBModel  
 import matplotlib.pyplot as plt
 
 # define lattice vectors
@@ -15,7 +14,7 @@ lat = [[2.0, 0.0], [0.0, 1.0]]
 orb = [[0.0, 0.0], [0.5, 1.0]]
 
 # make one dimensional tight-binding model of a trestle-like structure
-my_model = tb_model(1, 2, lat, orb, per=[0])
+my_model = TBModel(1, 2, lat, orb, per=[0])
 
 # set model parameters
 t_first = 0.8 + 0.6j
