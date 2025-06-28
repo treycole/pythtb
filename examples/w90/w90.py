@@ -3,14 +3,14 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from __future__ import print_function
-from pythtb.tb_model import *  # import TB model class
+from pythtb import W90 # import TB model class
 import matplotlib.pyplot as plt
+import numpy as np
 
 # read output from Wannier90 that should be in folder named "example_a"
 # see instructions above for how to obtain the example output from Wannier90
 # for testing purposes
-silicon = w90(r"example_a", r"silicon")
+silicon = W90(r"silicon_w90", r"silicon")
 
 # hard coded fermi level in eV
 fermi_ev = 0.62285135e01
@@ -45,17 +45,19 @@ my_model = silicon.model(
 # solve and plot on the same path as used in wannier90
 # small discrepancy in the plot is there because of the terms that
 # were ignore in the silicon.model function call above
-#
+
 fig, ax = plt.subplots()
 (w90_kpt, w90_evals) = silicon.w90_bands_consistency()
-for i in range(w90_evals.shape[0]):
-    ax.plot(list(range(w90_evals.shape[1])), w90_evals[i] - fermi_ev, "k-", zorder=-100)
+
+ax.plot(list(range(w90_evals.shape[0])), w90_evals - fermi_ev, "k-", zorder=-100)
+
 # now interpolate from the model on the same path in k-space
-int_evals = my_model.solve_all(w90_kpt)
-for i in range(int_evals.shape[0]):
-    ax.plot(list(range(int_evals.shape[1])), int_evals[i], "r-", zorder=-50)
-ax.set_xlim(0, int_evals.shape[1] - 1)
+int_evals = my_model.solve_ham(w90_kpt)
+ax.plot(list(range(int_evals.shape[0])), int_evals, "r-", zorder=-50)
+
+ax.set_xlim(0, int_evals.shape[0] - 1)
 ax.set_xlabel("K-path from Wannier90")
 ax.set_ylabel("Band energy (eV)")
 fig.tight_layout()
+plt.show()
 fig.savefig("silicon.pdf")

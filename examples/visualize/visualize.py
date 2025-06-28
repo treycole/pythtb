@@ -5,21 +5,21 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb.tb_model import *  # import TB model class
+from pythtb.tb_model import TBModel  # import TB model class
 import numpy as np
 import matplotlib.pyplot as plt
 
 # define lattice vectors
-lat = [[1.0, 0.0], [0.5, np.sqrt(3.0) / 2.0]]
+lat = [[1, 0], [1/2, np.sqrt(3)/2]]
 # define coordinates of orbitals
-orb = [[1.0 / 3.0, 1.0 / 3.0], [2.0 / 3.0, 2.0 / 3.0]]
+orb = [[1/3, 1/3], [2/3, 2/3]]
 
 # make two dimensional tight-binding graphene model
-my_model = tb_model(2, 2, lat, orb)
+my_model = TBModel(2, 2, lat, orb)
 
 # set model parameters
-delta = 0.0
-t = -1.0
+delta = 0
+t = -1
 
 # set on-site energies
 my_model.set_onsite([-delta, delta])
@@ -35,7 +35,7 @@ ax.set_title("Graphene, bulk")
 ax.set_xlabel("x coordinate")
 ax.set_ylabel("y coordinate")
 fig.tight_layout()
-# fig.savefig("visualize_bulk.pdf")
+fig.savefig("visualize_bulk.pdf")
 
 plt.show()
 
@@ -47,7 +47,7 @@ ax.set_title("Graphene, ribbon")
 ax.set_xlabel("x coordinate")
 ax.set_ylabel("y coordinate")
 fig.tight_layout()
-# fig.savefig("visualize_ribbon.pdf")
+fig.savefig("visualize_ribbon.pdf")
 
 plt.show()
 
@@ -59,7 +59,7 @@ ax.set_title("Graphene, finite")
 ax.set_xlabel("x coordinate")
 ax.set_ylabel("y coordinate")
 # fig.tight_layout()
-# fig.savefig("visualize_finite.pdf")
+fig.savefig("visualize_finite.pdf")
 
 plt.show()
 

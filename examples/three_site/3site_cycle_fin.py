@@ -6,10 +6,9 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb import *
+from pythtb import TBModel, WFArray
 import numpy as np
 import matplotlib.pyplot as plt
-
 
 # define function to construct model
 def set_model(t, delta, lmbd):
@@ -44,7 +43,7 @@ num_kpt = 31
 # two-dimensional wf_array in which we will store wavefunctions
 # we store it in the order [lambda,k] since want Berry curvatures
 #   and Chern numbers defined with the [lambda,k] sign convention
-wf_kpt_lambda = wf_array(my_model, [path_steps, num_kpt])
+wf_kpt_lambda = WFArray(my_model, [path_steps, num_kpt])
 
 # fill the array with eigensolutions
 for i_lambda in range(path_steps):
