@@ -5,7 +5,7 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ------
 
-## [2.0.0] - 2025-06-03
+## [2.0.0] - Unreleased
 ---
 ### Changed
 
@@ -16,7 +16,7 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 - Examples are now grouped categorically into folders
 
-##### `TBModel`
+#### `TBModel`
 
 - `TBModel.get_orb`:
     - Added `cartesian` boolean flag to return orbitals in Cartesian coordinates. It is `False` by default.
@@ -40,7 +40,7 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
       - If finite (no k axis): (n_state, ...) and spin axes are as before
     - Handles single-k-point input automatically and reproduces `solve_one`.
 
-##### `WFArray`
+#### `WFArray`
 - `WFArray.berry_flux`
     - Flag renamed: `occ` -> `state_idx`
     - Flag renamed: `dirs` -> `plane`
@@ -57,17 +57,17 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
-##### Models
+#### Models
 - Added a [folder of example models](pythtb/models) that is importable using, e.g.,
   ```
   from pythtb.models import haldane
   my_model = haldane(delta, t, t2)
   ```
-##### Examples
+#### Examples
 - [visualize_3d.py](examples/visualize/visualize_3d.py): demonstrates the 3D visualization feature for `TBModel`
 - [ssh.py](examples/ssh/ssh.py): Constructs the ssh model and plots the band structure with a slider to change the intracell hopping. 
 
-##### `TBModel`
+#### `TBModel`
 - `TBModel.__repr__`: Object representation now displays `rdim`, `kdim`, and `nspin`. 
 - `TBModel.__str__`: Printing a `TBModel` instance using `print(TBModel)` calls the `report()` (formerly `dislplay`) method and prints model information.
 - `TBModel.get_ham`: Generates Hamiltonians for both single and multiple k-points.
@@ -78,7 +78,7 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `TBModel.get_recip_lat`: Returns reciprocal lattice vectors.
 - Added read-only retrieval of core TBModel attributes (e.g., `dim_r`, `dim_k`, `nspin`, `per`, `norb`, `nstate`, `lat`, `orb`, `site_energies`, and `hoppings`) using e.g. `my_model.dim_r` preventing unintended modification of internal model parameters.
 
-##### `WFArray`
+#### `WFArray`
 - `WFArray.chern_num`
     - Returns the chern number for a given plane
 - `WFArray.wilson_loop`
@@ -100,7 +100,7 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Removed 
 - Support for Python <3.10 ([SPEC-0](https://scientific-python.org/specs/spec-0000/))
-- Deprecated `setup.py`: migration to `pyproject.toml`.
+- `setup.py`: migration to `pyproject.toml`.
 - `WFArray.berry_flux` flag `individual_phases`
 - `TBModel.solve_one`
 - `TBModel.solve_all`
@@ -116,5 +116,100 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ---
 
 ### Developer Notes
-For a detailed explanation of the changes, see the developer documentation [DEVELOPMENT.md](notes/DEVELOPMENT.md).
+For a detailed explanation of the changes, see the developer documentation [DEVELOPMENT.md](dev/DEVELOPMENT.md).
+
+
+
+## [1.8.0] - 2022-09-20
+---
+### Changed
+- Updated class `wf_array` to make it easier to store states
+  which are not Bloch-like eigenstates.
+- Fixed various small issues.
+
+### Added
+-  Added new functionality to `wf_array`
+    - `solve_on_one_point`
+    - `choose_states` 
+    - `empty_like`
+- Added function change_nonperiodic_vector and changed the way
+  `to_home` parameter works.
+
+
+### Removed
+- Removed some functions that were kept for backwards compatibility
+    - `berry_curv`
+    - `k_path`
+    - `tbmodel`
+    - `set_sites`
+    - `add_hop`.
+  
+## [1.7.2] - 2017-08-01
+---
+### Changed
+- Display function now prints hopping distances
+
+### Added
+- Added support for deleting orbitals
+
+
+## [1.7.1] - 2016-12-22
+---
+### Added
+- Added support for python 3.x in addition to 2.x
+
+## [1.7.0] - 2916-06-07
+---
+### Changed
+- Cleaned up period boundary condition in the `wf_array` class
+
+### Fixed
+- Fixed bug with reduce_dim.  Some hopping terms were not correctly
+  casted as onsite terms.
+- Fixed bug in impose_pbc when dim_k is less than dim_r.
+
+### Added
+- Added interface with Wannier90 package
+- Added support for making bandstructure plots along multi-segment
+  paths in the Brillouin zone
+- Added support for hybrid Wannier functions.
+- Berry curvature in dimensions higher than 2.
+
+
+
+## [1.6.2] - 2013-02-25
+---
+### Added
+- Added support for spinors.
+- Added make_supercell method with which one can make arbitrary
+  super-cells of the model and also generate slabs with arbitrary
+  orientation.
+ 
+## [1.6.1] - 2012-11-15
+---
+For the most part, the code should be backward-compatible with version 1.5.
+### Changed
+- Renamed the code package (previously PyTB) to avoid confusion with
+  other acronyms.
+- Streamlined the code to be more consistent in naming conventions.
+- Made some improvements and extensions to the calculation of Berry
+  phases and curvatures.
+- Changed the way in which the `impose_pbc` function is used.
+- `tb_mode`, `set_onsite`, `set_hop` are named differently but have aliases to names from version 1.5
+
+### Added
+- Built a proper python distribution including documentation and an
+  improved website.
+- Added a more powerful method of setting onsite and hopping parameters.
+- Added some additional examples.
+
+
+### Removed
+- Removed `add_wf` function from `wf_array` object and replaced it
+  with `[]` operator, and 
+
+
+## [1.5] - 2012-06-
+---
+
 
