@@ -1,19 +1,33 @@
-"""
-PythTB: Python Tight Binding module: a Python package for tight-binding calculations.
-
-May 22, 2025
-
-Copyright (c) 2010-2025 Trey Cole, Sinisa Coh and David Vanderbilt.
-
-PythTB is free software available at http://www.physics.rutgers.edu/pythtb/ .
-You can redistribute it and/or modify it under the terms of the GNU General
-Public License v3.0 or later. See LICENSE or https://www.gnu.org/licenses/gpl-3.0.en.html
-for details.
-"""
-
 __version__ = "2.0.0"
 __author__ = "Trey Cole, Sinisa Coh, David Vanderbilt"
 __license__ = "GPL-3.0"
+
+# Set up logging
+import logging
+
+logger = logging.getLogger("pythtb")  # Main PythTB logger
+logger.addHandler(logging.NullHandler())  # Avoids spurious warnings
+logger.setLevel(logging.WARNING)  # Default level for library use
+
+def get_logger():
+    """Return the shared PythTB logger."""
+    return logger
+
+def enable_logging(level=logging.INFO):
+    """Enable console logging at specified level (default: INFO)."""
+    if not any(isinstance(h, logging.StreamHandler) for h in logger.handlers):
+        ch = logging.StreamHandler()
+        ch.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+        logger.addHandler(ch)
+    logger.setLevel(level)
+
+def disable_logging():
+    """Disable all logging output from PythTB."""
+    logger.setLevel(logging.CRITICAL + 1)  # Effectively disables all logging
+
+def set_logging_level(level):
+    """Set logging level, e.g., logging.DEBUG, logging.INFO."""
+    logger.setLevel(level)
 
 # Import all public API from the core module
 from .tb_model import *
