@@ -53,8 +53,6 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `W90.w90_bands_consistency`
     - Returned energies now have shape (kpts, band) instead of (band, kpts). This matches the shape of the returned eigenvectors in `TBModel.solve_ham`.
 
----
-
 ### Added
 
 #### Models
@@ -105,15 +103,12 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `TBModel.solve_one`
 - `TBModel.solve_all`
 
----
 
 ### Deprecated
 - `tb_model.solve_one`: Use `TBModel.solve_ham` instead
 - `tb_model.solve_all`: Use `TBModel.solve_ham` instead
 - `tb_model.display`: Use `TBModel.report` instead
 - `reset` flag for `TBModel.set_onsite`: Use `set` instead.
-
----
 
 ### Developer Notes
 For a detailed explanation of the changes, see the developer documentation [DEVELOPMENT.md](dev/DEVELOPMENT.md).
