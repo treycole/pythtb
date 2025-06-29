@@ -5,7 +5,7 @@
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb.tb_model import TBModel  # import TB model class
+from pythtb import TBModel  # import TB model class
 import numpy as np
 
 # define lattice vectors
