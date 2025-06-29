@@ -86,7 +86,7 @@ wann_center = phase / (2.0 * np.pi)
 ax_wann.plot(all_lambda, wann_center, "ko-")
 
 # compute integrated curvature
-final = wf_kpt_lambda.berry_flux([0])
+final = np.sum(wf_kpt_lambda.berry_flux([0], plane=(0,1)))
 print("Berry flux in k-lambda space: ", final)
 
 # finish plot of onsite terms
@@ -95,8 +95,7 @@ ax_onsite.set_xlabel("Lambda parameter")
 ax_onsite.set_ylabel("Onsite terms")
 ax_onsite.set_xlim(0.0, 1.0)
 fig_onsite.tight_layout()
-plt.show()
-# fig_onsite.savefig("3site_onsite.pdf")
+fig_onsite.savefig("3site_onsite.pdf")
 
 # finish plot for band structure
 ax_band.set_title("Band structure")
@@ -104,8 +103,7 @@ ax_band.set_xlabel("Path in k-vector")
 ax_band.set_ylabel("Band energies")
 ax_band.set_xlim(0.0, 1.0)
 fig_band.tight_layout()
-plt.show()
-# fig_band.savefig("3site_band.pdf")
+fig_band.savefig("3site_band.pdf")
 
 # finish plot for Wannier center
 ax_wann.set_title("Center of Wannier function")
@@ -113,8 +111,8 @@ ax_wann.set_xlabel("Lambda parameter")
 ax_wann.set_ylabel("Center (reduced coordinate)")
 ax_wann.set_xlim(0.0, 1.0)
 fig_wann.tight_layout()
-plt.show()
-# fig_wann.savefig("3site_wann.pdf")
+fig_wann.savefig("3site_wann.pdf")
 
+plt.show()
 
 print("Done.\n")

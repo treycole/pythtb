@@ -49,28 +49,26 @@ wf_kpt_lambda = WFArray(my_model, [path_steps, num_kpt])
 for i_lambda in range(path_steps):
     lmbd = all_lambda[i_lambda]
     my_model = set_model(t, delta, lmbd)
-    print(my_model)
     (eval, evec) = my_model.solve_ham(k_vec, return_eigvecs=True)
-    print(evec.shape)
     for i_kpt in range(num_kpt):
         wf_kpt_lambda[i_lambda, i_kpt] = evec[i_kpt]
 
 # compute integrated curvature
 print("Chern numbers for rising fillings")
-print("  Band  0     = %5.2f" % (wf_kpt_lambda.berry_flux([0]) / (2.0 * np.pi)))
-print("  Bands 0,1   = %5.2f" % (wf_kpt_lambda.berry_flux([0, 1]) / (2.0 * np.pi)))
-print("  Bands 0,1,2 = %5.2f" % (wf_kpt_lambda.berry_flux([0, 1, 2]) / (2.0 * np.pi)))
+print("  Band  0     = %5.2f" % np.sum(wf_kpt_lambda.berry_flux([0], plane=(0,1)) / (2.0 * np.pi)))
+print("  Bands 0,1   = %5.2f" % np.sum(wf_kpt_lambda.berry_flux([0, 1], plane=(0,1)) / (2.0 * np.pi)))
+print("  Bands 0,1,2 = %5.2f" % np.sum(wf_kpt_lambda.berry_flux([0, 1, 2], plane=(0,1)) / (2.0 * np.pi)))
 print("")
 print("Chern numbers for individual bands")
-print("  Band  0 = %5.2f" % (wf_kpt_lambda.berry_flux([0]) / (2.0 * np.pi)))
-print("  Band  1 = %5.2f" % (wf_kpt_lambda.berry_flux([1]) / (2.0 * np.pi)))
-print("  Band  2 = %5.2f" % (wf_kpt_lambda.berry_flux([2]) / (2.0 * np.pi)))
+print("  Band  0 = %5.2f" % np.sum(wf_kpt_lambda.berry_flux([0], plane=(0,1)) / (2.0 * np.pi)))
+print("  Band  1 = %5.2f" % np.sum(wf_kpt_lambda.berry_flux([1], plane=(0,1)) / (2.0 * np.pi)))
+print("  Band  2 = %5.2f" % np.sum(wf_kpt_lambda.berry_flux([2], plane=(0,1)) / (2.0 * np.pi)))
 print("")
 
 # for annotating plot with text
-text_lower = "C of band [0] = %3.0f" % (wf_kpt_lambda.berry_flux([0]) / (2.0 * np.pi))
+text_lower = "C of band [0] = %3.0f" % np.sum(wf_kpt_lambda.berry_flux([0], plane=(0,1)) / (2.0 * np.pi))
 text_upper = "C of bands [0,1] = %3.0f" % (
-    wf_kpt_lambda.berry_flux([0, 1]) / (2.0 * np.pi)
+    np.sum(wf_kpt_lambda.berry_flux([0, 1], plane=(0,1)) / (2.0 * np.pi))
 )
 
 # now loop over parameter again, this time for finite chains
