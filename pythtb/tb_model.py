@@ -220,20 +220,42 @@ class TBModel:
 
     def __repr__(self):
         """
-        Returns a string representation of the TBModel object.
+        Return a string representation of the ``TBModel`` object.
+
+        Returns
+        -------
+        str
+            String representation of the ``TBModel``.
         """
         return (f"pythtb.TBModel(dim_r={self._dim_r}, dim_k={self._dim_k}, "
                 f"norb={self._norb}, nspin={self._nspin})")
 
     def __str__(self):
         """
-        Returns a string representation of the TBModel object.
+        Return a string representation of the ``TBModel`` object.
+
+        Returns
+        -------
+        str
+            String representation of the ``TBModel``.
         """
         return self.report(show=False)
 
     def __eq__(self, other):
         """
-        Equality comparison: compares structural parameters, arrays, and hoppings.
+        Compare two ``TBModel`` objects for equality.
+
+        Compares structural parameters, arrays, and hoppings.
+
+        Parameters
+        ----------
+        other : ``TBModel``
+            Another ``TBModel`` instance.
+
+        Returns
+        -------
+        bool
+            True if the models are equal, False otherwise.
         """
         if not isinstance(other, TBModel):
             return NotImplemented
@@ -277,7 +299,19 @@ class TBModel:
 
     def report(self, show: bool=True, short: bool=False):
         """
-        Prints information about the tight-binding model.
+        Print or return a report about the tight-binding model.
+
+        Parameters
+        ----------
+        show : bool, optional
+            If True, prints the report to stdout. If False, returns the report as a string.
+        short : bool, optional
+            If True, print only a short summary. If False, print full details.
+
+        Returns
+        -------
+        str or None
+            Returns the report string if `show` is False, otherwise prints and returns None.
         """
         output = []
         header = (
@@ -371,7 +405,20 @@ class TBModel:
         else:
             return "\n".join(output)
 
-    def set_k_mesh(self, *nks):
+    def set_k_mesh(self, nks: list | tuple):
+        """
+        Set up a uniform k-space mesh for the model.
+
+        Parameters
+        ----------
+        nks : tuple or list
+            Number of k-points along each periodic direction.
+
+        Raises
+        ------
+        ValueError
+            If the number of mesh points does not match the number of periodic directions.
+        """
         from .k_mesh import KMesh
 
         dim_k = len(nks)
@@ -390,12 +437,23 @@ class TBModel:
 
     def get_k_mesh(self, flat: bool = False):
         """
-        Returns the k-space mesh.
+        Return the k-space mesh.
 
-        :param flat: If True, returns the flat mesh (1D array of k-points).
-         If False, returns the square mesh (2D array of k-points).
-        
-        :return: k_mesh object containing the k-space mesh.
+        Parameters
+        ----------
+        flat : bool, optional
+            If True, returns the flat mesh (1D array of k-points).
+            If False, returns the square mesh (multi-dimensional array of k-points).
+
+        Returns
+        -------
+        k_mesh : {(Nk, dim_k) | (nk1, nk2, ..., dim_k)} array
+            Array of k-points in the mesh.
+
+        Raises
+        ------
+        NameError
+            If the k-mesh has not been initialized.
         """
         if not hasattr(self, "k_mesh"):
             raise NameError(
@@ -408,9 +466,21 @@ class TBModel:
 
     def _get_periodic_H(self, H_flat, k_vals):
         """
-        Change to periodic gauge so that H(k+G) = H(k)
+        Change Hamiltonian to periodic gauge so that :math:`H(\mathbf{k}+\mathbf{G}) = H(\mathbf{k})`.
 
-        If n_spin = 2, H_flat should only be flat along k and NOT spin.
+        If ``nspin``=2, ``H_flat`` should only be flat along k and NOT spin.
+
+        Parameters
+        ----------
+        H_flat : (Nk, nstate, nstate[, n_spin]) array
+            Hamiltonian flattened along the k-direction.
+        k_vals : (Nk, dim_k) array
+            Array of k-point values, shape (dim_k, N_k).
+
+        Returns
+        -------
+        H_per_flat : (Nk, nstate, nstate[, n_spin]) array
+            Hamiltonian in periodic gauge.
         """
         orb_vecs = self.get_orb_vecs()  # reduced units
         orb_vec_diff = orb_vecs[:, None, :] - orb_vecs[None, :, :]
@@ -428,77 +498,129 @@ class TBModel:
     # Property decorators for read-only access to model attributes
     @property
     def dim_r(self):
-        "Returns dimensionality of real space."
+        """
+        Return the dimensionality of real space.
+
+        Returns
+        -------
+        int
+            Number of real space dimensions.
+        """
         return self._dim_r
 
     @property
     def dim_k(self):
-        "Returns dimensionality of reciprocal space."
+        """
+        Return the dimensionality of reciprocal space.
+
+        Returns
+        -------
+        int
+            Number of reciprocal space (periodic) dimensions.
+        """
         return self._dim_k
 
     @property
     def nspin(self):
-        "Returns number of spin components."
+        """
+        Return the number of spin components.
+
+        Returns
+        -------
+        int
+            Number of spin components (1 or 2).
+        """
         return self._nspin
 
     @property
     def per(self):
         """
-        Returns periodic directions as a list of indices.
+        Return periodic directions as a list of indices.
+
         Each index corresponds to a lattice vector in the model.
+
+        Returns
+        -------
+        list of int
+            Indices of periodic lattice vectors.
         """
         return self._per
 
     @property
     def norb(self):
         """
-        Returns number of orbitals in the model.
-        This is the number of tight-binding orbitals defined in the model.
+        Return the number of orbitals in the model.
+
+        Returns
+        -------
+        int
+            Number of tight-binding orbitals.
         """
         return self._norb
 
     @property
     def nstate(self):
         """
-        Returns number of electronic states in the model.
-        This is the number of orbitals multiplied by the number of spin components.
+        Return the number of electronic states in the model.
+
+        Returns
+        -------
+        nstate : int
+            Number of electronic states (norb * nspin).
         """
         return self._nstate
 
     @property
     def lat_vecs(self):
         """
-        Returns lattice vectors in Cartesian coordinates.
-        Each vector is a row in the array.
+        Return lattice vectors in Cartesian coordinates.
+
+        Returns
+        -------
+        lat : (dim_r, dim_r) array
+            Lattice vectors.
         """
         return self._lat.copy()
 
     @property
     def orb_vecs(self):
         """
-        Returns orbital vectors in reduced coordinates.
-        Each orbital is a row in the array.
+        Return orbital vectors in reduced coordinates.
+
+        Returns
+        -------
+        orb : (norb, dim_r) array
+            Orbital positions.
         """
         return self._orb.copy()
 
     @property
     def site_energies(self):
         """
-        Returns on-site energies for each orbital.
-        If the model is spinful, this is a 2D array with shape (norb, nspin, nspin).
-        If the model is spinless, this is a 1D array with shape (norb,).
+        Return on-site energies for each orbital.
+
+        Returns
+        -------
+        site_energies : {(norb,) | (norb, 2, 2)} array
+            On-site energies. Shape is (norb,) for spinless, (norb, 2, 2) for spinful models.
         """
         return self._site_energies.copy()
 
     @property
     def hoppings(self):
         """
-        Returns a list of hoppings in the model.
-        Each hopping is a tuple (amplitude, i, j, [R]), where:
-        - amplitude: complex number representing the hopping amplitude
-        - i: index of the orbital from which the hopping starts
-        - j: index of the orbital to which the hopping goes
-        - R: optional list of lattice vectors for the hopping
+        Return a list of hoppings in the model.
+
+        Each hopping is a dict with keys:
+        - 'amplitude': hopping amplitude (complex or matrix)
+        - 'from_orbital': index of starting orbital
+        - 'to_orbital': index of ending orbital
+        - 'lattice_vector': (optional) lattice vector displacement
+
+        Returns
+        -------
+        list of dict
+            List of hopping terms.
         """
         raw = copy.deepcopy(self._hoppings)
         formatted = []
@@ -517,16 +639,29 @@ class TBModel:
     @property
     def assume_position_operator_diagonal(self):
         """
-        Returns whether the model assumes the position operator is diagonal.
-        This is used for calculating the velocity operator.
+        Return whether the model assumes the position operator is diagonal.
+
+        Returns
+        -------
+        bool
+            True if position operator is diagonal, False otherwise.
         """
         return self._assume_position_operator_diagonal
 
     @assume_position_operator_diagonal.setter
     def assume_position_operator_diagonal(self, value: bool):
         """
-        Sets whether the model assumes the position operator is diagonal.
-        This is used for calculating the velocity operator.
+        Set whether the model assumes the position operator is diagonal.
+
+        Parameters
+        ----------
+        value : bool
+            True to assume diagonal position operator, False otherwise.
+
+        Raises
+        ------
+        ValueError
+            If value is not a boolean.
         """
         if not isinstance(value, bool):
             raise ValueError("assume_position_operator_diagonal must be a boolean.")
@@ -534,14 +669,19 @@ class TBModel:
 
     def copy(self):
         """
-        Returns a copy of the TBModel object.
-        This is useful for creating a new model with the same parameters.
+        Return a deep copy of the TBModel object.
+
+        Returns
+        -------
+        TBModel
+            A deep copy of the model.
         """
         return copy.deepcopy(self)
     
     def clear_hoppings(self):
         """
-        Clears all hoppings in the model.
+        Clear all hoppings in the model.
+
         This is useful for resetting the model to a state without any hoppings.
         """
         self._hoppings.clear()
@@ -549,7 +689,8 @@ class TBModel:
 
     def clear_onsite(self):
         """
-        Clears all on-site energies in the model.
+        Clear all on-site energies in the model.
+
         This is useful for resetting the model to a state without any on-site energies.
         """
         self._site_energies.fill(0)
@@ -561,17 +702,29 @@ class TBModel:
     )
     def get_num_orbitals(self):
         """
-        Returns the number of orbitals in the model.
-        This is equivalent to the property `norb`.
+        Return the number of orbitals in the model.
+
+        Returns
+        -------
+        int
+            Number of tight-binding orbitals.
         """
         return self.norb
 
     def get_orb(self, cartesian=False):
         """
-        Returns orbitals in format [orbital, coordinate.]
+        Return orbital positions.
 
-        Arg: cartesian (bool)
-            Returns orbital vectors in Cartesian units.
+        Parameters
+        ----------
+        cartesian : bool, optional
+            If True, returns orbital positions in Cartesian units.
+            If False, returns reduced coordinates.
+
+        Returns
+        -------
+        np.ndarray
+            Array of orbital positions, shape (norb, dim_r).
         """
         orbs = self.orb_vecs
         if cartesian:
@@ -582,16 +735,24 @@ class TBModel:
 
     def get_lat(self):
         """
-        Returns lattice vectors in format [vector, coordinate].
-        Vectors are in Cartesian units.
+        Return lattice vectors in Cartesian coordinates.
+
+        Returns
+        -------
+        np.ndarray
+            Lattice vectors, shape (dim_r, dim_r).
         """
         return self.lat_vecs
 
     # TODO: Fix to work with systems where not all lattice vectors are periodic
     def get_recip_lat(self):
         """
-        Returns reciprocal lattice vectors in format [vector, coordinate].
-        Vectors are in Cartesian units.
+        Return reciprocal lattice vectors in Cartesian coordinates.
+
+        Returns
+        -------
+        recip_lat_vecs : (dim_k, dim_r) array
+            Reciprocal lattice vectors, shape (dim_k, dim_r).
         """
         if self.dim_k == 0:
             logger.warning(
@@ -616,11 +777,15 @@ class TBModel:
 
     def get_recip_vol(self):
         """
-        Returns the volume of the reciprocal lattice.
+        Return the volume of the reciprocal lattice.
+
         The volume is defined as the absolute value of the determinant
         of the reciprocal lattice vectors.
 
-        :return: Volume of the reciprocal lattice.
+        Returns
+        -------
+        vol_k : float
+            Volume of the reciprocal lattice.
         """
         recip_lat_vecs = self.get_recip_lat()
         if self._dim_k == 0:
@@ -648,50 +813,56 @@ class TBModel:
 
     def set_onsite(self, onsite_en, ind_i=None, mode="set"):
         r"""
-        Defines on-site energies for tight-binding orbitals. One can
-        either set energy for a single orbital (ind_i specified), or all 
-        orbitals at once (onsite_en is a list).
+        Define on-site energies for tight-binding orbitals.
 
-        :param onsite_en: 
-            For spinless models (nspin=1):
-                - A real scalar, or a list/array of real scalars (one per orbital).
-            For spinful models (nspin=2):
-                - A scalar a: interpreted as a * I for both spin components.
-                - A 4-vector [a, b, c, d]: interpreted as a * I + b * sigma_x + c * sigma_y + d * sigma_z.
-                    [[ a + d,  b - i*c ],
-                     [ b + i*c,  a - d ]]
-                - A full 2x2 Hermitian matrix.
-            If 'ind_i' is None, 'onsite_en' must be a list/array of length 'norb'.
+        You can set the energy for a single orbital (by specifying ``ind_i``), or for all
+        orbitals at once (by passing a list/array to ``onsite_en``).
+
+        Parameters
+        ----------
+        onsite_en : float, list, np.ndarray
+            For spinless models (``nspin=1``):
+                - Real scalar or list/array of real scalars (one per orbital).
+            For spinful models (``nspin=2``):
+                - Scalar: interpreted as :math:`a I` for both spin components.
+                - 4-vector [a, b, c, d]: interpreted as
+                  :math:`a I + b \sigma_x + c \sigma_y + d \sigma_z`:
+
+                  .. math::
+                      \begin{bmatrix}
+                        a + d & b - i c \\
+                        b + i c & a - d
+                      \end{bmatrix}
+
+                - Full 2x2 Hermitian matrix.
+            If ``ind_i`` is None, ``onsite_en`` must be a list/array of length ``norb``.
             Otherwise, it may be a single value or a 2x2 matrix.
 
-        :param ind_i: Index of tight-binding orbital to update. 
-            If None, all orbitals are updated.
-          
-        :param mode: Similar to parameter *mode* in function set_hop*.
-          Speficies way in which parameter *onsite_en* is
-          used. It can either set value of on-site energy from scratch,
-          reset it, or add to it.
+        ind_i : int or None, optional
+            Index of tight-binding orbital to update. If None, all orbitals are updated.
+        mode : {'set', 'add'}, optional
+            Specifies how ``onsite_en`` is used:
 
-          * "set" -- Default value. On-site energy is set to value of
-            *onsite_en* parameter. One can use "set" on each
-            tight-binding orbital only once.
+            - "set": On-site energy is set to the value of ``onsite_en``. (Default)
+            - "add": Adds to the previous value of on-site energy.
 
-          * "add" -- Adds to the previous value of on-site
-            energy. This function can be called multiple times for the
-            same orbital(s).
+        Raises
+        ------
+        TypeError
+            If input types are incorrect.
+        ValueError
+            If dimensions, indices, or Hermiticity are invalid.
 
-        Example usage::
+        Notes
+        -----
+        If called multiple times with "add", values are accumulated.
 
-          # Defines on-site energy of first orbital to be 0.0,
-          # second 1.0, and third 2.0
-          tb.set_onsite([0.0, 1.0, 2.0])
-          # Increases value of on-site energy for second orbital
-          tb.set_onsite(100.0, 1, mode="add")
-          # Changes on-site energy of second orbital to zero
-          tb.set_onsite(0.0, 1, mode="set")
-          # Sets all three on-site energies at once
-          tb.set_onsite([2.0, 3.0, 4.0], mode="set")
-
+        Examples
+        --------
+        >>> tb.set_onsite([0.0, 1.0, 2.0])
+        >>> tb.set_onsite(100.0, 1, mode="add")
+        >>> tb.set_onsite(0.0, 1, mode="set")
+        >>> tb.set_onsite([2.0, 3.0, 4.0], mode="set")
         """
         # Handle deprecated 'reset' mode
         mode = mode.lower()
@@ -754,97 +925,66 @@ class TBModel:
         self, hop_amp, ind_i: int, ind_j: int, ind_R=None, mode="set", allow_conjugate_pair=False
     ):
         r"""
+        Define hopping parameters between tight-binding orbitals.
 
-        Defines hopping parameters between tight-binding orbitals. In
-        the notation used in section 3.1 equation 3.6 of
-        :download:`notes on tight-binding formalism
-        <misc/pythtb-formalism.pdf>` this function specifies the
-        following object
+        In the notation of tight-binding formalism, this function specifies:
 
         .. math::
+            H_{ij}(\mathbf{R}) = \langle \phi_{\mathbf{0},i} | H | \phi_{\mathbf{R},j} \rangle
 
-          H_{ij}({\bf R})= \langle \phi_{{\bf 0} i}  \vert H  \vert \phi_{{\bf R},j} \rangle
+        where :math:`\langle \phi_{\mathbf{0},i} |` is the i-th orbital in the home unit cell,
+        and :math:`| \phi_{\mathbf{R},j} \rangle` is the j-th orbital in a cell shifted by lattice vector :math:`\mathbf{R}`.
 
-        Where :math:`\langle \phi_{{\bf 0} i} \vert` is i-th
-        tight-binding orbital in the home unit cell and
-        :math:`\vert \phi_{{\bf R},j} \rangle` is j-th tight-binding orbital in
-        unit cell shifted by lattice vector :math:`{\bf R}`. :math:`H`
-        is the Hamiltonian.
-
-        (Strictly speaking, this term specifies hopping amplitude
-        for hopping from site *j+R* to site *i*, not vice-versa.)
-
+        (Strictly speaking, this term specifies hopping amplitude for hopping from site j+R to site i, not vice-versa.)
         Hopping in the opposite direction is automatically included by
         the code since
 
         .. math::
+            H_{ji}(-\mathbf{R}) = \left[ H_{ij}(\mathbf{R}) \right]^*
 
-          H_{ji}(-{\bf R})= \left[ H_{ij}({\bf R}) \right]^{*}
+        Parameters
+        ----------
+        hop_amp : float, complex, list, np.ndarray
+            Hopping amplitude. 
+            For spinless (``nspin``=1): real or complex number.
+            For spinful (``nspin``=2):
+                - Scalar: interpreted as :math:`a I`
+                - 4-vector [a, b, c, d]: interpreted as
+                  :math:`a I + b \sigma_x + c \sigma_y + d \sigma_z`
+                - 2x2 matrix: full hopping matrix.
+        ind_i : int
+            Index of bra orbital (in home unit cell).
+        ind_j : int
+            Index of ket orbital (in cell shifted by ``ind_R``).
+        ind_R : list[int] or np.ndarray, optional
+            Lattice vector (integer array, in reduced coordinates) pointing to the unit cell
+            where the ket orbital is located. Must have length ``dim_r``. If model is non-periodic,
+            can be omitted.
+        mode : {'set', 'add'}, optional
+            Specifies how ``hop_amp`` is used:
+                - "set": Set the hopping term to the value of ``hop_amp``. (Default)
+                - "add": Add ``hop_amp`` to the previous value.
+        allow_conjugate_pair : bool, optional
+            If True, allows specification of both a hopping and its conjugate pair.
+            If False, prevents double-counting.
 
-        .. warning::
+        Raises
+        ------
+        ValueError
+            If indices or lattice vectors are out of range, or duplicate hoppings are specified.
+        TypeError
+            If input types are invalid.
 
-           There is no need to specify hoppings in both :math:`i
-           \rightarrow j+R` direction and opposite :math:`j
-           \rightarrow i-R` direction since that is done
-           automatically. If you want to specifiy hoppings in both
-           directions, see description of parameter
-           *allow_conjugate_pair*.
+        Notes
+        -----
+        There is no need to specify hoppings in both :math:`i \rightarrow j+\mathbf{R}` and
+        :math:`j \rightarrow i-\mathbf{R}` directions, since the latter is included automatically.
 
-        :param hop_amp: Hopping amplitude; can be real or complex
-          number, equals :math:`H_{ij}({\bf R})`. If *nspin* is *2*
-          then hopping amplitude can be given either as a single
-          number, an array of four numbers, or a 2x2 matrix. If
-          a single number is given, it is interpreted as hopping
-          amplitude for both up and down spin component, proportional to the identity.
-          If an array of four numbers is given, these are the coefficients of I,
-          sigma_x, sigma_y, and sigma_z (that is, the 2x2 identity and
-          the three Pauli spin matrices) respectively.
-
-        :param ind_i: Index of bra orbital from the bracket :math:`\langle
-          \phi_{{\bf 0} i} \vert H \vert \phi_{{\bf R},j} \rangle`. This
-          orbital is assumed to be in the home unit cell.
-
-        :param ind_j: Index of ket orbital from the bracket :math:`\langle
-          \phi_{{\bf 0} i} \vert H \vert \phi_{{\bf R},j} \rangle`. This
-          orbital does not have to be in the home unit cell; its unit cell
-          position is determined by parameter *ind_R*.
-
-        :param ind_R: Lattice vector (integer array, in reduced
-          coordinates) pointing to the unit cell where the ket
-          orbital is located.  The number of coordinates must equal
-          the dimensionality in real space (*dim_r* parameter) for
-          consistency, but only the periodic directions of ind_R are
-          used. If reciprocal space is zero-dimensional (as in a
-          molecule), this parameter does not need to be specified.
-
-        :param mode: Similar to parameter *mode* in function *set_onsite*.
-          Speficies way in which parameter *hop_amp* is
-          used. It can either set or reset the value of hopping term,
-          or add to it.
-
-          * "set" -- Default value. Hopping term is set to value of
-            *hop_amp* parameter. Overwrites previous set value.
-
-          * "add" -- Adds to the previous value of hopping term.
-
-        :param allow_conjugate_pair: Default value is *False*. If set
-          to *True* code will allow user to specify hopping
-          :math:`i \rightarrow j+R` even if conjugate-pair hopping
-          :math:`j \rightarrow i-R` has been
-          specified. If both terms are specified, code will
-          still count each term two times.
-
-        Example usage::
-
-          # Specifies complex hopping amplitude between first orbital in home
-          # unit cell and third orbital in neigbouring unit cell.
-          tb.set_hop(0.3+0.4j, 0, 2, [0, 1])
-          # change value of this hopping
-          tb.set_hop(0.1+0.2j, 0, 2, [0, 1], mode="set")
-          # add to previous value (after this function call below,
-          # hopping term amplitude is 100.1+0.2j)
-          tb.set_hop(100.0, 0, 2, [0, 1], mode="add")
-
+        Examples
+        --------
+        >>> tb.set_hop(0.3+0.4j, 0, 2, [0, 1])
+        >>> tb.set_hop(0.1+0.2j, 0, 2, [0, 1], mode="set")
+        >>> tb.set_hop(100.0, 0, 2, [0, 1], mode="add")
         """
         #### Prechecks and formatting ####
         # deprecation warning
@@ -968,12 +1108,29 @@ class TBModel:
 
     def _val_to_block(self, val):
         """
-        If nspin=1 then just returns val (should be a real number).
-        If nspin=2 then returns a 2 by 2 matrix from the input parameters.
-            - If only one real number is given in the input then  assume that this is multiplied by the identity.
-            - If array with up to four elements is given then these are multiplied by the Pauli matrices
-              at each respective index.
-            - If given a 2 by 2  matrix, just return it.
+        Convert input value to appropriate matrix block for onsite or hopping.
+
+        For nspin=1, returns the value (should be real or complex scalar).
+        For nspin=2:
+            - Scalar: returns a 2x2 matrix proportional to the identity.
+            - Array with up to four elements: returns a 2x2 matrix as
+              :math:`a I + b \sigma_x + c \sigma_y + d \sigma_z`.
+            - 2x2 matrix: returns the matrix as is.
+
+        Parameters
+        ----------
+        val : float, complex, list, np.ndarray
+            Value to convert.
+
+        Returns
+        -------
+        float, complex, or np.ndarray
+            Matrix block for onsite or hopping.
+
+        Raises
+        ------
+        ValueError
+            If input is not a valid format.
         """
         # spinless case
         if self._nspin == 1:
@@ -1002,14 +1159,30 @@ class TBModel:
 
     def get_velocity(self, k_pts, cartesian=False):
         """
-        Generate the velocity operator using commutator v_k = d/dk H_k for an array of k-points.
+        Generate the velocity operator via the commutator :math:`v_k = \\partial_k H_k` for an array of k-points.
 
-        Parameters:
-            model: Tight-binding model instance.
-            k_pts: Array of k-points in reduced coordinates, shape (n_kpts, dim_k).
+        Parameters
+        ----------
+        k_pts : (Nk, dim_k) array
+            Array of k-points in reduced coordinates.
+        cartesian : bool
+            If True, use Cartesian coordinates for the velocity operator.
 
-        Returns:
-            vel: Velocity operators at each k-point, shape (dim_k, n_kpts, n_orb, n_orb).
+        Returns
+        -------
+        vel : (dim_k, Nk, norb, norb) array
+            Velocity operators at each k-point. First axis indexes the cartesian direction if ``cartesian`` is True.
+            Otherwise, it indexes the reduced direction.
+
+        Notes
+        -----
+        The velocity operator is defined via the derivative of the Hamiltonian
+        with respect to k, i.e.,
+
+        .. math::
+            v_k = \\frac{\\partial H(k)}{\\partial k}
+
+        The imaginary number is omitted.
         """
         dim_k = self._dim_k
 
@@ -1098,31 +1271,51 @@ class TBModel:
 
         return vel
 
-    def get_ham(self, k_pts=None, loop=True):
+    def hamiltonian(self, k_pts=None, loop=True):
         """
-        Generate Bloch Hamiltonian for an array of k-points in reduced coordinates.
-        The Hamiltonian is defined as
-        :math: `H(k) = sum_{ij} H_{ij}(k) |\phi_i \rangle\langle \phi_j| `
-        where :math:`H_{ij}(k) = \langle \phi_i|H|\phi_j\ragnle exp(i \mathbf{k} \cdot (\mathbf{r}_i - \mathbf{r}_j + \mathbf{R}))`.
-        
-        The Hamiltonian is Hermitian, and the k-points are in reduced coordinates.
+        Generate the Bloch Hamiltonian for an array of k-points in reduced coordinates.
 
-        The Hamiltonian follows tight-binding convention I where the phase factors
-        associated with the orbital positions are included. This means :math:`H(k) \neq H(k+G)`, but
-        instead :math: `H(k) = U H(k+G) U^(\dagger)` where U is the unitary transformation that relates the
-        Hamiltonian at k and k+G, where G is a reciprocal lattice vector.
+        The Hamiltonian is computed in tight-binding convention I, which includes phase factors
+        associated with orbital positions. As a result, the Hamiltonian satisfies:
 
-        WARNING: Taking finite differences for partial k_mu H(k) won't work in convention I
-        at the boundaries.
+        .. math::
+        H(k) \\neq H(k + G), \\quad \\text{but instead} \\quad H(k) = U H(k + G) U^{\\dagger}
 
-        :param k_pts: Array of k-points in reduced coordinates, shape (n_kpts, dim_k).
-        If None, the Hamiltonian is computed for a finite sample (dim_k = 0).
+        where :math:`G` is a reciprocal lattice vector and :math:`U` is a unitary transformation
+        relating the two.
 
-        :return: Hamiltonian in the form of a numpy array.
-        The shape of the array is (n_kpts, n_orb, n_orb) for spinless models,
-        or (n_kpts, n_orb, 2, n_orb, 2) for spinful models.
-        If dim_k = 0, the shape is (n_orb, n_orb) for spinless models,
-        or (n_orb, 2, n_orb, 2) for spinful models.
+        The Hamiltonian is defined as:
+
+        .. math::
+            H(k) = \\sum_{ij} H_{ij}(k) |\\phi_i \\rangle \\langle \\phi_j|
+
+        where
+
+        .. math::
+            H_{ij}(k) = \\langle \\phi_i | H | \\phi_j \\rangle \\exp[i \\mathbf{k} \\cdot (\\mathbf{r}_i - \\mathbf{r}_j + \\mathbf{R})]
+
+        Notes
+        -----
+        - The output Hamiltonian is Hermitian.
+        - The input k-points must be in reduced (crystal) coordinates.
+        - Finite difference estimates of :math:`\\partial_{k_\\mu} H(k)` may not be accurate at
+          boundaries due to the gauge discontinuity inherent in convention I.
+
+        Parameters
+        ----------
+        k_pts : np.ndarray or None
+            Array of k-points in reduced coordinates, shape (n_kpts, dim_k).
+            If `None`, the Hamiltonian is computed at a single point (dim_k = 0),
+            corresponding to a finite sample.
+
+        Returns
+        -------
+        ham : {(n_kpts, n_orb, n_orb), (n_kpts, n_orb, 2, n_orb, 2), (n_orb, n_orb), (n_orb, 2, n_orb, 2)} array
+            Array of Bloch-Hamiltonian matrices defined on the specified k-points.
+                - If ``dim_k`` > 0: shape is (n_kpts, n_orb, n_orb) for spinless models,
+                  or (n_kpts, n_orb, 2, n_orb, 2) for spinful models.
+                - If `dim_k == 0`: shape is (n_orb, n_orb) for spinless or (n_orb, 2, n_orb, 2) for spinful.
+
         """
         # Cache invariant data to avoid repeated conversions
         dim_k = self._dim_k
@@ -1377,7 +1570,7 @@ class TBModel:
           (eval, evec) = tb.solve_all([[0.0, 0.0], [0.0, 0.2]], return_eigvecs=True)
 
         """
-        Ham = self.get_ham(k_list)
+        Ham = self.hamiltonian(k_list)
 
         if return_eigvecs:
             eigvals, eigvecs = self._sol_ham(
@@ -2554,44 +2747,54 @@ somehow changed Cartesian coordinates of orbitals."""
         abelian:bool=True,
     ):
         """
-        Generates the Berry curvature from the velocity operator :math:`dH/dk`.
-        The Berry curvature is computed as
+        Compute the Berry curvature at a list of k-points.
+
+        Parameters
+        ----------
+        k_pts : (Nk, dim_k) array
+            Array of k-points with shape (Nk, dim_k), where Nk is the number of points
+            and dim_k is the dimensionality of the k-space.
+        evals : (Nk, n_states) array, optional
+            Eigenvalues of the Hamiltonian at the k-points. If not provided, they will be computed.
+        evecs : (Nk, n_states, n_orb) array, optional
+            Eigenvectors of the Hamiltonian. If not provided, they will be computed.
+        occ_idxs : 1D array, optional
+            Indices of the occupied bands. Defaults to the first half of the states.
+        dirs : str or tuple of int, optional
+            Directions in k-space for which to compute the curvature.
+            If "all", computes all components. If a tuple, restricts to specified indices.
+        cartesian : bool, optional
+            If True, computes the velocity operator in Cartesian coordinates.
+            Default is False (reduced coordinates).
+        abelian : bool, optional
+            If True, returns the trace of the Berry curvature tensor (abelian case).
+            If False, returns the full tensor.
+
+        Returns
+        -------
+        b_curv : {(dim_k, dim_k, Nk, n_states, n_states), (Nk, n_states, n_states), (Nk)}
+            Berry curvature tensor. If ``dirs`` is "all", shape is (dim_k, dim_k, Nk, n_orb, n_orb).
+            If ``dirs`` is a tuple, shape is (Nk, n_orb, n_orb) and the returned tensor is restricted to the specified directions.
+            If ``abelian`` is True, returns the band-trace of the Berry curvature tensor. 
+
+        Notes
+        -----
+        The Berry curvature is computed from the velocity operator 
+        :math:`v_k = i \\partial_k H_k`. Specifically, for :math:`(m,n) \in \\text{occ}`,
 
         .. math::
-            \Omega_{\mu \nu;\ mn}(k) =  \sum_{l\in \rm con} \frac{ \langle u_{mk} | v^{\mu}_k | u_{lk} \rangle \langle u_{lk} | v_k^{\nu} | u_{mk} \rangle - \langle u_{mk} | v_k^{\nu} | u_{lk} \rangle \langle u_{lk} | v_k^{\mu} | u_{mk} \rangle }{ (E_{nk} - E_{lk})(E_{mk} - E_{lk})}
-        
-        :param k_pts (np.ndarray):
-            k-points at which to compute Berry curvature.
-            Shape should be (Nk, dim_k) where Nk is the number of k-points
-            and dim_k is the dimension of the k-space.
-        :param evals (np.ndarray, optional):
-            Eigenvalues of the Hamiltonian at the k-points.
-            If not provided, they will be computed.
-            Shape should be (Nk, n_states) where n_states is the number of states.
-        :param evecs (np.ndarray, optional):
-            Eigenvectors of the Hamiltonian at the k-points.
-            If not provided, they will be computed.    
-            Shape should be (Nk, n_states, n_orb) where n_orb is the number of orbitals.
-        :param occ_idxs (list, np.ndarray, optional):
-            Indices of the occupied bands.
-            If not provided, the first half of the states will be considered occupied.
-        :param dirs (str, tuple, optional):
-            Directions in k-space for which to compute Berry curvature.
-            If "all", curvature is computed for all dimensions.
-            If a tuple, it should contain indices of the dimensions to compute.
-        :param cartesian (bool, optional):
-            If True, the velocity operator is computed in Cartesian coordinates.
-            Default is False, which uses reduced coordinates.
-        :param abelian (bool, optional):
-            If True, the Berry curvature is computed in an abelian way,
-            i.e., the trace over the orbital indices is taken.
-            If False, the full tensor is returned.  
+            \\Omega_{\\mu \\nu;\ mn}(k) =  \\sum_{l \\notin \\text{occ}} 
+            \\frac{ 
+                \\langle u_{mk} | v^{\\mu}_k | u_{lk} \\rangle 
+                \\langle u_{lk} | v_k^{\\nu} | u_{nk} \\rangle 
+                - 
+                \\langle u_{mk} | v_k^{\\nu} | u_{lk} \\rangle 
+                \\langle u_{lk} | v_k^{\\mu} | u_{nk} \\rangle 
+            }{ 
+                (E_{nk} - E_{lk})(E_{mk} - E_{lk})
+            }
 
-        :returns:
-            * Berry curvature tensor **np.ndarray** 
-                If `dirs` is "all", shape will be (dim_k, dim_k, Nk, n_orb, n_orb).
-                If `dirs` is a tuple, shape will be (Nk, n_orb, n_orb) for
-                the specified dimensions.
+        This quantity is an anti-symmetric under `μ ↔ ν`.
         """
 
         if self._dim_k < 2:

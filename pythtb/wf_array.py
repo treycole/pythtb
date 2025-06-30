@@ -1471,7 +1471,7 @@ class Bloch(WFArray):
 
     def set_Bloch_ham(self, lambda_vals=None, model_fxn=None):
         if lambda_vals is None:
-            H_k = self.model.get_ham(k_pts=self.k_mesh.flat_mesh)  # [Nk, norb, norb]
+            H_k = self.model.hamiltonian(k_pts=self.k_mesh.flat_mesh)  # [Nk, norb, norb]
             # [nk1, nk2, ..., norb, norb]
             self.H_k = H_k.reshape(*[nk for nk in self.k_mesh.nks], *H_k.shape[1:])
             return
@@ -1501,9 +1501,9 @@ class Bloch(WFArray):
             }
 
             # Generate the model with modified parameters
-            modified_model = model_fxn(**param_dict)
+            modified_model : TBModel = model_fxn(**param_dict)
 
-            H_kl[param_set] = modified_model.get_ham(k_pts=self.k_mesh.flat_mesh)
+            H_kl[param_set] = modified_model.hamiltonian(k_pts=self.k_mesh.flat_mesh)
 
         # Reshape for compatibility with existing Berry curvature methods
 
