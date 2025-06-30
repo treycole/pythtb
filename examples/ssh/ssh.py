@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
-# one dimensional chain
+# one dimensional ssh chain
+# demontrates new `TBModel.hamiltonian` function
 
 # Copyright under GNU General Public License 2010, 2012, 2016
 # by Sinisa Coh and David Vanderbilt (see gpl-pythtb.txt)
 
-from pythtb import TBModel, WFArray
+from pythtb import TBModel
 from pythtb.utils import pauli_decompose
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
-from matplotlib import cm
 import numpy as np
 
 def ssh(v, w):
@@ -33,7 +33,7 @@ fig, (ax1, ax2) = plt.subplots(1, 2)
 
 model = ssh(v, w_init)
 evals, evecs = model.solve_ham(k_vec, return_eigvecs=True)
-ham = model.get_ham(k_vec)
+ham = model.hamiltonian(k_vec)
 
 # Compute phase difference
 numerator = evecs[:, :, 1]
@@ -114,7 +114,7 @@ def update(val):
     w = w_slider.val
     model = ssh(v, w)
     evals, evecs = model.solve_ham(k_vec, return_eigvecs=True)
-    ham = model.get_ham(k_vec)
+    ham = model.hamiltonian(k_vec)
 
     numerator = evecs[:, :, 1]
     denominator = evecs[:, :, 0]

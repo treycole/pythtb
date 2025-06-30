@@ -1,30 +1,30 @@
 {
     "haldane_bp": {
-        "last_pass": "2025-06-30T10:57:13.366929",
+        "last_pass": "2025-06-30T14:55:26.630745",
         "pythtb_version": "2.0.0",
         "python_version": "3.11.11",
         "status": "pass"
     },
     "haldane_fin": {
-        "last_pass": "2025-06-30T10:57:14.023967",
+        "last_pass": "2025-06-30T14:55:27.190201",
         "pythtb_version": "2.0.0",
         "python_version": "3.11.11",
         "status": "pass"
     },
     "haldane_hwf": {
-        "last_pass": "2025-06-30T10:57:14.232569",
+        "last_pass": "2025-06-30T14:55:27.369133",
         "pythtb_version": "2.0.0",
         "python_version": "3.11.11",
         "status": "pass"
     },
     "haldane": {
-        "last_pass": "2025-06-30T10:57:13.207866",
+        "last_pass": "2025-06-30T14:55:26.519823",
         "pythtb_version": "2.0.0",
         "python_version": "3.11.11",
         "status": "pass"
     },
     "edge": {
-        "last_pass": "2025-06-30T10:57:13.179977",
+        "last_pass": "2025-06-30T14:55:26.501699",
         "pythtb_version": "2.0.0",
         "python_version": "3.11.11",
         "status": "pass"
