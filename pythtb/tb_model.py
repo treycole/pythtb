@@ -1102,14 +1102,14 @@ class TBModel:
         """
         Generate Bloch Hamiltonian for an array of k-points in reduced coordinates.
         The Hamiltonian is defined as
-        H(k) = sum_{ij} H_{ij}(k) |i><j| 
-        where H_{ij}(k) = <i|H|j> exp(i k . (r_i - r_j + R)).
+        :math: `H(k) = sum_{ij} H_{ij}(k) |\phi_i \rangle\langle \phi_j| `
+        where :math:`H_{ij}(k) = \langle \phi_i|H|\phi_j\ragnle exp(i \mathbf{k} \cdot (\mathbf{r}_i - \mathbf{r}_j + \mathbf{R}))`.
         
         The Hamiltonian is Hermitian, and the k-points are in reduced coordinates.
 
         The Hamiltonian follows tight-binding convention I where the phase factors
-        associated with the orbital positions are included. This means H(k) =\= H(k+G), but
-        instead H(k) = U H(k+G) U^(dagger) where U is the unitary transformation that relates the
+        associated with the orbital positions are included. This means :math:`H(k) \neq H(k+G)`, but
+        instead :math: `H(k) = U H(k+G) U^(\dagger)` where U is the unitary transformation that relates the
         Hamiltonian at k and k+G, where G is a reciprocal lattice vector.
 
         WARNING: Taking finite differences for partial k_mu H(k) won't work in convention I
@@ -1181,7 +1181,7 @@ class TBModel:
                 else:
                     raise ValueError("Invalid spin value.")
 
-        amps = np.array([h[0] for h in hoppings], dtype=complex)
+        hop_amps = np.array([h[0] for h in hoppings], dtype=complex)
         i_indices = np.array([h[1] for h in hoppings])
         j_indices = np.array([h[2] for h in hoppings])
         n_hops = len(hoppings)
@@ -1189,14 +1189,14 @@ class TBModel:
         if dim_k == 0:
             if nspin == 1:
                 ham  = np.zeros((norb, norb), complex)
-                np.add.at(ham, (i_indices, j_indices), amps)
-                np.add.at(ham, (j_indices, i_indices), amps.conj())
+                np.add.at(ham, (i_indices, j_indices), hop_amps)
+                np.add.at(ham, (j_indices, i_indices), hop_amps.conj())
                 np.fill_diagonal(ham, site_energies)
             elif nspin == 2:
                 ham = np.zeros((norb, 2, norb, 2), dtype=complex)
                 for h in range(n_hops):
-                    ham[i_indices[h], :, j_indices[h], :] += amps[h]
-                    ham[j_indices[h], :, i_indices[h], :] += amps[h].conj().T
+                    ham[i_indices[h], :, j_indices[h], :] += hop_amps[h]
+                    ham[j_indices[h], :, i_indices[h], :] += hop_amps[h].conj().T
 
                 for orb in orb_idxs:
                     ham[orb, :, orb, :] += site_energies[orb]
@@ -1219,14 +1219,14 @@ class TBModel:
                 T_f = np.zeros((n_hops, norb, norb), complex)
                 T_r = np.zeros((n_hops, norb, norb), complex)
                 idx = np.arange(n_hops)
-                T_f[idx, i_indices, j_indices] = amps
-                T_r[idx, j_indices, i_indices] = amps.conj()
+                T_f[idx, i_indices, j_indices] = hop_amps
+                T_r[idx, j_indices, i_indices] = hop_amps.conj()
             elif nspin == 2:
                 T_f = np.zeros((n_hops, norb, 2, norb, 2), complex)
                 T_r = np.zeros((n_hops, norb, 2, norb, 2), complex)
                 for h in range(n_hops):
-                    T_f[h, i_indices[h], :, j_indices[h], :] = amps[h]
-                    T_r[h, j_indices[h], :, i_indices[h], :] = amps[h].conj().T
+                    T_f[h, i_indices[h], :, j_indices[h], :] = hop_amps[h]
+                    T_r[h, j_indices[h], :, i_indices[h], :] = hop_amps[h].conj().T
 
             ham = np.tensordot(phases, T_f, axes=([1], [0]))
             ham_hc = np.tensordot(phases.conj(), T_r, axes=([1], [0]))
@@ -1449,8 +1449,6 @@ class TBModel:
 
         See also these examples: :ref:`haldane_fin-example`,
         :ref:`edge-example`.
-
-
         """
         if self._dim_k == 0:
             raise Exception("\n\nModel is already finite")
@@ -2552,48 +2550,45 @@ somehow changed Cartesian coordinates of orbitals."""
         evecs=None,
         occ_idxs=None,
         dirs="all",
-        cartesian=False,
-        abelian=True,
+        cartesian:bool=False,
+        abelian:bool=True,
     ):
         """
-        Generates the Berry curvature from the velocity operator dH/dk.
+        Generates the Berry curvature from the velocity operator :math:`dH/dk`.
         The Berry curvature is computed as
-        :math:`\Omega_{mn} = i \sum_{l\in \rm con} \left( \langle u_m | v_\mu | u_l \rangle
-        \langle u_l | v_\nu | u_m \rangle - \langle u_m | v_\nu | u_l \rangle
-        \langle u_l | v_\mu | u_m \rangle
-        \right) / (E_n - E_l)(E_m - E_l)`.
 
-        Args:
-            k_pts (np.ndarray):
-                k-points at which to compute Berry curvature.
-                Shape should be (Nk, dim_k) where Nk is the number of k-points
-                and dim_k is the dimension of the k-space.
-            evals (np.ndarray, optional):
-                Eigenvalues of the Hamiltonian at the k-points.
-                If not provided, they will be computed.
-                Shape should be (Nk, n_states) where n_states is the number of states.
-            evecs (np.ndarray, optional):
-                Eigenvectors of the Hamiltonian at the k-points.
-                If not provided, they will be computed.    
-                Shape should be (Nk, n_states, n_orb) where n_orb is the number of orbitals.
-            occ_idxs (list, np.ndarray, optional):
-                Indices of the occupied bands.
-                If not provided, the first half of the states will be considered occupied.
-            dirs (str, tuple, optional):
-                Directions in k-space for which to compute Berry curvature.
-                If "all", curvature is computed for all dimensions.
-                If a tuple, it should contain indices of the dimensions to compute.
-            cartesian (bool, optional):
-                If True, the velocity operator is computed in Cartesian coordinates.
-                Default is False, which uses reduced coordinates.
-            abelian (bool, optional):
-                If True, the Berry curvature is computed in an abelian way,
-                i.e., the trace over the orbital indices is taken.
-                If False, the full tensor is returned.  
+        .. math::
+            \Omega_{\mu \nu;\ mn}(k) =  \sum_{l\in \rm con} \frac{ \langle u_{mk} | v^{\mu}_k | u_{lk} \rangle \langle u_{lk} | v_k^{\nu} | u_{mk} \rangle - \langle u_{mk} | v_k^{\nu} | u_{lk} \rangle \langle u_{lk} | v_k^{\mu} | u_{mk} \rangle }{ (E_{nk} - E_{lk})(E_{mk} - E_{lk})}
+        
+        :param k_pts (np.ndarray):
+            k-points at which to compute Berry curvature.
+            Shape should be (Nk, dim_k) where Nk is the number of k-points
+            and dim_k is the dimension of the k-space.
+        :param evals (np.ndarray, optional):
+            Eigenvalues of the Hamiltonian at the k-points.
+            If not provided, they will be computed.
+            Shape should be (Nk, n_states) where n_states is the number of states.
+        :param evecs (np.ndarray, optional):
+            Eigenvectors of the Hamiltonian at the k-points.
+            If not provided, they will be computed.    
+            Shape should be (Nk, n_states, n_orb) where n_orb is the number of orbitals.
+        :param occ_idxs (list, np.ndarray, optional):
+            Indices of the occupied bands.
+            If not provided, the first half of the states will be considered occupied.
+        :param dirs (str, tuple, optional):
+            Directions in k-space for which to compute Berry curvature.
+            If "all", curvature is computed for all dimensions.
+            If a tuple, it should contain indices of the dimensions to compute.
+        :param cartesian (bool, optional):
+            If True, the velocity operator is computed in Cartesian coordinates.
+            Default is False, which uses reduced coordinates.
+        :param abelian (bool, optional):
+            If True, the Berry curvature is computed in an abelian way,
+            i.e., the trace over the orbital indices is taken.
+            If False, the full tensor is returned.  
 
-        Returns:
-            np.ndarray:
-                Berry curvature tensor.
+        :returns:
+            * Berry curvature tensor **np.ndarray** 
                 If `dirs` is "all", shape will be (dim_k, dim_k, Nk, n_orb, n_orb).
                 If `dirs` is a tuple, shape will be (Nk, n_orb, n_orb) for
                 the specified dimensions.
