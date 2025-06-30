@@ -9,7 +9,7 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ---
 ### Changed
 
-- Renamed public classes (see [DEVLOG](notes/DEVLOG.md) for more details)
+- Renamed public classes (see [DEVLOG](https://github.com/sinisacoh/pythtb/blob/v2/dev/DEVLOG.md) for more details)
     - `tb_model` -> `TBModel`
     - `wf_array` -> `WFArray`
     - `w90` -> `W90`
@@ -56,14 +56,14 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Added
 
 #### Models
-- Added a [folder of example models](pythtb/models) that is importable using, e.g.,
+- Added a [folder of example models](https://github.com/sinisacoh/pythtb/blob/v2/pythtb/models) that is importable using, e.g.,
   ```
   from pythtb.models import haldane
   my_model = haldane(delta, t, t2)
   ```
 #### Examples
-- [visualize_3d.py](examples/visualize/visualize_3d.py): demonstrates the 3D visualization feature for `TBModel`
-- [ssh.py](examples/ssh/ssh.py): Constructs the ssh model and plots the band structure with a slider to change the intracell hopping. 
+- [visualize_3d.py](https://github.com/sinisacoh/pythtb/blob/v2/examples/visualize/visualize_3d.py): demonstrates the 3D visualization feature for `TBModel`
+- [ssh.py](https://github.com/sinisacoh/pythtb/blob/v2/examples/ssh/ssh.py): Constructs the ssh model and plots the band structure with a slider to change the intracell hopping. 
 
 #### `TBModel`
 - `TBModel.__repr__`: Object representation now displays `rdim`, `kdim`, and `nspin`. 
@@ -111,7 +111,7 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - `reset` flag for `TBModel.set_onsite`: Use `set` instead.
 
 ### Developer Notes
-For a detailed explanation of the changes, see the developer documentation [DEVELOPMENT.md](dev/DEVELOPMENT.md).
+For a detailed explanation of the changes, see the developer documentation [DEVELOPMENT.md](https://github.com/sinisacoh/pythtb/blob/v2/dev/DEVELOPMENT.md).
 
 
 
@@ -159,9 +159,8 @@ For a detailed explanation of the changes, see the developer documentation [DEVE
 - Cleaned up period boundary condition in the `wf_array` class
 
 ### Fixed
-- Fixed bug with reduce_dim.  Some hopping terms were not correctly
-  casted as onsite terms.
-- Fixed bug in impose_pbc when dim_k is less than dim_r.
+- Fixed bug with reduce_dim.  Some hopping terms were not correctly cast as onsite terms.
+- Fixed bug in `impose_pbc` when `dim_k` is less than `dim_r`.
 
 ### Added
 - Added interface with Wannier90 package
