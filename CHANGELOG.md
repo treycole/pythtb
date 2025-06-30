@@ -68,7 +68,7 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 #### `TBModel`
 - `TBModel.__repr__`: Object representation now displays `rdim`, `kdim`, and `nspin`. 
 - `TBModel.__str__`: Printing a `TBModel` instance using `print(TBModel)` calls the `report()` (formerly `dislplay`) method and prints model information.
-- `TBModel.get_ham`: Generates Hamiltonians for both single and multiple k-points.
+- `TBModel.hamiltonian`: Generates Hamiltonians for both single and multiple k-points.
 - `TBModel.get_velocity`: Computes $dH/dk$ (velocity operator) in the orbital basis.
 - `TBModel.berry_curv`: Computes Berry curvature from $dH/dk$ elements using the Kubo formula. Accepts occupied band indices. Assumes there is a global gap that defines the occupied and unoccupied bands. 
 - `TBModel.chern`: Returns Chern number for a given set of occupied bands using the Berry curvature from above. Assumes there is a global gap that defines the occupied and unoccupied bands. 
