@@ -32,7 +32,7 @@ my_model.set_hop(t, 1, 0, [0, 1, 0])
 my_model.set_hop(t, 1, 0, [1, 1, 0])
 
 # print tight-binding model
-my_model.display()
+print(my_model)
 
 # ----------------------------------------
 # specify k-space path

@@ -33,7 +33,7 @@ print("\n========================================================")
 print("construct and display original model with tilted")
 print("nonperiodic lattice vector")
 print("========================================================\n")
-model_orig.display()
+print(model_orig)
 
 # ------
 
@@ -45,7 +45,7 @@ print("vector changed to be normal to the periodic direction")
 print("========================================================\n")
 
 model_perp = model_orig.change_nonperiodic_vector(1)
-model_perp.display()
+print(model_perp)
 
 # ------
 

@@ -442,7 +442,6 @@ class WFArray:
         # Store all wavefunctions in the WFArray
         idx_arr = np.ndindex(*mesh_size)
         for idx in idx_arr:
-            # self[*idx] = evecs[*idx]
             self[idx] = evecs[idx]
 
         # impose periodic boundary conditions along all directions

@@ -32,7 +32,7 @@ ta = 0.4  # six weaker hoppings
 tb = 0.7  # two stronger hoppings
 bulk_model = set_model(delta, ta, tb)
 
-# bulk_model.display()
+print(bulk_model)
 
 # make slab model
 nl = 9  # number of layers
@@ -42,7 +42,7 @@ slab_model = slab_model.remove_orb(2 * nl - 1)
 
 print("\nConstructed %2d-layer slab model\n" % nl)
 
-# slab_model.display()
+print(slab_model)
 
 # solve on grid to check insulating
 nk = 10
