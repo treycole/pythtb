@@ -1,12 +1,13 @@
 from pythtb import TBModel
 import numpy as np
 
+
 def kane_mele(
-        onsite: int | float | np.integer | np.floating, 
-        t: int | float | complex | np.integer | np.floating |  np.complexfloating, 
-        soc: int | float | complex | np.integer | np.floating |  np.complexfloating, 
-        rashba: int | float | complex | np.integer | np.floating |  np.complexfloating
-        ) -> TBModel:
+    onsite: int | float | np.integer | np.floating,
+    t: int | float | complex | np.integer | np.floating | np.complexfloating,
+    soc: int | float | complex | np.integer | np.floating | np.complexfloating,
+    rashba: int | float | complex | np.integer | np.floating | np.complexfloating,
+) -> TBModel:
     """
     kane_mele tight-binding model.
 
@@ -45,7 +46,7 @@ def kane_mele(
 
     # set hoppings (one for each connected pair of orbitals)
     # (amplitude, i, j, [lattice vector to cell containing j])
-    
+
     # spin-independent first-neighbor hoppings
     ret_model.set_hop(t, 0, 1, [0, 0])
     ret_model.set_hop(t, 0, 1, [0, -1])
@@ -54,21 +55,29 @@ def kane_mele(
     # second-neighbour spin-orbit hoppings (s_z)
     nnn_hop = 1j * soc * sigma_z
     ret_model.set_hop(-nnn_hop, 0, 0, [0, 1])
-    ret_model.set_hop(nnn_hop,  0, 0, [1, 0])
+    ret_model.set_hop(nnn_hop, 0, 0, [1, 0])
     ret_model.set_hop(-nnn_hop, 0, 0, [1, -1])
-    ret_model.set_hop(nnn_hop,  1, 1, [0, 1])
+    ret_model.set_hop(nnn_hop, 1, 1, [0, 1])
     ret_model.set_hop(-nnn_hop, 1, 1, [1, 0])
-    ret_model.set_hop(nnn_hop,  1, 1, [1, -1])
+    ret_model.set_hop(nnn_hop, 1, 1, [1, -1])
 
     # Rashba first-neighbor hoppings: (s_x)(dy)-(s_y)(d_x)
- 
+
     # bond unit vectors are (np.sqrt(3) / 2, 1/2) then (0,-1) then (-np.sqrt(3) / 2, 1/2)
     ret_model.set_hop(
-        1j * rashba * ((1/2) * sigma_x - (np.sqrt(3) / 2) * sigma_y), 0, 1, [0, 0], mode="add"
+        1j * rashba * ((1 / 2) * sigma_x - (np.sqrt(3) / 2) * sigma_y),
+        0,
+        1,
+        [0, 0],
+        mode="add",
     )
     ret_model.set_hop(1j * rashba * -sigma_x, 0, 1, [0, -1], mode="add")
     ret_model.set_hop(
-        1j * rashba * ((1/2) * sigma_x + (np.sqrt(3) / 2) * sigma_y), 0, 1, [-1, 0], mode="add"
+        1j * rashba * ((1 / 2) * sigma_x + (np.sqrt(3) / 2) * sigma_y),
+        0,
+        1,
+        [-1, 0],
+        mode="add",
     )
 
     return ret_model

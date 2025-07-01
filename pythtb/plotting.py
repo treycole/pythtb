@@ -830,7 +830,7 @@ def plot_bands(
     model,
     k_path,
     nk=101,
-    evals=None, 
+    evals=None,
     evecs=None,
     k_label=None,
     proj_orb_idx=None,

@@ -12,6 +12,7 @@ __all__ = [
     "KMesh",
 ]
 
+
 def k_uniform_mesh(model, mesh_size) -> np.ndarray:
     r"""
     Returns a uniform grid of k-points that can be passed to

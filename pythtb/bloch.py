@@ -2,6 +2,7 @@ from pythtb import TBModel, WFArray, KMesh
 import numpy as np
 from itertools import product
 
+
 class Bloch(WFArray):
     def __init__(self, model: TBModel, *param_dims):
         """Class for storing and manipulating Bloch like wavefunctions.
@@ -75,14 +76,14 @@ class Bloch(WFArray):
                 self._wf_shape = (*self.nks, self._n_states, self._n_orb)
 
         # self.set_Bloch_ham()
+
     @property
     def u_wfs(self):
         return self._u_wfs
-    
+
     @property
     def psi_wfs(self):
         return self._psi_wfs
-
 
     def get_wf_axes(self):
         dict_axes = {
@@ -101,7 +102,9 @@ class Bloch(WFArray):
 
     def set_Bloch_ham(self, lambda_vals=None, model_fxn=None):
         if lambda_vals is None:
-            H_k = self.model.hamiltonian(k_pts=self.k_mesh.flat_mesh)  # [Nk, norb, norb]
+            H_k = self.model.hamiltonian(
+                k_pts=self.k_mesh.flat_mesh
+            )  # [Nk, norb, norb]
             # [nk1, nk2, ..., norb, norb]
             self.H_k = H_k.reshape(*[nk for nk in self.k_mesh.nks], *H_k.shape[1:])
             return
@@ -540,7 +543,6 @@ class Bloch(WFArray):
         else:
             return U_wilson
 
-
     # works in all cases
     def berry_loop(self, wfs_loop, evals=False):
         U_wilson = self.wilson_loop(wfs_loop, evals=evals)
@@ -549,7 +551,6 @@ class Bloch(WFArray):
             return U_wilson[1]
         else:
             return -np.angle(np.linalg.det(U_wilson))  # total Berry phase
-
 
     # Works in all cases
     def get_links(self, state_idx):
@@ -607,7 +608,6 @@ class Bloch(WFArray):
             U_forward.append(U_forward_mu)
 
         return np.array(U_forward)
-
 
     def berry_flux_plaq(self, state_idx=None, non_abelian=False):
         """Compute fluxes on a two-dimensional plane of states.
@@ -667,7 +667,6 @@ class Bloch(WFArray):
                 Berry_flux[nu, mu] = -phases_plane
 
         return Berry_flux
-
 
     def berry_curv(
         self,
@@ -777,7 +776,6 @@ class Bloch(WFArray):
         else:
             return Berry_curv
 
-
     def chern_num(self, dirs=(0, 1), band_idxs=None):
         if band_idxs is None:
             n_occ = int(self._n_states / 2)
@@ -787,7 +785,6 @@ class Bloch(WFArray):
         Chern = np.sum(berry_flux[dirs] / (2 * np.pi))
 
         return Chern
-
 
     # TODO allow for subbands
     def trace_metric(self):
@@ -805,7 +802,6 @@ class Bloch(WFArray):
             )
 
         return w_b[0] * np.sum(T_kb, axis=-1)
-
 
     # TODO allow for subbands
     def omega_til(self):
@@ -834,7 +830,6 @@ class Bloch(WFArray):
             )
         )
         return Omega_tilde
-
 
     def interp_op(self, O_k, k_path, plaq=False):
         k_mesh = np.copy(self.k_mesh.square_mesh)
@@ -871,7 +866,6 @@ class Bloch(WFArray):
 
         return O_k_interp
 
-
     def interp_energy(self, k_path, return_eigvecs=False):
         H_k_proj = self.get_proj_ham()
         H_k_interp = self.interp_op(H_k_proj, k_path)
@@ -886,7 +880,6 @@ class Bloch(WFArray):
         else:
             eigvals_interp = np.linalg.eigvalsh(H_k_interp)
             return eigvals_interp
-
 
     # TODO allow for subbands
     def get_proj_ham(self):
