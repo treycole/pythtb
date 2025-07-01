@@ -38,16 +38,18 @@ def set_logging_level(level):
 from .tb_model import *
 from .wf_array import *
 from .w90 import *
-from .k_mesh import *
 from .wannier import *
+from .bloch import *
+from .k_mesh import *
 from .utils import *
 
-from . import tb_model, wf_array, w90, k_mesh, wannier, utils
+from . import tb_model, wf_array, w90, bloch, k_mesh, wannier, utils
 
 __all__ = []
 __all__ += tb_model.__all__
 __all__ += wf_array.__all__
 __all__ += w90.__all__
+__all__ += bloch.__all__
 __all__ += k_mesh.__all__
 __all__ += wannier.__all__
 __all__ += utils.__all__

@@ -33,10 +33,3 @@ def test_example():
         eigvals = eigvals.T  # in v2.0 eigvals shape is changed
         np.testing.assert_allclose(eigvals, expected[label], rtol=1e-8, atol=1e-14)
     
-
-def get_version(pkg):
-    try:
-        import importlib.metadata as im
-        return im.version(pkg)
-    except Exception:
-        return "unknown"

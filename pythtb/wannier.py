@@ -1,9 +1,7 @@
 import numpy as np
-from .wf_array import Bloch
+from .bloch import Bloch
 from itertools import product
 from typing import TYPE_CHECKING
-
-# from copy import deepcopy
 
 if TYPE_CHECKING:
     from .k_mesh import KMesh
@@ -11,8 +9,19 @@ if TYPE_CHECKING:
 
 __all__ = ["Wannier"]
 
-
 class Wannier:
+    """
+    Class for constructing Wannier functions from Bloch wavefunctions.
+
+    Parameters
+    ----------
+    model : TBModel
+        The tight-binding model associated with these Wannier functions.
+    energy_eigstates : Bloch
+        The Bloch wavefunctions corresponding to the energy eigenstates.
+    nks : list
+        The k-point mesh dimensions.
+    """
     def __init__(self, model: "TBModel", energy_eigstates: Bloch, *nks):
         self.model: "TBModel" = model
         self.model.set_k_mesh(*nks)

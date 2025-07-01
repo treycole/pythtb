@@ -3,12 +3,12 @@ import numpy as np
 from tests.utils import import_run
 
 OUTPUTDIR = "golden_outputs"
+#NOTE: Replace with your expected output file name(s). Should be in order
+# of the results returned by run()
 OUTPUTS = {
     "evecs": "evecs.npy",
     "d_vec": "d_vec.npy"
 }
-#NOTE: Replace with your expected output file name(s). Should be in order
-# of the results returned by run()
 
 def test_example():
     example_dir = os.path.dirname(__file__)
@@ -31,10 +31,3 @@ def test_example():
     #NOTE: Modify to match your expected output structure
     for i, (label, fname) in enumerate(OUTPUTS.items()):
         np.testing.assert_allclose(results[i], expected[label], rtol=1e-8, atol=1e-14)
-
-def get_version(pkg):
-    try:
-        import importlib.metadata as im
-        return im.version(pkg)
-    except Exception:
-        return "unknown"

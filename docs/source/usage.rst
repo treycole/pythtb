@@ -10,6 +10,10 @@ The main PythTB module consists of these three parts:
 * :class:`pythtb.WFArray` class for computing Berry phase (and related) properties.
 
 * :class:`pythtb.W90` class for interface with `Wannier90 <http://www.wannier.org>`_ code that allows construction of tight-binding models based on first-principles density functional theory calculations.
+   
+* :class:`pythtb.Wannier` class for constructing Wannier functions from Bloch wavefunctions defined on a full mesh.
+
+* :class:`pythtb.Bloch` class for working with Bloch states and related quantities.
 
 .. automodule:: pythtb
-   :members: TBModel, WFArray, W90
+   :members: TBModel, WFArray, W90, Wannier, Bloch

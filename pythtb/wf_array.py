@@ -5,8 +5,7 @@ import numpy as np
 import copy  # for deepcopying
 from itertools import product
 
-__all__ = ["WFArray", "Bloch"]
-
+__all__ = ["WFArray"]
 
 class WFArray:
     r"""

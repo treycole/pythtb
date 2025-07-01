@@ -1,14 +1,24 @@
-from pythtb import TBModel, WFArray, KMesh
+from .tb_model import TBModel
+from .k_mesh import KMesh
+from .wf_array import WFArray
 import numpy as np
 from itertools import product
 
+__all__ = ["Bloch"] 
 
 class Bloch(WFArray):
-    def __init__(self, model: TBModel, *param_dims):
-        """Class for storing and manipulating Bloch like wavefunctions.
+    """Class for storing and manipulating Bloch wavefunctions.
 
-        Wavefunctions are defined on a semi-full reciprocal space mesh.
-        """
+    This is a subclass of WFArray designed specifically for Bloch wavefunctions.
+
+    Parameters
+    ----------
+    model : TBModel
+        The tight-binding model associated with these Bloch wavefunctions.
+    param_dims : tuple
+        The dimensions of the parameter space (k-space and/or adiabatic parameters).
+    """
+    def __init__(self, model: TBModel, *param_dims):
         super().__init__(model, param_dims)
         assert (
             len(param_dims) >= model.dim_k
@@ -101,6 +111,16 @@ class Bloch(WFArray):
         self.pbc_lam = True
 
     def set_Bloch_ham(self, lambda_vals=None, model_fxn=None):
+        """
+        Set the Bloch Hamiltonian for the wavefunctions.
+
+        Parameters
+        ----------
+        lambda_vals : dict, optional
+            A dictionary of parameter values for the adiabatic evolution.
+        model_fxn : function, optional
+            A function that returns a model given a set of parameters.
+        """
         if lambda_vals is None:
             H_k = self.model.hamiltonian(
                 k_pts=self.k_mesh.flat_mesh
@@ -162,17 +182,18 @@ class Bloch(WFArray):
 
         self.H_k = H_kl
 
-    def solve_model(self, model_fxn=None, lambda_vals=None):
+    def solve_model(self, lambda_vals=None, model_fxn=None):
         """
         Solves for the eigenstates of the Bloch Hamiltonian defined by the model over a semi-full
         k-mesh, e.g. in 3D reduced coordinates {k = [kx, ky, kz] | k_i in [0, 1)}.
 
-        Args:
+        Parameters
+        ----------
+            lambda_vals (dict, optional):
+                Dictionary of parameter values for adiabatic evolution. Each key corresponds to
+                a varying parameter and the values are arrays
             model_fxn (function, optional):
                 A function that returns a model given a set of parameters.
-            param_vals (dict, optional):
-                Dictionary of parameter values for adiabatic evoltuion. Each key corresponds to
-                a varying parameter and the values are arrays
         """
 
         if lambda_vals is None:
