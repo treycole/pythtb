@@ -28,6 +28,8 @@ conda create -n pythtb-dev python=3.11
 # Activate the environment
 conda activate pythtb-dev
 
+# The environment should now be visible: `$(pythtb-deb) USER`
+
 # Install required dependencies
 conda install numpy matplotlib
 
