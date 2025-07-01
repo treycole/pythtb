@@ -53,15 +53,6 @@ def pytest_sessionfinish(session, exitstatus):
     tree = build_nested_tree(results)
     output.extend(format_tree(tree))
 
-
-    # for folder in sorted(results):
-    #     output.append(f"- **{folder}/**")
-    #     for test_name, passed in sorted(results[folder]):
-    #         check = "✅" if passed else "❌"
-    #         output.append(f"    - {check} `{test_name}`")
-
-    #     output.append("")
-
     out_path = Path(session.config.rootdir) / "tests" / "README.md"
     print(f"\n✅ Wrote nested test results to {out_path}")
 
