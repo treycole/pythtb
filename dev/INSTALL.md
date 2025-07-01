@@ -35,7 +35,7 @@ conda install numpy matplotlib
 conda install jupyterlab
 ```
 
-## Installing PythTB in Editable Mode
+### Installing PythTB in Editable Mode
 
 After setting up the environment, clone the repository and install it in editable mode so that changes to the source code are reflected immediately without reinstalling:
 
@@ -60,7 +60,7 @@ print(pythtb.__version__)
 You should see the version number of your local install.
 
 
-## Troubleshooting
+### Troubleshooting
 
 If you encounter issues such as `ModuleNotFoundEror` or conflicts between pip and conda package managers, try:
 - Ensuring you're not installing packages globally. You need to activate the `conda` environment before installing packages.
