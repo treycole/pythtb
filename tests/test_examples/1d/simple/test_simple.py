@@ -1,8 +1,5 @@
 import os
 import numpy as np
-import json
-import datetime
-import platform
 from tests.utils import import_run
 
 OUTPUTDIR = "golden_outputs"
@@ -15,10 +12,6 @@ OUTPUTS = {
 def test_example():
     example_dir = os.path.dirname(__file__)
     run = import_run(example_dir)
-    name = os.path.basename(os.path.dirname(__file__))
-    group = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
-    base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    log_file = os.path.join(base_path, group, "status.json")
 
     # Load expected results
     expected = {}
@@ -30,49 +23,16 @@ def test_example():
     results = run()
     if not isinstance(results, (tuple, list)):
         results = [results]
-
-    # Prepare entry
-    entry = {
-        "last_pass": datetime.datetime.now().isoformat(),
-        "pythtb_version": get_version("pythtb"),
-        "python_version": platform.python_version(),
-        "status": "pass"
-    }
-    
     if len(results) != len(OUTPUTS):
-        entry["status"] = "fail"
-        entry["reason"] = f"Expected {len(OUTPUTS)} outputs, got {len(results)}"
-        raise AssertionError(entry["reason"])
-    
+        raise AssertionError(f"Expected {len(OUTPUTS)} outputs, got {len(results)}")
+
     # Compare results with expected outputs
     #NOTE: Modify to match your expected output structure
-    try:
-        for i, (label, fname) in enumerate(OUTPUTS.items()):
-            eigvals = results[i]
-            eigvals = eigvals.T  # in v2.0 eigvals shape is changed
-            np.testing.assert_allclose(eigvals, expected[label], rtol=1e-8, atol=1e-14)
-    except AssertionError as e:
-        entry["status"] = "fail"
-        entry["reason"] = f"Mismatch in {label}: {str(e)}"
-
-    # Log the pass/fail status
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
-    status = {}
-    if os.path.exists(log_file):
-        try:
-            with open(log_file) as f:
-                content = f.read().strip()
-                if content:
-                    status = json.loads(content)
-        except Exception as e:
-            print(f"⚠️ Warning: Couldn't parse {log_file}, starting fresh. Reason: {e}")
-
-    status[name] = entry
-    with open(log_file, "w") as f:
-        json.dump(status, f, indent=4)
-
-    if entry["status"] == "fail":
-        raise AssertionError(entry["reason"])
+    for i, (label, fname) in enumerate(OUTPUTS.items()):
+        eigvals = results[i]
+        eigvals = eigvals.T  # in v2.0 eigvals shape is changed
+        np.testing.assert_allclose(eigvals, expected[label], rtol=1e-8, atol=1e-14)
+    
 
 def get_version(pkg):
     try:

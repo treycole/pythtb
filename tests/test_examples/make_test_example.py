@@ -37,9 +37,6 @@ def run():
     write_file(example_dir / f"test_{name}.py", '''\
 import os
 import numpy as np
-import json
-import datetime
-import platform
 from tests.utils import import_run
 
 OUTPUTDIR = "golden_outputs"
@@ -54,10 +51,6 @@ OUTPUTS = {
 def test_example():
     example_dir = os.path.dirname(__file__)
     run = import_run(example_dir)
-    name = os.path.basename(os.path.dirname(__file__))
-    group = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
-    base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    log_file = os.path.join(base_path, group, "status.json")
 
     # Load expected results
     expected = {}
@@ -69,53 +62,15 @@ def test_example():
     results = run()
     if not isinstance(results, (tuple, list)):
         results = [results]
-
-    # Prepare entry
-    entry = {
-        "last_pass": datetime.datetime.now().isoformat(),
-        "pythtb_version": get_version("pythtb"),
-        "python_version": platform.python_version(),
-        "status": "pass"
-    }
     
     if len(results) != len(OUTPUTS):
-        entry["status"] = "fail"
-        entry["reason"] = f"Expected {len(OUTPUTS)} outputs, got {len(results)}"
-        raise AssertionError(entry["reason"])
+        raise AssertionError(f"Expected {len(OUTPUTS)} outputs, got {len(results)}")
+               
     # Compare results with expected outputs
     #NOTE: Modify to match your expected output structure
-    try:
-        for i, (label, fname) in enumerate(OUTPUTS.items()):
-            np.testing.assert_allclose(results[i], expected[label], rtol=1e-8, atol=1e-14)
-    except AssertionError as e:
-        entry["status"] = "fail"
-        entry["reason"] = f"Mismatch in {label}: {str(e)}"
+    for i, (label, fname) in enumerate(OUTPUTS.items()):
+        np.testing.assert_allclose(results[i], expected[label], rtol=1e-8, atol=1e-14)
 
-    # Log the pass/fail status
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
-    status = {}
-    if os.path.exists(log_file):
-        try:
-            with open(log_file) as f:
-                content = f.read().strip()
-                if content:
-                    status = json.loads(content)
-        except Exception as e:
-            print(f"⚠️ Warning: Couldn't parse {log_file}, starting fresh. Reason: {e}")
-
-    status[name] = entry
-    with open(log_file, "w") as f:
-        json.dump(status, f, indent=4)
-
-    if entry["status"] == "fail":
-        raise AssertionError(entry["reason"])
-
-def get_version(pkg):
-    try:
-        import importlib.metadata as im
-        return im.version(pkg)
-    except Exception:
-        return "unknown"
 ''')
 
     # regen_golden_data.py
@@ -165,30 +120,6 @@ def regenerate():
 if __name__ == "__main__":
     regenerate()
 ''')
-
-    # Ensure empty or missing status.json is handled gracefully
-    status_path = BASE_DIR / group / "status.json"
-    status_path.parent.mkdir(parents=True, exist_ok=True)
-
-    status = {}
-    if status_path.exists():
-        try:
-            with open(status_path) as f:
-                content = f.read().strip()
-                if content:
-                    status = json.loads(content)
-        except Exception as e:
-            print(f"⚠️ Warning: Couldn't parse existing {status_path.name}, starting fresh. Reason: {e}")
-
-    status[name] = {
-        "status": "unknown",
-        "created": datetime.datetime.now().isoformat(),
-        "pythtb_version": get_version("pythtb"),
-        "python_version": platform.python_version()
-    }
-
-    with open(status_path, "w") as f:
-        json.dump(status, f, indent=4)
 
     print(f"✅ Created example: {group}/{name}")
 
