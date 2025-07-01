@@ -12,4 +12,3 @@ in contributing to the project and informing you on the expectations of the main
 - For a more detailed view of each major release, see [DEVNOTES.md](DEVNOTES.md)
 - For a log of notes left by other developers, see [DEVLOG.md](DEVLOG.md)
 
-dev/INSTALL.md
