@@ -7,7 +7,10 @@ This is a step-by-step guide to installing the latest version of PythTB, particu
 When developing a new version of PythTB, it is useful to maintain several different versions simultaneously without interaction between the two that could lead to dependency issues. 
 This is where package managers help keep things neat and organized. It allows one to create virtual environments that have their own independent versions of Python and its packages. 
 
-For most purposes, `conda` is a great choice for a package manager. While the `venv` package manager is native to Python, it lacks many of the nice features that come with `conda`.
+### Why `conda`?
+For most purposes, `conda` is a great choice for a virtual environment manager. While the `venv` package manager is native to Python, it lacks many of the nice features that come with `conda`. For instance, `venv` only isolates Python packages, where `conda` isolates both packages _and_ Python itself.
+
+Like `pip`, `conda` is also a package manager. It searches for packages from _conda channels_ rather than `pip`'s PyPI. Many packages live in both, but not always the same versions or builds.
 
 ### Installing `conda`
 
