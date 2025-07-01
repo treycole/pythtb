@@ -121,7 +121,7 @@ class TBModel:
     """
 
     def __init__(
-        self, dim_k: int, dim_r: int, lat=None, orb=0, per=None, nspin: int = 1
+        self, dim_k: int, dim_r: int, lat=None, orb=1, per=None, nspin: int = 1
     ):
 
         # Dimensionality of real space
@@ -142,8 +142,8 @@ class TBModel:
         # initialize lattice vectors
         # shape: (dim_r, dim_r)
         # idx: (lattice direction, cartesian components)
-        # default: 'unit' implies unit matrix
-        if lat is None or (isinstance(lat, str) and lat == "unit"):
+        # default: None implies unit matrix
+        if lat is None:
             self._lat = np.identity(dim_r, float)
             logger.info("Lattice vectors not specified. Using identity matrix.")
         elif isinstance(lat, (list, np.ndarray)):
@@ -188,7 +188,7 @@ class TBModel:
             self._norb = orb.shape[0]  # number of orbitals
         else:
             raise TypeError(
-                "Orbital vectors must be array-type, 'bravais', or an integer."
+                "Orbital vectors must be array-type or an integer."
             )
 
         # Specifying which dimensions are periodic.
