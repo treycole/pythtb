@@ -19,13 +19,22 @@ def pytest_runtest_makereport(item, call):
 
 @pytest.hookimpl(trylast=True)
 def pytest_sessionfinish(session, exitstatus):
-    output = ["# ✅ Test Status Checklist", ""]
+    output = [
+        "# 📋 Test Status Report",
+        "",
+        f"Generated on **{datetime.now().strftime('%Y-%m-%d at %H:%M:%S')}**",
+        "",
+        "---",
+        ""
+    ]
+
     for folder in sorted(results):
         output.append(f"- **{folder}/**")
         for test_name, passed in sorted(results[folder]):
-            check = "[x]" if passed else "[ ]"
-            timestamp = f" _(at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')})_" if passed else ""
-            output.append(f"  - {check} `{test_name}`{timestamp}")
+            check = "✅" if passed else "❌"
+            timestamp = f" — *{datetime.now().strftime('%H:%M:%S')}*" if passed else ""
+            output.append(f"    - {check} `{test_name}`{timestamp}")
+
         output.append("")
 
     out_path = Path("PASSING.md")
