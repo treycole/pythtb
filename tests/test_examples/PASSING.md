@@ -2,6 +2,7 @@
 
 - [x] 1d
     - [x] simple
+    - [x] ssh
 - [x] boron_nitride
     - [x] bn_ribbon_berry
 - [x] buckling
