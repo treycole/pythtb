@@ -1,0 +1,91 @@
+# 📋 Test Status Report
+
+Generated on **2025-07-01 at 16:38:18**
+
+---
+
+- **tests/**
+  - **test_examples/**
+    - **1d/**
+      - **simple/**
+        - ✅ `test_example`
+      - **ssh/**
+        - ✅ `test_example`
+    - **boron_nitride/**
+      - **bn_ribbon_berry/**
+        - ✅ `test_example`
+    - **buckling/**
+      - **buckled_layer/**
+        - ✅ `test_example`
+      - **trestle/**
+        - ✅ `test_example`
+    - **checkerboard/**
+      - **checkerboard/**
+        - ✅ `test_example`
+    - **graphene/**
+      - **cone/**
+        - ✅ `test_answer`
+        - ✅ `test_example`
+      - **graphene/**
+        - ✅ `test_example`
+    - **haldane/**
+      - **edge/**
+        - ✅ `test_example`
+      - **haldane/**
+        - ✅ `test_example`
+      - **haldane_bp/**
+        - ✅ `test_example`
+      - **haldane_fin/**
+        - ✅ `test_example`
+      - **haldane_hwf/**
+        - ✅ `test_example`
+    - **kane_mele/**
+      - **kane_mele/**
+        - ✅ `test_example`
+    - **slab/**
+      - **cubic_slab_hwf/**
+        - ✅ `test_example`
+    - **supercell/**
+      - **supercell/**
+        - ✅ `test_example`
+    - **three_site/**
+      - **3site_cycle/**
+        - ✅ `test_example[-1-2]`
+      - **3site_cycle_fin/**
+        - ✅ `test_example[-1.3-2.0]`
+    - **zero_dim/**
+      - **0dim/**
+        - ✅ `test_example`
+  - **test_tbmodel/**
+    - ✅ `test_bravais_lattice[3-3-lat_vecs0-1]`
+    - ✅ `test_bravais_lattice[3-3-lat_vecs1-2]`
+    - ✅ `test_centers`
+    - ✅ `test_modes`
+    - ✅ `test_origin_orbs[1-2-lat_vecs7-2-1]`
+    - ✅ `test_origin_orbs[1-3-lat_vecs2-4-1]`
+    - ✅ `test_origin_orbs[1-3-lat_vecs5-1-2]`
+    - ✅ `test_origin_orbs[2-2-lat_vecs6-1-1]`
+    - ✅ `test_origin_orbs[2-3-lat_vecs1-5-1]`
+    - ✅ `test_origin_orbs[2-3-lat_vecs4-10-2]`
+    - ✅ `test_origin_orbs[2-3-lat_vecs9-2-1]`
+    - ✅ `test_origin_orbs[3-3-lat_vecs0-0-1]`
+    - ✅ `test_origin_orbs[3-3-lat_vecs3-0-2]`
+    - ✅ `test_origin_orbs[3-3-lat_vecs8-4-1]`
+    - ✅ `test_set_onsite[1]`
+    - ✅ `test_set_onsite[2]`
+    - ✅ `test_slab`
+    - ✅ `test_spin`
+    - ✅ `test_tbmodel_initialization[1-1-lat_vecs0-orbital_pos0-1]`
+    - ✅ `test_tbmodel_initialization[1-1-lat_vecs1-orbital_pos1-1]`
+    - ✅ `test_tbmodel_initialization[1-1-lat_vecs7-orbital_pos7-2]`
+    - ✅ `test_tbmodel_initialization[1-1-lat_vecs8-orbital_pos8-2]`
+    - ✅ `test_tbmodel_initialization[1-2-lat_vecs10-orbital_pos10-2]`
+    - ✅ `test_tbmodel_initialization[1-2-lat_vecs3-orbital_pos3-1]`
+    - ✅ `test_tbmodel_initialization[1-3-lat_vecs13-orbital_pos13-2]`
+    - ✅ `test_tbmodel_initialization[1-3-lat_vecs6-orbital_pos6-1]`
+    - ✅ `test_tbmodel_initialization[2-2-lat_vecs2-orbital_pos2-1]`
+    - ✅ `test_tbmodel_initialization[2-2-lat_vecs9-orbital_pos9-2]`
+    - ✅ `test_tbmodel_initialization[2-3-lat_vecs12-orbital_pos12-2]`
+    - ✅ `test_tbmodel_initialization[2-3-lat_vecs5-orbital_pos5-1]`
+    - ✅ `test_tbmodel_initialization[3-3-lat_vecs11-orbital_pos11-2]`
+    - ✅ `test_tbmodel_initialization[3-3-lat_vecs4-orbital_pos4-1]`

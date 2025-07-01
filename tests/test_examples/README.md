@@ -19,15 +19,3 @@ This file contains a function `run()` which returns the relevant data being gene
 
 ### `test_$NAMEOFEXAMPLE.py` script
 This file is what will be automatically detected and run by `pytest`. At the top of the file, the dictionary `OUTPUTS` must be modified to include the names of the golden data files. Be careful that the order in which the entries are added matches the order of what is returned in `run()`. If the data is something that is not savable by `NumPy`, such as pickled objects, be sure to modify the code as needed to make the appropriate comparisons. 
-
-### `status.json`
-After each run of `pytest`, the pass/fail status, along with other helpful metadata, will be written to `status.json` in the group directory. 
-
------
-To see the status of all of the examples, run
-
-```bash
-python report_test_status.py
-```
-
-This will print a table of the pass/fail status of all the tests, and write the pass/fail status in the form of a markdown checklist in `PASSING.md`.
