@@ -59,7 +59,11 @@ To test that everything is set up correctly, try importing the package from a Py
 import pythtb
 print(pythtb.__version__)
 ```
-You should see the version number of your local install.
+You should see the version number of your local install. You can also do
+```bash
+conda list
+```
+to see all of the packages installed in your activated virtual environment.
 
 
 ### Troubleshooting
