@@ -41,8 +41,7 @@ def deprecated(message: str, category=FutureWarning):
 
 
 class TBModel:
-    """
-    Tight-binding model constructor.
+    """Tight-binding model constructor.
 
     This class contains the tight-binding model information. 
     It is designed to handle various aspects of tight-binding models, including the lattice structure, 
@@ -235,8 +234,7 @@ class TBModel:
         self._hoppings = []
 
     def __repr__(self):
-        """
-        Return a string representation of the ``TBModel`` object.
+        """Return a string representation of the ``TBModel`` object.
 
         Returns
         -------
@@ -249,8 +247,7 @@ class TBModel:
         )
 
     def __str__(self):
-        """
-        Return a string representation of the ``TBModel`` object.
+        """Return a string representation of the ``TBModel`` object.
 
         Returns
         -------
@@ -260,8 +257,7 @@ class TBModel:
         return self.report(show=False)
 
     def __eq__(self, other):
-        """
-        Compare two TBModel objects for equality.
+        """Compare two TBModel objects for equality.
 
         Compares structural parameters, arrays, and hoppings.
 
@@ -314,11 +310,14 @@ class TBModel:
         "The 'display' method is deprecated and will be removed in a future release. Use 'print(model)' or 'model.report(show=True)' instead."
     )
     def display(self):
+        """
+        .. deprecated:: 2.0.0
+            `display` has been deprecated, it is recommended to use `print(model)` or `model.report(show=True)` instead.
+        """
         return self.report(show=True)
 
     def report(self, show: bool = True, short: bool = False):
-        """
-        Print or return a report about the tight-binding model.
+        """Print or return a report about the tight-binding model.
 
         Parameters
         ----------
@@ -429,8 +428,9 @@ class TBModel:
             return "\n".join(output)
 
     def set_k_mesh(self, nks):
-        """
-        Set up a uniform k-space mesh for the model.
+        """Set up a uniform k-space mesh for the model.
+
+        .. versionadded:: 2.0.0
 
         Parameters
         ----------
@@ -463,8 +463,9 @@ class TBModel:
         self.nks = nks
 
     def get_k_mesh(self, flat: bool = False):
-        """
-        Return the k-space mesh.
+        """Return the k-space mesh.
+
+        .. versionadded:: 2.0.0
 
         Parameters
         ----------
@@ -633,8 +634,9 @@ class TBModel:
         self._assume_position_operator_diagonal = value
 
     def copy(self) -> "TBModel":
-        """
-        Return a deep copy of the TBModel object.
+        """Return a deep copy of the TBModel object.
+
+        .. versionadded:: 2.0.0
 
         Returns
         -------
@@ -648,8 +650,9 @@ class TBModel:
         return copy.deepcopy(self)
 
     def clear_hoppings(self):
-        """
-        Clear all hoppings in the model.
+        """Clear all hoppings in the model.
+
+        .. versionadded:: 2.0.0
 
         Notes
         -----
@@ -659,8 +662,9 @@ class TBModel:
         logger.info("Cleared all hoppings.")
 
     def clear_onsite(self):
-        """
-        Clear all on-site energies in the model.
+        """Clear all on-site energies in the model.
+
+        .. versionadded:: 2.0.0
 
         Notes
         -----
@@ -673,18 +677,13 @@ class TBModel:
     @deprecated("Use 'norb' property instead.")
     def get_num_orbitals(self):
         """
-        Return the number of orbitals in the model.
-
-        Returns
-        -------
-        int
-            Number of tight-binding orbitals.
+        .. deprecated:: 2.0.0
+           Use 'norb' property instead.
         """
         return self.norb
 
     def get_orb(self, cartesian=False):
-        """
-        Return orbital positions.
+        """Return orbital positions.
 
         Parameters
         ----------
@@ -704,8 +703,7 @@ class TBModel:
             return orbs
 
     def get_lat(self):
-        """
-        Return lattice vectors in Cartesian coordinates.
+        """Return lattice vectors in Cartesian coordinates.
 
         Returns
         -------
@@ -718,6 +716,8 @@ class TBModel:
     def get_recip_lat(self):
         """
         Return reciprocal lattice vectors in Cartesian coordinates.
+
+        .. versionadded:: 2.0.0
 
         Returns
         -------
@@ -750,11 +750,12 @@ class TBModel:
         return b
 
     def get_recip_vol(self):
-        """
-        Return the volume of the reciprocal lattice.
+        """Return the volume of the reciprocal lattice.
 
         The volume is defined as the absolute value of the determinant
         of the reciprocal lattice vectors.
+
+        .. versionadded:: 2.0.0
 
         Returns
         -------
@@ -790,11 +791,13 @@ class TBModel:
         return abs(np.linalg.det(recip_lat_vecs))
 
     def set_onsite(self, onsite_en, ind_i=None, mode="set"):
-        """
-        Define on-site energies for tight-binding orbitals.
+        """Define on-site energies for tight-binding orbitals.
 
         You can set the energy for a single orbital (by specifying `ind_i`), or for all
         orbitals at once (by passing a list/array to `onsite_en`).
+
+        .. deprecated:: 2.0.0
+            Using 'reset' for `mode` is deprecated, use 'set' instead.
 
         Parameters
         ----------
@@ -900,8 +903,7 @@ class TBModel:
         mode="set",
         allow_conjugate_pair=False,
     ):
-        """
-        Define hopping parameters between tight-binding orbitals.
+        """Define hopping parameters between tight-binding orbitals.
 
         In the notation of tight-binding formalism, this function specifies:
 
@@ -910,7 +912,9 @@ class TBModel:
 
         where :math:`\\langle \\phi_{\\mathbf{0},i} |` is the i-th orbital in the home unit cell,
         and :math:`| \\phi_{\\mathbf{R},j} \\rangle` is the j-th orbital in a cell shifted by lattice vector :math:`\\mathbf{R}`.
-        
+
+        .. deprecated:: 2.0.0
+            Using 'reset' for `mode` is deprecated, use 'set' instead.
 
         Parameters
         ----------
@@ -943,7 +947,6 @@ class TBModel:
         allow_conjugate_pair : bool, optional
             If True, allows specification of both a hopping and its conjugate pair.
             If False, prevents double-counting.
-
 
         Notes
         -----
@@ -1131,8 +1134,11 @@ class TBModel:
         return block
 
     def get_velocity(self, k_pts, cartesian=False):
-        """
-        Generate the velocity operator via the commutator :math:`v_k = \\partial_k H_k` for an array of k-points.
+        """Generate the velocity operator
+
+        The velocity operator is defined via the commutator :math:`v_k = \\partial_k H_k` for an array of k-points.
+
+        .. versionadded:: 2.0.0
 
         Parameters
         ----------
@@ -1245,8 +1251,7 @@ class TBModel:
         return vel
 
     def hamiltonian(self, k_pts=None):
-        """
-        Generate the Bloch Hamiltonian for an array of k-points in reduced coordinates.
+        """Generate the Bloch Hamiltonian for an array of k-points in reduced coordinates.
 
         The Hamiltonian is computed in tight-binding convention I, which includes phase factors
         associated with orbital positions in the hopping terms:
@@ -1256,7 +1261,8 @@ class TBModel:
             H_{ij}(k) = \\sum_{\\mathbf{R}} t_{ij}(\mathbf{R}) \\exp[i \\mathbf{k} \\cdot (\\mathbf{r}_i - \\mathbf{r}_j + \\mathbf{R})]
 
         where :math:`t_{ij}(R)` is the hopping amplitude from orbital j to i through lattice vector :math:`\\mathbf{R}`.
-
+        
+        .. versionadded:: 2.0.0
 
         Parameters
         ----------
@@ -1466,7 +1472,9 @@ class TBModel:
             return eval, evec
 
     def solve_ham(self, k_list=None, return_eigvecs=False, keep_spin_ax=True):
-        """Solve for eigenvalues and optionally eigenvectors of the tight-binding model
+        """Diagonalize the Hamiltonian 
+        
+        Solve for eigenvalues and optionally eigenvectors of the tight-binding model
         at a list of one-dimensional k-vectors.
 
         Parameters
@@ -1554,25 +1562,31 @@ class TBModel:
 
     @deprecated("use .solve_ham() instead (since v2.0).", category=FutureWarning)
     def solve_one(self, k_list=None, eig_vectors=False):
+        """
+        .. deprecated:: 2.0.0
+            Use .solve_ham() instead.
+        """
         return self.solve_ham(
             k_list=k_list, return_eigvecs=eig_vectors, keep_spin_ax=True
         )
 
     @deprecated("use .solve_ham() instead (since v2.0).", category=FutureWarning)
     def solve_all(self, k_list=None, eig_vectors=False):
+        """
+        .. deprecated:: 2.0.0
+            Use .solve_ham() instead.
+        """
         return self.solve_ham(
             k_list=k_list, return_eigvecs=eig_vectors, keep_spin_ax=True
         )
 
     def cut_piece(self, num, fin_dir, glue_edgs=False) -> "TBModel":
-        """
+        """Cut a (d-1)-dimensional piece out of a d-dimensional tight-binding model.
+        
         Constructs a (d-1)-dimensional tight-binding model out of a
         d-dimensional one by repeating the unit cell a given number of
-        times along one of the periodic lattice vectors. The real-space
-        lattice vectors of the returned model are the same as those of
-        the original model; only the dimensionality of reciprocal space
-        is reduced.
-
+        times along one of the periodic lattice vectors. 
+        
         Parameters
         ----------
         num : int
@@ -1591,11 +1605,14 @@ class TBModel:
             Object of type :class:`pythtb.TBModel` representing a cutout
             tight-binding model. 
     
-            
         Notes
         -----
-            Orbitals in `fin_model` are numbered so that the `i`-th orbital of the `n`-th unit
-            cell has index ``i + norb * n`` (here `norb` is the number of orbitals in the original model).
+        - Orbitals in `fin_model` are numbered so that the `i`-th orbital of the `n`-th unit 
+          cell has index ``i + norb * n`` (here `norb` is the number of orbitals in the original model).
+        - The real-space lattice vectors of the returned model are the same as those of
+          the original model; only the dimensionality of reciprocal space
+          is reduced.
+
 
         Examples
         --------
@@ -1715,12 +1732,7 @@ class TBModel:
         return fin_model
 
     def reduce_dim(self, remove_k, value_k) -> "TBModel":
-        """
-        Reduces dimensionality of the model by taking a reciprocal-space
-        slice of the Bloch Hamiltonian :math:`{\\cal H}_{\\bf k}`. The Bloch
-        Hamiltonian (defined in :download:`notes on tight-binding
-        formalism <misc/pythtb-formalism.pdf>` in section 3.1 equation 3.7) of a
-        d-dimensional model is a function of d-dimensional k-vector.
+        """Reduces dimensionality of the model by taking a reciprocal-space slice
 
         This function returns a d-1 dimensional tight-binding model obtained
         by constraining one of k-vector components in :math:`{\\cal H}_{\\bf
@@ -1741,6 +1753,14 @@ class TBModel:
         red_tb : :class:`pythtb.TBModel`
             Reduced tight-binding model.
 
+        Notes
+        -----
+        Reduces dimensionality of the model by taking a reciprocal-space
+        slice of the Bloch Hamiltonian :math:`{\\cal H}_{\\bf k}`. The Bloch
+        Hamiltonian (defined in :download:`notes on tight-binding
+        formalism <misc/pythtb-formalism.pdf>` in section 3.1 equation 3.7) of a
+        d-dimensional model is a function of d-dimensional k-vector.
+
         Examples
         --------- 
         Constrains second k-vector component to equal 0.3
@@ -1748,7 +1768,6 @@ class TBModel:
         >>> red_tb = tb.reduce_dim(1, 0.3)
 
         """
-        #
         if self._dim_k == 0:
             raise Exception("\n\nCan not reduce dimensionality even further!")
         # make a copy
@@ -1812,14 +1831,12 @@ class TBModel:
         to_home=True, 
         to_home_suppress_warning:bool=False
     ) -> "TBModel":
-        """Returns tight-binding model :class:`pythtb.TBModel` in which one of
-        the non-periodic "lattice vectors" is changed. This function is especially useful after
-        using function cut_piece to create slabs, rods, or ribbons.
+        """Change non-periodic lattice vector 
         
-        Non-periodic vectors are those elements of `lat` that are not listed as
-        periodic with the *per* parameter (see more information on
-        `lat` and `per` in :class:`pythtb.TBModel`). 
-        
+        Returns tight-binding model :class:`pythtb.TBModel` in which one of
+        the non-periodic "lattice vectors" is changed.  Non-periodic vectors are those 
+        elements of `lat` that are not listed as periodic with the `per` parameter.
+
         The returned object has modified reduced coordinates of orbitals, 
         consistent with the new choice of `lat`. Therefore, the actual 
         (Cartesian) coordinates of orbitals in original and returned :class:`pythtb.TBModel`
@@ -1859,16 +1876,16 @@ class TBModel:
 
         Notes
         -----
-        By default, the new non-periodic vector is constructed
-        from the original by removing all components in the periodic
-        space. This ensures that the Berry phases computed in the
-        periodic space correspond to the usual expectations.
-         
-        For example, after this change, the Berry phase computed for a
-        ribbon depends only on the location of the Wannier center
-        in the extended direction, not on its location in the
-        transverse direction. Alternatively, the new nonperiodic
-        vector can be set explicitly via the `new_latt_vec` parameter.
+        - This function is especially useful after using function cut_piece to create slabs, rods, or ribbons.
+        - By default, the new non-periodic vector is constructed
+          from the original by removing all components in the periodic
+          space. This ensures that the Berry phases computed in the
+          periodic space correspond to the usual expectations.
+        - For example, after this change, the Berry phase computed for a
+          ribbon depends only on the location of the Wannier center
+          in the extended direction, not on its location in the
+          transverse direction. Alternatively, the new nonperiodic
+          vector can be set explicitly via the `new_latt_vec` parameter.
 
 
         Examples
@@ -1879,7 +1896,8 @@ class TBModel:
 
         See Also
         --------
-        See example :ref:`bn_ribbon_berry` for more detail.
+        - :ref:`bn_ribbon_berry`
+        - `lat` and `per` in :class:`pythtb.TBModel`
         """
 
         # Check that selected direction is nonperiodic
@@ -1957,42 +1975,49 @@ class TBModel:
     def make_supercell(
         self,
         sc_red_lat,
-        return_sc_vectors=False,
-        to_home=True,
-        to_home_suppress_warning=False,
+        return_sc_vectors: bool=False,
+        to_home: bool=True,
+        to_home_suppress_warning: bool=False,
     ) -> "TBModel":
-        """
+        """Make model on a super-cell.
 
-        Returns tight-binding model :class:`pythtb.TBModel`
-        representing a super-cell of a current object. This function
-        can be used together with *cut_piece* in order to create slabs
-        with arbitrary surfaces.
+        Constructs a :class:`pythtb.TBModel` representing a super-cell 
+        of the current object. This function can be used together with :func:`cut_piece`
+        in order to create slabs with arbitrary surfaces.
 
         By default all orbitals will be shifted to the home cell after
         unit cell has been created. That way all orbitals will have
         reduced coordinates between 0 and 1. If you wish to avoid this
         behavior, you need to set, *to_home* argument to *False*.
 
-        :param sc_red_lat: Array of integers with size *dim_r*dim_r*
-          defining a super-cell lattice vectors in terms of reduced
-          coordinates of the original tight-binding model. First index
-          in the array specifies super-cell vector, while second index
-          specifies coordinate of that super-cell vector.  If
-          *dim_k<dim_r* then still need to specify full array with
-          size *dim_r*dim_r* for consistency, but non-periodic
-          directions must have 0 on off-diagonal elemets s and 1 on
+        Parameters
+        ----------
+        sc_red_lat : array-like
+          Super-cell lattice vectors in terms of reduced coordinates
+          of the original tight-binding model. Shape must be
+          ``(dim_r, dim_r)``. First index in the array specifies super-cell vector,
+          while second index specifies coordinate of that super-cell vector. 
+          
+          If `dim_k` < `dim_r` then still need to specify full array with
+          size ``(dim_r, dim_r)`` for consistency, but non-periodic
+          directions must have 0 on off-diagonal elements and 1 on
           diagonal.
 
-        :param return_sc_vectors: Optional parameter. Default value is
-          *False*. If *True* returns also lattice vectors inside the
-          super-cell. Internally, super-cell tight-binding model will
-          have orbitals repeated in the same order in which these
-          super-cell vectors are given, but if argument *to_home*
-          is set *True* (which it is by default) then additionally,
-          orbitals will be shifted to the home cell.
+        return_sc_vectors : bool, optional
+            Default value is ``False``. If ``True`` returns also lattice vectors
+            inside the super-cell. Internally, super-cell tight-binding model will
+            have orbitals repeated in the same order in which these
+            super-cell vectors are given, but if argument `to_home`
+            is set ``True`` (which it is by default) then additionally,
+            orbitals will be shifted to the home cell.
 
-        :param to_home: Optional parameter, if *True* will shift all orbitals
-          to the home cell along non-periodic directions. Default value is *True*.
+        to_home : bool, optional
+            Default value is ``True``. If ``True`` will shift all orbitals
+            to the home cell along non-periodic directions.
+
+        to_home_suppress_warning : bool, optional
+            Default value is ``False``. If ``True`` suppresses warning messages
+            about orbitals being outside the home cell.
 
         :param to_home_suppress_warning: Optional parameter, if *False* code
           will print a warning message whenever returned object has an orbital with
@@ -2013,6 +2038,13 @@ class TBModel:
           Super-cell vectors, returned only if
           `return_sc_vectors` is set to ``True`` (default value is
           ``False``).
+
+        Notes
+        -----
+        The super-cell is constructed by repeating the original unit cell
+        according to the specified super-cell lattice vectors. The resulting
+        model will have a larger Brillouin zone and may exhibit different
+        electronic properties compared to the original model.
 
         Examples
         --------
@@ -2265,7 +2297,7 @@ class TBModel:
                     if self._hoppings[h][2] == i:
                         self._hoppings[h][3] += disp_vec
 
-    def add_orbital(self, coord: list | np.ndarray):
+    def add_orb(self, coord: list | np.ndarray):
         r"""
         Adds a new orbital to the model with the specified
         coordinate. The orbital coordinate must be given in reduced
@@ -2274,10 +2306,12 @@ class TBModel:
         of orbitals, and the orbital index is set to the next available
         index.
 
-        :param coord: List or numpy array of length *dim_r* specifying
-          the reduced coordinates of the new orbital. The coordinates
-          must be given in units of the real-space lattice vectors of
-          the model.
+        .. versionadded:: 2.0.0
+
+        Parameters
+        ----------
+        coord : array_like
+            The reduced coordinates of the new orbital of length `dim_r`
         """
         # Validate coordinate shape
         coord = np.array(coord, float)
@@ -2310,20 +2344,22 @@ class TBModel:
         original model. Similarly 3 and 4 correspond to 4 and 5.
         Indices of first two orbitals (0 and 1) are unaffected.
 
-        :param to_remove: List of orbital indices to be removed, or
-          index of single orbital to be removed
+        Parameters
+        ----------
+        to_remove : list | int
+            List of orbital indices to be removed, or index of single orbital to be removed
 
-        :returns:
+        Returns
+        -------
+        del_tb : class:`pythtb.TBModel`
+            Model with removed orbitals.
+         
+        Examples
+        --------
+        If original_model has say 10 orbitals then returned small_model will 
+        have only 8 orbitals.
 
-          * **del_tb** -- Object of type :class:`pythtb.TBModel`
-            representing a model with removed orbitals.
-
-        Example usage::
-
-          # if original_model has say 10 orbitals then
-          # returned small_model will have only 8 orbitals.
-
-          small_model=original_model.remove_orb([2,5])
+        >>> small_model = original_model.remove_orb([2,5])
 
         """
 
@@ -2374,7 +2410,7 @@ class TBModel:
         return ret
 
     def k_uniform_mesh(self, mesh_size):
-        r"""
+        """
         Returns a uniform grid of k-points that can be passed to
         passed to function :func:`pythtb.TBModel.solve_all`.  This
         function is useful for plotting density of states histogram
@@ -2382,31 +2418,37 @@ class TBModel:
 
         Returned uniform grid of k-points always contains the origin.
 
-        :param mesh_size: Number of k-points in the mesh in each
-          periodic direction of the model.
+        Parameters
+        ----------
+        mesh_size : array_like
+            Number of k-points in the mesh in each periodic direction of the model.
 
-        :returns:
+        Returns
+        -------
+        k_vec : np.ndarray
+          Array of k-vectors on the mesh that can be directly passed to function 
+          :func:`pythtb.TBModel.solve_all`.
 
-          * **k_vec** -- Array of k-vectors on the mesh that can be
-            directly passed to function  :func:`pythtb.TBModel.solve_all`.
+        Examples
+        --------
+        Returns a 10x20x30 mesh of a tight binding model 
+        with three periodic directions
 
-        Example usage::
+        >>> k_vec = my_model.k_uniform_mesh([10,20,30])
 
-          # returns a 10x20x30 mesh of a tight binding model
-          # with three periodic directions
-          k_vec = my_model.k_uniform_mesh([10,20,30])
-          # solve model on the uniform mesh
-          my_model.solve_all(k_vec)
+        Solve model on the uniform mesh
+
+        >>> my_model.solve_ham(k_vec)
 
         """
 
         return k_uniform_mesh(self, mesh_size)
 
     def k_path(self, kpts, nk:int, report:bool=True):
-        r"""
+        """
 
         Interpolates a path in reciprocal space between specified
-        k-points.  In 2D or 3D the k-path can consist of several
+        k-points. In 2D or 3D the k-path can consist of several
         straight segments connecting high-symmetry points ("nodes"),
         and the results can be used to plot the bands along this path.
 
@@ -2436,11 +2478,10 @@ class TBModel:
         Returns
         -------
         k_vec : np.ndarray
-            Array of (nearly) equidistant interpolated
-            k-points. The distance between the points is calculated in
-            the Cartesian frame, however coordinates themselves are
-            given in dimensionless reduced coordinates!  This is done
-            so that this array can be directly passed to function
+            Array of (nearly) equidistant interpolated k-points. 
+            The distance between the points is calculated in the Cartesian frame,
+            however coordinates themselves are given in dimensionless reduced coordinates!  
+            This is done so that this array can be directly passed to function
             :func:`pythtb.TBModel.solve_ham`.
 
         k_dist : np.ndarray
@@ -2449,12 +2490,11 @@ class TBModel:
             the k-space so that the distances between the k-points in
             the plot are exact.
             
-            Unlike array `k_vec` this one has
-            dimensions! Units are defined here so that for an
-            one-dimensional crystal with lattice constant equal to for
-            example *10* the length of the Brillouin zone would equal
-            *1/10=0.1*. In other words factors of :math:`2\pi` are
-            absorbed into *k*. 
+            Unlike array `k_vec` this one has dimensions! Units are defined here 
+            so that for an one-dimensional crystal with lattice constant equal to 
+            for example `10` the length of the Brillouin zone would equal
+            `1/10=0.1`. In other words factors of :math:`2\pi` are
+            absorbed into `kpts`.
 
         k_node : np.ndarray
             Array giving accumulated k-distance to each
@@ -2483,11 +2523,10 @@ class TBModel:
         obtained from Wannier90."""
         self._assume_position_operator_diagonal = True
 
-    def position_matrix(self, evec, dir):
+    def position_matrix(self, evec: np.ndarray, dir: int):
         r"""
-
         Returns matrix elements of the position operator along
-        direction *dir* for eigenvectors *evec* at a single k-point.
+        direction `dir` for eigenvectors `evec` at a single k-point.
         Position operator is defined in reduced coordinates.
 
         The returned object :math:`X` is
@@ -2498,34 +2537,44 @@ class TBModel:
           r^{\alpha} \vert u_{n {\bf k}} \rangle
 
         Here :math:`r^{\alpha}` is the position operator along direction
-        :math:`\alpha` that is selected by *dir*.
+        :math:`\alpha` that is selected by `dir`.
 
-        :param evec: Eigenvectors for which we are computing matrix
-          elements of the position operator.  The shape of this array
-          is evec[band,orbital] if *nspin* equals 1 and
-          evec[band,orbital,spin] if *nspin* equals 2.
+        Parameters
+        ----------
+        evec : np.ndarray
+            Eigenvectors for which we are computing matrix
+            elements of the position operator.  The shape of this array
+            is ``evec[band,orbital]`` if `nspin` = 1 and
+            ``evec[band,orbital,spin]`` if `nspin` = 2.
 
-        :param dir: Direction along which we are computing the center.
-          This integer must not be one of the periodic directions
-          since position operator matrix element in that case is not
-          well defined.
+        dir : int
+            Direction along which we are computing the center.
+            This integer must not be one of the periodic directions
+            since position operator matrix element in that case is not
+            well defined.
 
-        :returns:
-          * **pos_mat** -- Position operator matrix :math:`X_{m n}` as defined
-            above. This is a square matrix with size determined by number of bands
-            given in *evec* input array.  First index of *pos_mat* corresponds to
-            bra vector (*m*) and second index to ket (*n*).
+        Returns
+        -------
+        pos_mat : np.ndarray
+            Position operator matrix :math:`X_{m n}` as defined above. 
+            This is a square matrix with size determined by number of bands
+            given in `evec` input array.  First index of `pos_mat` corresponds to
+            bra vector (:math:`m`) and second index to ket (:math:`n`).
 
-        Example usage::
+        Examples
+        --------
+        Diagonalizes Hamiltonian at some k-points
 
-          # diagonalizes Hamiltonian at some k-points
-          (evals, evecs) = my_model.solve_ham(k_vec, return_eigvecs=True)
-          # computes position operator matrix elements for 3-rd kpoint
-          # and bottom five bands along first coordinate
-          pos_mat = my_model.position_matrix(evecs[2, :5], 0)
+        >>> (evals, evecs) = my_model.solve_ham(k_vec, return_eigvecs=True)
 
-        See also this example: :ref:`haldane_hwf-example`,
+        Computes position operator matrix elements for 3-rd kpoint
+        and bottom five bands along first coordinate
 
+        >>> pos_mat = my_model.position_matrix(evecs[2, :5], 0)
+
+        See Also
+        --------
+        :ref:`haldane_hwf-example`
         """
 
         # make sure specified direction is not periodic!
@@ -2580,13 +2629,12 @@ class TBModel:
 
         return pos_mat
 
-    def position_expectation(self, evec, dir):
-        r"""
-
-        Returns diagonal matrix elements of the position operator.
+    def position_expectation(self, evec: np.ndarray, dir: int):
+        r"""Returns diagonal matrix elements of the position operator.
+        
         These elements :math:`X_{n n}` can be interpreted as an
         average position of n-th Bloch state *evec[n]* along
-        direction *dir*.  Generally speaking these centers are *not*
+        direction `dir`.  Generally speaking these centers are *not*
         hybrid Wannier function centers (which are instead
         returned by :func:`pythtb.TBModel.position_hwf`).
 
