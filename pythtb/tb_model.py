@@ -1829,7 +1829,7 @@ class TBModel:
         self, np_dir: int, 
         new_latt_vec=None, 
         to_home=True, 
-        to_home_suppress_warning:bool=False
+        to_home_warning:bool=True
     ) -> "TBModel":
         """Change non-periodic lattice vector 
         
@@ -1859,14 +1859,14 @@ class TBModel:
             If ``True`` (default), shift all orbitals to the home cell along
             non-periodic directions.
 
-        to_home_suppress_warning : bool, optional
-            If ``False`` (default), code will print a warning message whenever
+        to_home_warning : bool, optional
+            If ``True`` (default), code will print a warning message whenever
             returned object has an orbital with at least one reduced coordinate
             smaller than 0 or larger than 1 along a non-periodic direction. If
-            ``True`` the warning message will not be printed.
+            ``False`` the warning message will not be printed.
 
             Note that this parameter has no effect on the model; it only determines whether a
-            warning message is printed or not.  Default value is ``False``.
+            warning message is printed or not. 
 
         Returns
         --------
@@ -1967,7 +1967,7 @@ class TBModel:
 
         # put orbitals to home cell if asked for
         if to_home:
-            nnp_tb._shift_to_home(to_home_suppress_warning)
+            nnp_tb._shift_to_home(to_home_warning)
 
         # return new tb model
         return nnp_tb
@@ -1977,7 +1977,7 @@ class TBModel:
         sc_red_lat,
         return_sc_vectors: bool=False,
         to_home: bool=True,
-        to_home_suppress_warning: bool=False,
+        to_home_warning: bool=True,
     ) -> "TBModel":
         """Make model on a super-cell.
 
@@ -2015,19 +2015,13 @@ class TBModel:
             Default value is ``True``. If ``True`` will shift all orbitals
             to the home cell along non-periodic directions.
 
-        to_home_suppress_warning : bool, optional
-            Default value is ``False``. If ``True`` suppresses warning messages
-            about orbitals being outside the home cell.
+        to_home_warning : bool, optional
+            Default value is ``True``. If ``True`` prints warning messages
+            about orbitals being outside the home cell (reduced coordinate larger
+            than 1 or smaller than 0 along non-periodic direction). 
 
-        :param to_home_suppress_warning: Optional parameter, if *False* code
-          will print a warning message whenever returned object has an orbital with
-          at least one reduced coordinate smaller than 0 or larger than 1
-          along a non-periodic direction.  If *True* the warning message
-          will not be printed.  Note that setting this parameter to *True*
-          or *False* has no effect on resulting coordinates of the model.
-          The only difference between this parameter set to *True* or *False*
-          is whether a warning message is printed or not.  Default value
-          is *False*.
+            Note that setting this parameter to *True* or *False* has no effect on 
+            resulting coordinates of the model. 
 
         Returns
         -------
@@ -2201,7 +2195,7 @@ class TBModel:
 
         # put orbitals to home cell if asked for
         if to_home:
-            sc_tb._shift_to_home(to_home_suppress_warning)
+            sc_tb._shift_to_home(to_home_warning)
 
         # return new tb model and vectors if needed
         if not return_sc_vectors:
@@ -2209,9 +2203,11 @@ class TBModel:
         else:
             return (sc_tb, sc_vec)
 
-    def _shift_to_home(self, to_home_suppress_warning=False):
+    def _shift_to_home(self, to_home_warning: bool=True):
         """Shifts orbital coordinates (along periodic directions) to the home
-        unit cell. After this function is called reduced coordinates
+        unit cell. 
+        
+        After this function is called reduced coordinates
         (along periodic directions) of orbitals will be between 0 and
         1.
 
@@ -2224,16 +2220,15 @@ class TBModel:
         This behavior might be especially non-intuitive for
         tight-binding models that came from the *cut_piece* function.
 
-        :param to_home_suppress_warning: Optional parameter, if *False* code
-          will print a warning message whenever there is an orbital with
-          at least one reduced coordinate smaller than 0 or larger than 1
-          along a non-periodic direction.  If *True* the warning message
-          will not be printed.  Note that setting this parameter to *True*
-          or *False* has no effect on resulting coordinates of the model.
-          The only difference between this parameter set to *True* or *False*
-          is whether a warning message is printed or not.  Default value
-          is *False*.
+        Parameters
+        ----------
+        to_home_warning: bool, optional
+            Default value is ``True``. If ``True`` prints warning messages
+            about orbitals being outside the home cell (reduced coordinate larger
+            than 1 or smaller than 0 along non-periodic direction). 
 
+            Note that setting this parameter to *True* or *False* has no effect on 
+            resulting coordinates of the model. 
         """
 
         # create list of emty lists (one for each real-space direction)
@@ -2252,7 +2247,7 @@ class TBModel:
                         warning_list[k] = warning_list[k] + [i]
 
         # print warning message if needed
-        if not to_home_suppress_warning:
+        if to_home_warning:
             warn_str = ""
             for k in range(self._dim_r):
                 orbs = warning_list[k]
@@ -2278,7 +2273,7 @@ class TBModel:
                     + warn_str
                     + """  *
   To prevent printing this warning, call 'change_nonperiodic_vector'
-  or 'make_supercell' with 'to_home_suppress_warning=True'.
+  or 'make_supercell' with 'to_home_warning=False'.
   *
   This warning message will be removed in future versions of PythTb.
 """
@@ -2334,25 +2329,25 @@ class TBModel:
         # No hoppings are added by default
 
     def remove_orb(self, to_remove):
-        r"""
-        Returns a model with some orbitals removed.  Note that this
-        will reindex the orbitals with indices higher than those that
-        are removed.  For example.  If model has 6 orbitals and one
-        wants to remove 2nd orbital, then returned model will have 5
-        orbitals indexed as 0,1,2,3,4.  In the returned model orbital
-        indexed as 2 corresponds to the one indexed as 3 in the
-        original model. Similarly 3 and 4 correspond to 4 and 5.
-        Indices of first two orbitals (0 and 1) are unaffected.
+        r"""Removes specified orbitals from the model.
 
         Parameters
         ----------
-        to_remove : list | int
+        to_remove : array-like | int
             List of orbital indices to be removed, or index of single orbital to be removed
 
         Returns
         -------
         del_tb : class:`pythtb.TBModel`
             Model with removed orbitals.
+
+        Notes
+        -----
+        Removing orbitals will reindex the orbitals with indices higher
+        than those that are removed. For example, if model has 6 orbitals
+        and you remove the 2nd orbital, then the orbitals 3-6 will be
+        reindexed to 1-4 (Python counting). Indices of first two orbitals (0 and 1) 
+        are unaffected.
          
         Examples
         --------
