@@ -1,8 +1,7 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.  
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and follows [Semantic Versioning](https://semver.org/).
-
-All notable changes to this project will be documented in this file. The changes documented here are meant to be user-oriented. Internal implementations, private method updates, file structure changes, etc. are meant for developers and will be documented in [DEVNOTES.md](https://github.com/sinisacoh/pythtb/blob/v2/dev/DEVNOTES.md). There may be exceptions where these types of updates change how users interact with the package (e.g., `__str__` changes) that would be relevant to include here.
 
 ------
 
@@ -14,34 +13,24 @@ All notable changes to this project will be documented in this file. The changes
     - `tb_model` -> `TBModel`
     - `wf_array` -> `WFArray`
     - `w90` -> `W90`
-
 - Examples are now grouped categorically into folders
 
 #### `TBModel`
-
-- `TBModel.get_orb`
-    - Added `cartesian` boolean flag to return orbitals in Cartesian coordinates. It is `False` by default.
-- `TBModel.set_onsite`
-    - Only `set` and `add` parameters retained; `reset` is now merged into `set`.
-- `TBModel.set_hop`
-    - Only `set` and `add` parameters retained; `reset` is now merged into `set`.
+- `TBModel.solve_all` and `TBModel.solve_one` (deprecated)
+    - These methods have been unified into a faster `TBModel.solve_ham`.
+    - The returned eigenvalues and eigenvectors are indexed differently for vectorized workflows (matrix elements go last for NumPy linear algebra operations)
+        - Eigenvalues now indexed as `(Nk, n_state)` .
+        - Eigenvectors shaped for spinful and spinless cases (see docstring for full details).
+            - `n_spin`= 1: (Nk, n_state, n_state) 
+            - `n_spin`= 2: (Nk, n_state, n_orb, 2)
+            - If finite (no k axis): (n_state, ...) and spin axes are as before
+    - Flag in `TBModel.solve_ham`: `eigvectors` -> `return_eigvecs` for clarity.
 - `TBModel.visualize`
     - Hopping vectors depicted as curved arrows instead of two straight lines at an angle. 
     - Lattice vectors shown as arrows, unit cell delineated with dotted lines. 
     - Arrow transparency scales with hopping magnitude (max element in 2x2 matrix if spinful) to give an idea of the strength of the hopping terms in the model.
-- `tb_model.display` -> `TBModel.report`
-    - Simplified and aligned output (now uses `np.array2string` with custom formatting).
-    - Header is centered and capitalized.
+- `tb_model.display` (deprecated, now `TBModel.report` and `print(TBModel)`):
     - Prints orbital vectors in both Cartesian and reduced units.
-- `tb_model.solve_one` / `tb_model.solve_all` -> `TBModel.solve_ham`
-    - `TBModel.solve_ham` combines `tb_model.solve_one` and `tb_model.solve_all`.
-    - Flag renamed: `eigvectors` -> `return_eigvecs` for clarity.
-    - Changed output shape: eigenvalues now indexed as `(Nk, n_state)` for vectorized workflows (matrix elements go last for NumPy linear algebra operations).
-    - Eigenvectors shaped for spinful and spinless cases (see docstring for full details).
-      - `n_spin`= 1: (Nk, n_state, n_state) 
-      - `n_spin`= 2: (Nk, n_state, n_orb, 2)
-      - If finite (no k axis): (n_state, ...) and spin axes are as before
-    - Handles single-k-point input automatically and reproduces `solve_one`.
 
 #### `WFArray`
 - `WFArray.berry_flux`
@@ -49,12 +38,12 @@ All notable changes to this project will be documented in this file. The changes
     - Flag renamed: `dirs` -> `plane`
     - Flag removed: `individual_phases`
         - This flag previously returned the integrated Berry flux in the plane as a function of the remaining parameters. For clarity, it is now up to the user to sum over the proper axes if they want to integrate the Berry flux. The Berry flux will have axes for all parameter directions. 
-    - Default behavior change: when `dirs` is unspecified (or `None`) the returned Berry flux will have 2 additional axes (first and second) over all combinations of planes (e.g. `berry_flux()[0,1]` is the Berry flux in the 0,1 plane)
+    - Default behavior change: when `dirs` is unspecified (or `None`) the returned Berry flux will have 2 additional axes (first and second) over all combinations of planes (e.g. berry_flux()[0,1] is the Berry flux in the 0,1 plane)
     - Substantial speed improvements using NumPy vectorization
 
 #### `W90`
 - `W90.w90_bands_consistency`
-    - Returned energies now have shape (kpts, band) instead of (band, kpts). This matches the shape of the returned eigenvectors in `TBModel.solve_ham`.
+    - Returned energies now have shape (kpts, band) instead of (band, kpts). This matches the shape of the returned eigenvalues in `TBModel.solve_ham`.
 
 ### Added
 
@@ -69,26 +58,35 @@ All notable changes to this project will be documented in this file. The changes
 - [ssh.py](https://github.com/sinisacoh/pythtb/blob/v2/examples/ssh/ssh.py): Constructs the ssh model and plots the band structure with a slider to change the intracell hopping. 
 
 #### `TBModel`
-- `TBModel.__repr__`
-    - Object representation now displays `rdim`, `kdim`, and `nspin`. 
-- `TBModel.__str__`
-    - Printing a `TBModel` instance using `print(TBModel)` calls the `report()` (formerly `dislplay`) method and prints model information.
+- `TBModel.__repr__`: Object representation now displays `rdim`, `kdim`, and `nspin`. 
+- `TBModel.__str__`: Allows printing a `TBModel` instance using 
+    ```python
+    print(TBModel)
+    ```
+    This calls `TBModel.report()` (formerly `TBModel.display()`) and prints model information.
+- `TBModel.get_orb` boolean flag `cartesian`
+    - Returns orbital vectors in Cartesian coordinates if `True`, `False` by default.
 - `TBModel.hamiltonian`
     - Generates Hamiltonians for both single and multiple k-points.
+- `TBModel.solve_ham`:
+    - Unified method subsumes previous methods `tb_model.solve_one` and `tb_model.solve_all`
+    - Handles single-k-point input automatically and reproduces `solve_one`.
 - `TBModel.get_velocity`
     - Computes $dH/dk$ (velocity operator) in the orbital basis.
 - `TBModel.berry_curv`
-    - Computes Berry curvature from $dH/dk$ elements using the Kubo formula. Accepts occupied band indices. Assumes there is a global gap that defines the occupied and unoccupied bands. 
+    - Computes Berry curvature from $dH/dk$ elements using the Kubo formula. 
+    - Accepts occupied band indices. 
+    - Assumes there is a global gap that defines the occupied and unoccupied bands. 
 - `TBModel.chern`
-    - Returns Chern number for a given set of occupied bands using the Berry curvature from above. Assumes there is a global gap that defines the occupied and unoccupied bands. 
+    - Returns Chern number for a given set of occupied bands using the Berry curvature from above. 
+    - Assumes there is a global gap that defines the occupied and unoccupied bands. 
 -  `TBModel.visualize3d`
-    -  For 3-dimensional tight-binding models, displays a 3d figure of the tight-binding orbitals using `plotly`.
-    -  Prints a legend with the model terms (onsite energies, orbital positions).
-    -  The figure can be rotated and zoomed in.
-    -  When highlighting an orbital or bond, the onsite or hopping terms appear. 
+    - For 3-dimensional tight-binding models, displays a 3d figure of the tight-binding orbitals using `plotly`. 
+    - Also prints a legend with the model terms (onsite energies, orbital positions). 
+    - The figure can be rotated and zoomed in. When highlighting an orbital or bond, the onsite or hopping terms appear. 
 - `TBModel.get_recip_lat`
     - Returns reciprocal lattice vectors.
-- Added read-only retrieval of core TBModel attributes (e.g., `dim_r`, `dim_k`, `nspin`, `per`, `norb`, `nstate`, `lat`, `orb`, `site_energies`, and `hoppings`) using e.g., `my_model.dim_r` preventing unintended modification of internal model parameters.
+- Added read-only retrieval of core TBModel attributes (e.g., `dim_r`, `dim_k`, `nspin`, `per`, `norb`, `nstate`, `lat`, `orb`, `site_energies`, and `hoppings`) using e.g. `my_model.dim_r` preventing unintended modification of internal model parameters.
 
 #### `WFArray`
 - `WFArray.chern_num`
@@ -102,7 +100,7 @@ All notable changes to this project will be documented in this file. The changes
 - `WFArray.get_projectors`
     - Returns the band projectors and optionally their compliment 
 - `WFArray.get_bloch_states`
-    - When the states populated are all Bloch states (defined on k-mesh), this function applies the $e^{i \mathbf{k} \cdot \mathbf{r}}$ phase factors and returns both the cell-periodic $u_{n\mathbf{k}}$ and the Bloch states $\psi_{n\mathbf{k}}$.
+    - When the states populated are all Bloch states (defined on k-mesh), this function applies the $e^{i \mathbf{k} \cdot \mathbf{r}}$ phase factors and returns both the cell-periodic $u_{n\mathbf{k}}$ and the Bloch states $\phi_{n\mathbf{k}}$.
 - `WFArray.get_states`
     - Returns the `WFArray` states in NumPy form. 
     - Has an optional flag to flatten the spin axis in cases where the states are spinful
@@ -119,10 +117,11 @@ All notable changes to this project will be documented in this file. The changes
 - `tb_model.solve_one`: Use `TBModel.solve_ham` instead
 - `tb_model.solve_all`: Use `TBModel.solve_ham` instead
 - `tb_model.display`: Use `TBModel.report` instead
-- `reset` flag for `TBModel.set_onsite` and `TBModel.set_hop`: Use `set` instead.
+- `reset` flag for `TBModel.set_onsite`: Use `set` instead.
+    - Only `set` and `add` parameters retained; `reset` is now merged into `set`.
 
 ### Developer Notes
-For a detailed explanation of the changes, see the developer documentation [DEVNOTES.md](https://github.com/sinisacoh/pythtb/blob/v2/dev/DEVNOTES.md).
+For a detailed explanation of the changes, see the developer documentation [DEVELOPMENT.md](https://github.com/sinisacoh/pythtb/blob/v2/dev/DEVELOPMENT.md).
 
 
 ## [1.8.0] - 2022-09-20
@@ -139,6 +138,7 @@ For a detailed explanation of the changes, see the developer documentation [DEVN
     - `empty_like`
 - Added function change_nonperiodic_vector and changed the way
   `to_home` parameter works.
+
 
 ### Removed
 - Removed some functions that were kept for backwards compatibility
@@ -162,7 +162,6 @@ For a detailed explanation of the changes, see the developer documentation [DEVN
 ### Added
 - Added support for python 3.x in addition to 2.x
 
-
 ## [1.7.0] - 2916-06-07
 ---
 ### Changed
@@ -180,6 +179,7 @@ For a detailed explanation of the changes, see the developer documentation [DEVN
 - Berry curvature in dimensions higher than 2.
 
 
+
 ## [1.6.2] - 2013-02-25
 ---
 ### Added
@@ -187,7 +187,6 @@ For a detailed explanation of the changes, see the developer documentation [DEVN
 - Added make_supercell method with which one can make arbitrary
   super-cells of the model and also generate slabs with arbitrary
   orientation.
-
  
 ## [1.6.1] - 2012-11-15
 ---
@@ -215,3 +214,5 @@ For the most part, the code should be backward-compatible with version 1.5.
 
 ## [1.5] - 2012-06-
 ---
+
+
