@@ -16,21 +16,25 @@ This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Examples are now grouped categorically into folders
 
 #### `TBModel`
-- `TBModel.solve_all` and `TBModel.solve_one` (deprecated)
-    - These methods have been unified into a faster `TBModel.solve_ham`.
+- `TBModel.solve_all()` and `TBModel.solve_one()` (deprecated, merged into faster `TBModel.solve_ham()`)
+    - These methods have been unified into a faster `TBModel.solve_ham()` that utilizes NumPy vectorization for faster diagonalization.
     - The returned eigenvalues and eigenvectors are indexed differently for vectorized workflows (matrix elements go last for NumPy linear algebra operations)
         - Eigenvalues now indexed as `(Nk, n_state)` .
         - Eigenvectors shaped for spinful and spinless cases (see docstring for full details).
             - `n_spin`= 1: (Nk, n_state, n_state) 
             - `n_spin`= 2: (Nk, n_state, n_orb, 2)
             - If finite (no k axis): (n_state, ...) and spin axes are as before
-    - Flag in `TBModel.solve_ham`: `eigvectors` -> `return_eigvecs` for clarity.
-- `TBModel.visualize`
+    - Flag in `TBModel.solve_ham()`: `eigvectors` -> `return_eigvecs` for clarity.
+- `TBModel.visualize()`
     - Hopping vectors depicted as curved arrows instead of two straight lines at an angle. 
     - Lattice vectors shown as arrows, unit cell delineated with dotted lines. 
     - Arrow transparency scales with hopping magnitude (max element in 2x2 matrix if spinful) to give an idea of the strength of the hopping terms in the model.
-- `tb_model.display` (deprecated, now `TBModel.report` and `print(TBModel)`):
+- `TBModel.display()` (deprecated, now `TBModel.report()` and `print(TBModel)`):
     - Prints orbital vectors in both Cartesian and reduced units.
+- `TBModel.change_nonperiodic_vector()` flag `to_home_supress_warning` has been renamed to `to_home_warning` for brevity and clarity.
+    - WARNING: The boolean meaning of the flag also changes, `to_home_warning == True` means a warning _will_ be displayed.
+- `TBModel.make_supercell()` flag `to_home_supress_warning` has been renamed to `to_home_warning` for brevity and clarity.
+    - WARNING: The boolean meaning of the flag also changes, `to_home_warning == True` means a warning _will_ be displayed.
 
 #### `WFArray`
 - `WFArray.berry_flux`
