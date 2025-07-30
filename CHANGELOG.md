@@ -131,7 +131,7 @@ For a detailed explanation of the changes, see the developer documentation [DEVN
 
 
 ## [1.8.0] - 2022-09-20
----
+
 ### Changed
 - Updated class `wf_array` to make it easier to store states
   which are not Bloch-like eigenstates.
@@ -155,7 +155,7 @@ For a detailed explanation of the changes, see the developer documentation [DEVN
     - `add_hop`.
   
 ## [1.7.2] - 2017-08-01
----
+
 ### Changed
 - Display function now prints hopping distances
 
@@ -164,12 +164,12 @@ For a detailed explanation of the changes, see the developer documentation [DEVN
 
 
 ## [1.7.1] - 2016-12-22
----
+
 ### Added
 - Added support for python 3.x in addition to 2.x
 
 ## [1.7.0] - 2916-06-07
----
+
 ### Changed
 - Cleaned up period boundary condition in the `wf_array` class
 
@@ -187,7 +187,7 @@ For a detailed explanation of the changes, see the developer documentation [DEVN
 
 
 ## [1.6.2] - 2013-02-25
----
+
 ### Added
 - Added support for spinors.
 - Added make_supercell method with which one can make arbitrary
@@ -195,7 +195,7 @@ For a detailed explanation of the changes, see the developer documentation [DEVN
   orientation.
  
 ## [1.6.1] - 2012-11-15
----
+
 For the most part, the code should be backward-compatible with version 1.5.
 ### Changed
 - Renamed the code package (previously PyTB) to avoid confusion with
@@ -219,6 +219,6 @@ For the most part, the code should be backward-compatible with version 1.5.
 
 
 ## [1.5] - 2012-06-
----
+
 
 
