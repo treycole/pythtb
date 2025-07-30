@@ -37,6 +37,7 @@ were developed in connection with David Vanderbilt's book `Berry Phases in
 Electronic Structure Theory <https:/www.cambridge.org/9781107157651>`_
 (Cambridge University Press, 2018).
 
+  
 .. _ssh-example:
 
 SSH model
@@ -44,7 +45,7 @@ SSH model
 
 This is a simple one-dimensional SSH model.
 
-.. plot :: examples/ssh.py
+.. plot :: examples/ssh/ssh.py
    :include-source:
 
 .. _checkerboard-example:
@@ -54,7 +55,7 @@ Checkerboard model
 
 Simple two-dimensional model.
 
-.. plot :: examples/checkerboard.py
+.. plot :: examples/checkerboard/checkerboard.py
    :include-source:
 
 .. _trestle-example:
@@ -65,7 +66,7 @@ Trestle
 Simple model with one-dimensional k-space, two-dimensional r-space,
 and with complex hoppings.
 
-.. plot :: examples/trestle.py
+.. plot :: examples/buckling/trestle.py
    :include-source:
 
 .. _0dim-example:
@@ -75,7 +76,7 @@ Molecule
 
 This is a zero-dimensional example of a molecule.
 
-.. plot :: examples/0dim.py
+.. plot :: examples/zero_dim/0dim.py
    :include-source:
 
 .. _graphene-example:   
@@ -85,7 +86,7 @@ Graphene model
 
 This is a toy model of a two-dimensional graphene sheet.
 
-.. plot :: examples/graphene.py
+.. plot :: examples/graphene/graphene.py
    :include-source:
   
 .. _cone-example:
@@ -103,7 +104,7 @@ the integral of the Berry curvature over a small square patch in the
 Brillouin zone containing the Dirac point, and plots individual phases
 for each plaquette in the array.
 
-.. plot :: examples/cone.py
+.. plot :: examples/graphene/cone.py
    :include-source:
 
 .. _3site_cycle-example:
@@ -121,7 +122,7 @@ shift by one lattice vector as :math:`\lambda` changes from 0 to 1.
 Also plots the individual on-site energies, band structure, and Wannier
 center of lowest band.
 
-.. plot :: examples/3site_cycle.py
+.. plot :: examples/three_site/3site_cycle.py
    :include-source:
 
 
@@ -134,7 +135,7 @@ This example is based on the same model as the one above but it
 considers the effect of the one-dimensional cycle on the edge states
 of a finite chain.
 
-.. plot :: examples/3site_cycle_fin.py
+.. plot :: examples/three_site/3site_cycle_fin.py
    :include-source:
 
 
@@ -148,7 +149,7 @@ is a graphene model with complex second neighbour hoppings.
 
 Here we have calculated the density of states as well.
 
-.. plot :: examples/haldane.py
+.. plot :: examples/haldane/haldane.py
    :include-source:
 
 .. _haldane_fin-example:   
@@ -159,7 +160,7 @@ Finite Haldane model
 Now let us calculate the density of states for a finite piece of the Haldane
 model with and without periodic boundary conditions (PBC).
 
-.. plot :: examples/haldane_fin.py
+.. plot :: examples/haldane/haldane_fin.py
    :include-source:
 
 .. _edge-example:
@@ -170,7 +171,7 @@ Edge states
 Plots the edge state-eigenfunction for a finite Haldane model that
 is periodic either in both directions or in only one direction.
 
-.. plot :: examples/edge.py
+.. plot :: examples/haldane/edge.py
    :include-source:
 
 .. _haldane_bp-example:
@@ -186,7 +187,7 @@ one less and one more automated, are illustrated.  The results
 indicate that the two bands have equal and opposite Chern
 numbers. Finally, the Berry curvature is calculated and printed.
 
-.. plot :: examples/haldane_bp.py
+.. plot :: examples/haldane/haldane_bp.py
    :include-source:
 
 .. _haldane_hwf-example:
@@ -197,7 +198,7 @@ Hybrid Wannier centers in Haldane model
 Calculates Berry phases for the Haldane model and compares it to the
 hybrid Wannier centers for a ribbon of the Haldane model.
 
-.. plot :: examples/haldane_hwf.py
+.. plot :: examples/haldane/haldane_hwf.py
    :include-source:
 
 
@@ -212,7 +213,7 @@ the use of spinor features of the code.  Also compute the 1D
 Wannier centers along :math:`x` as a function of :math:`k_y`,
 illustrating the determination of the :math:`Z_2` invariant.
 
-.. plot :: examples/kane_mele.py
+.. plot :: examples/kane_mele/kane_mele.py
    :include-source:
 
 
@@ -223,7 +224,7 @@ Visualization example
 
 Demonstrates visualization capabilities of the code.
 
-.. plot :: examples/visualize.py
+.. plot :: examples/visualize/visualize.py
    :include-source:
 
    
@@ -235,7 +236,7 @@ Arbitrary graphene surface
 Using supercell generator, one can calculate and plot the
 surface band structure for an arbitrary surface orientation.
 
-.. plot :: examples/supercell.py
+.. plot :: examples/supercell/supercell.py
    :include-source:
 
 
@@ -248,7 +249,7 @@ This is a very simple illustration of a slab geometry in which
 the orbitals are specified in a 3D space, but the system is only
 extensive in 2D, so that k-space is only 2D.
 
-.. plot :: examples/buckled_layer.py
+.. plot :: examples/buckling/buckled_layer.py
    :include-source:
 
 
@@ -262,7 +263,7 @@ of individual z-localized hybrid Wannier bands for a slab model
 (finite in z but extended in x and y), using a *wf_array* structure
 to simplify the calculation.
 
-.. plot :: examples/cubic_slab_hwf.py
+.. plot :: examples/slab/cubic_slab_hwf.py
    :include-source:
 
 
@@ -278,7 +279,7 @@ physically the same before and after the change, as shown by the
 identical band structures, the Berry phase is consistent with
 the polarization in the extended direction only after the change.
 
-.. plot :: examples/bn_ribbon_berry.py
+.. plot :: examples/boron_nitride/bn_ribbon_berry.py
    :include-source:
 
 
@@ -298,7 +299,7 @@ The example below will read the tight-binding model from the Wannier90
 calculation, create a simplified model in which some small hopping
 terms are ignored, and finally plot the interpolated band structure.
 
-.. plot :: examples/w90_quick.py
+.. plot :: examples/w90/w90_quick.py
    :include-source:
 
 
@@ -319,5 +320,5 @@ and unpack it with the following command in unix command::
 
 Here is the source code of the example.
 
-.. plot :: examples/w90.py
+.. plot :: examples/w90/w90.py
    :include-source:

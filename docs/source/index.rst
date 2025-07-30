@@ -1,10 +1,13 @@
+.. _pythtb_mainpage:
+
 .. meta::
    :keywords: PythTB, PyTB, python, tight binding, Wannier, Berry,
               topological insulator, Chern, Haldane, Kane-Mele, Z2, graphene,
               band structure, wavefunction, bloch, periodic insulator,
-	      wannier90, wannier function, density functional theory,
-	      DFT, first-principles
+              wannier90, wannier function, density functional theory,
+              DFT, first-principles
 
+=============================
 Python Tight Binding (PythTB)
 =============================
 
@@ -17,6 +20,7 @@ phases and related properties.
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
 
    about
    install

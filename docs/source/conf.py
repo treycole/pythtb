@@ -14,15 +14,26 @@ logging.getLogger("pythtb").setLevel(logging.WARNING)
 project = u'PythTB'
 copyright = '2025, Trey Cole, Sinisa Coh, and David Vanderbilt'
 author = 'Trey Cole, Sinisa Coh, and David Vanderbilt'
-release = pythtb.__version__
+version = pythtb.__version__
 
 # preamble for latex formulas
 # pngmath_latex_preamble = r"\usepackage{cmbright}"
 # pngmath_dvipng_args = ['-gamma 1.5', '-D 110']
 # pngmath_use_preview = True
 
-# autosummary_generate = True
-# autodoc_typehints = "description"
+autosummary_generate = True
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'show-inheritance': True,
+}
+autodoc_typehints = "description"
+
+# link to numpy and python
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+}
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -39,6 +50,7 @@ extensions = [
     'matplotlib.sphinxext.plot_directive',
     'sphinx.ext.mathjax',
     "sphinx.ext.intersphinx",
+    # "numpydoc"
 ]
 
 myst_enable_extensions = [
@@ -52,11 +64,10 @@ myst_enable_extensions = [
     "colon_fence",
 ]
 
-intersphinx_mapping = {
-    'python': ('https://docs.python.org/3', None),
-    'numpy': ('https://numpy.org/doc/stable/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/', None),
-}
+# intersphinx_mapping = {
+#     'python': ('https://docs.python.org/3', None),
+#     'numpy': ('https://numpy.org/doc/stable/', None)
+# }
 
 # tell Sphinx to treat .md files as sources
 source_suffix = {
@@ -78,21 +89,64 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_book_theme'
-# html_theme = 'classic'
-html_static_path = ['_static']
-# documentation.
+html_theme = 'pydata_sphinx_theme' #'sphinx_book_theme' #'classic'
+
+# html_theme_options = {
+#     "show_toc_level": 2,
+#     "navigation_depth": 4,
+#     "collapse_navigation": False,
+#     "show_nav_level": 2,
+#     # Optional: sticky nav
+#     "navbar_start": ["navbar-logo", "version-switcher"],
+# }
+
 html_theme_options = {
-    # "repository_url": "https://github.com/sinisacoh/pythtb",
-    # "use_repository_button": True,
-    # "use_issues_button": True,
-    # "use_edit_page_button": True,
-    # "path_to_docs": "docs/source",
-    # "repository_branch": "main",
-    # "use_download_button": True,
-    # "home_page_in_toc": True,
-    "show_toc_level": 2,
+    # "logo": {
+    #     "image_light": "_static/numpylogo.svg",
+    #     "image_dark": "_static/numpylogo_dark.svg",
+    # },
+    "github_url": "https://github.com/sinisacoh/pythtb",
+    "collapse_navigation": False,
+    # "external_links": [
+    #     {"name": "Learn", "url": "https://numpy.org/numpy-tutorials/"},
+    #     {"name": "NEPs", "url": "https://numpy.org/neps"},
+    # ],
+    "header_links_before_dropdown": 6,
+    "show_toc_level": 3,
+    # Add light/dark mode and documentation version switcher:
+    "navbar_end": [
+        "search-button",
+        "theme-switcher",
+        "version-switcher",
+        "navbar-icon-links"
+    ],
+    "navbar_persistent": [],
+    "switcher": {
+        "version_match": version,
+        "json_url": "versions.json",
+    },
+    "show_version_warning_banner": True,
 }
+
+html_static_path = ['_static']
+# html_theme_options["use_thebe"] = True  # e/nables Thebe for notebook
+# html_js_files = [
+    # "https://unpkg.com/thebe@latest/lib/index.js"
+# ] # for executing code
+html_title = f"{project} v{version} Docs"
+
+# documentation.
+# html_theme_options = {
+#     # "repository_url": "https://github.com/sinisacoh/pythtb",
+#     # "use_repository_button": True,
+#     # "use_issues_button": True,
+#     # "use_edit_page_button": True,
+#     # "path_to_docs": "docs/source",
+#     # "repository_branch": "main",
+#     # "use_download_button": True,
+#     # "home_page_in_toc": True,
+#     "show_toc_level": 2,
+# }
 # html_sidebars = {
 #           '**':    ['globaltoc.html', 'localtoc.html', 'searchbox.html'],
 #           'index': ['globaltoc.html', 'searchbox.html'],
@@ -103,15 +157,6 @@ html_show_sourcelink=False
 
 # The master toctree document.
 master_doc = 'index'
-
-# The version info for the project you're documenting, acts as replacement for
-# |version| and |release|, also used in various other places throughout the
-# built documents.
-
-# The shorter version.
-version = '2.0.0'
-# The full version, including alpha/beta/rc tags.
-release = '2.0.0'
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'

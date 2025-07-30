@@ -1,0 +1,26 @@
+{
+    "haldane": {
+        "last_pass": "2025-07-02T14:14:24.582246",
+        "pythtb_version": "2.0.0",
+        "python_version": "3.11.11",
+        "status": "pass"
+    },
+    "haldane_bp": {
+        "last_pass": "2025-07-02T14:14:24.691515",
+        "pythtb_version": "2.0.0",
+        "python_version": "3.11.11",
+        "status": "pass"
+    },
+    "haldane_fin": {
+        "last_pass": "2025-07-02T14:14:25.229786",
+        "pythtb_version": "2.0.0",
+        "python_version": "3.11.11",
+        "status": "pass"
+    },
+    "haldane_hwf": {
+        "last_pass": "2025-07-02T14:14:25.407647",
+        "pythtb_version": "2.0.0",
+        "python_version": "3.11.11",
+        "status": "pass"
+    }
+}

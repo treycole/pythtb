@@ -61,20 +61,13 @@ class TBModel:
 
     lat : array_like, optional
         Array containing lattice vectors in Cartesian coordinates
-        (in arbitrary units). By default, lattice vectors are an identity matrix.
-        
-        In example the below, the first lattice vector has coordinates 
-        ``[1.0,0.5]`` while the second  one has coordinates ``[0.0,2.0]``. 
+        (in arbitrary units). By default, lattice vectors are an identity matrix. 
 
     orb : int, array_like, optional
         Array containing reduced coordinates of all
         tight-binding orbitals. If `orb` is an integer code will assume 
         that there are these many orbitals all at the origin of the unit cell.  
         By default `orb`=1 and the code will assume a single orbital at the origin.
-
-        In the example below, the first orbital is defined with reduced 
-        coordinates ``[0.2,0.3]``. Its Cartesian coordinates are therefore 0.2 
-        times the first lattice vector plus 0.3 times the second lattice vector.
 
     per : array_like, optional
         Specifies the indices of lattice vectors which are considered to be periodic.
@@ -91,31 +84,34 @@ class TBModel:
         is explicitly a spinfull model and each orbital is assumed to
         have two spin components. Default value of this parameter is
         `1`. 
-
+    
     Notes
     -----
-      Parameter `dim_r` can be larger than `dim_k`! For example,
-      a polymer is a three-dimensional molecule (one needs three
-      coordinates to specify orbital positions), but it is periodic
-      along only one direction. For a polymer, therefore, we should
-      have `dim_k` equal to 1 and `dim_r` equal to 3. See similar example
-      here: :ref:`trestle-example`.
+    Parameter `dim_r` can be larger than `dim_k`! For example,
+    a polymer is a three-dimensional molecule (one needs three
+    coordinates to specify orbital positions), but it is periodic
+    along only one direction. For a polymer, therefore, we should
+    have `dim_k` equal to 1 and `dim_r` equal to 3. See :ref:`trestle-example`.
 
     Examples
     --------
-        Creates model that is two-dimensional in real space but only
-        one-dimensional in reciprocal space. Second lattice vector is
-        chosen to be periodic (since per=[1]). Three orbital
-        coordinates are specified.
+    Creates model that is two-dimensional in real space but only
+    one-dimensional in reciprocal space. The first lattice vector has coordinates
+    ``[1.0,0.5]`` while the second  one has coordinates ``[0.0,2.0]``.
+    The second lattice vector is chosen to be periodic (since ``per=[1]``).
+    Three orbital coordinates are specified in reduced units. The first orbital
+    is defined with reduced coordinates ``[0.2,0.3]``. Its Cartesian coordinates
+    are therefore 0.2 times the first lattice vector plus 0.3 times the second lattice 
+    vector.
 
-        >>> from pythtb import TBModel
-        >>> tb = TBModel(
-        ...        dim_k=1, dim_r=2,
-        ...        lat=[[1.0, 0.5], [0.0, 2.0]],
-        ...        orb=[[0.2, 0.3], [0.1, 0.1], [0.2, 0.2]],
-        ...        per=[1]
-        ...    )
-        >>> print(tb)
+    >>> from pythtb import TBModel
+    >>> tb = TBModel(
+    ...        dim_k=1, dim_r=2,
+    ...        lat=[[1.0, 0.5], [0.0, 2.0]],
+    ...        orb=[[0.2, 0.3], [0.1, 0.1], [0.2, 0.2]],
+    ...        per=[1]
+    ...    )
+    >>> print(tb)
 
     """
 
@@ -1273,10 +1269,12 @@ class TBModel:
 
         Returns
         -------
-        ham : array of shape {(n_kpts, n_orb, n_orb), (n_kpts, n_orb, 2, n_orb, 2), (n_orb, n_orb), (n_orb, 2, n_orb, 2)} 
+        ham : np.ndarray 
             Array of Bloch-Hamiltonian matrices defined on the specified k-points. The Hamiltonian is Hermitian by construction.
+
             - If `dim_k` > 0: shape is (n_kpts, n_orb, n_orb) for spinless models, or (n_kpts, n_orb, 2, n_orb, 2) 
-                for spinful models.
+              for spinful models.
+
             - If `dim_k` = 0: shape is (n_orb, n_orb) for spinless or (n_orb, 2, n_orb, 2) for spinful models.
 
         Notes
@@ -1604,7 +1602,12 @@ class TBModel:
         fin_model : TBModel
             Object of type :class:`pythtb.TBModel` representing a cutout
             tight-binding model. 
-    
+
+        See Also
+        ---------
+        :ref:`haldane_fin-example` : For an example
+        :ref:`edge-example` : For an example
+
         Notes
         -----
         - Orbitals in `fin_model` are numbered so that the `i`-th orbital of the `n`-th unit 
@@ -1612,7 +1615,6 @@ class TBModel:
         - The real-space lattice vectors of the returned model are the same as those of
           the original model; only the dimensionality of reciprocal space
           is reduced.
-
 
         Examples
         --------
@@ -1630,10 +1632,6 @@ class TBModel:
 
         >>> C = B.cut_piece(20, 2, glue_edgs=True)
 
-        See Also
-        ---------
-        :ref:`haldane_fin-example`,
-        :ref:`edge-example`.
         """
         if self._dim_k == 0:
             raise Exception("\n\nModel is already finite")
@@ -1874,6 +1872,11 @@ class TBModel:
             An equivalent tight-binding model with
             one redefined nonperiodic lattice vector.
 
+        See Also
+        --------
+        per
+        :ref:`bn_ribbon_berry` : For an example.
+
         Notes
         -----
         - This function is especially useful after using function cut_piece to create slabs, rods, or ribbons.
@@ -1887,22 +1890,17 @@ class TBModel:
           transverse direction. Alternatively, the new nonperiodic
           vector can be set explicitly via the `new_latt_vec` parameter.
 
-
         Examples
         --------
         Modify slab model so that nonperiodic third vector is perpendicular to the slab
 
         >>> nnp_tb = tb.change_nonperiodic_vector(2)
-
-        See Also
-        --------
-        - :ref:`bn_ribbon_berry`
-        - `lat` and `per` in :class:`pythtb.TBModel`
+       
         """
 
         # Check that selected direction is nonperiodic
         if self._per.count(np_dir) == 1:
-            print("\nnp_dir =", np_dir)
+            print("\n np_dir =", np_dir)
             raise Exception("Selected direction is not nonperiodic")
 
         if new_latt_vec is None:
@@ -2212,7 +2210,7 @@ class TBModel:
         1.
 
         Version of pythtb 1.7.2 (and earlier) was shifting orbitals to
-        home along even nonperiodic directions.  In the later versions
+        home along even nonperiodic directions. In the later versions
         of the code (this present version, and future versions) we
         don't allow this anymore, as this feature might produce
         counterintuitive results.  Shifting orbitals along nonperiodic
@@ -2292,10 +2290,10 @@ class TBModel:
                     if self._hoppings[h][2] == i:
                         self._hoppings[h][3] += disp_vec
 
-    def add_orb(self, coord: list | np.ndarray):
-        r"""
-        Adds a new orbital to the model with the specified
-        coordinate. The orbital coordinate must be given in reduced
+    def add_orb(self, coord):
+        """Adds a new orbital to the model with the specified coordinates.
+        
+        The orbital coordinate must be given in reduced
         coordinates, i.e. in units of the real-space lattice vectors
         of the model. The new orbital is added at the end of the list
         of orbitals, and the orbital index is set to the next available
@@ -2305,15 +2303,23 @@ class TBModel:
 
         Parameters
         ----------
-        coord : array_like
-            The reduced coordinates of the new orbital of length `dim_r`
+        coord : array_like, float
+            The reduced coordinates of the new orbital of length `dim_r`. If
+            `coord` is a single float or int, it will be converted to a 1D array 
+            (`dim_r` must be 1).
         """
-        # Validate coordinate shape
-        coord = np.array(coord, float)
-        if coord.shape != (self._dim_r,):
-            raise ValueError(
-                f"Orbital coordinate must be length {self._dim_r}, got {coord.shape}"
-            )
+        if isinstance(coord, (float, int)):
+            coord = np.array([coord], float)
+        elif isinstance(coord, list):
+            coord = np.array(coord, float)
+        elif not isinstance(coord, np.ndarray):
+            raise TypeError(f"Expected array_like or float, got {type(coord)}")
+
+        if coord.shape != (self.dim_r, ):
+                raise ValueError(
+                    f"Orbital coordinate must be a list of length {self._dim_r}, got {coord.shape}"
+                )
+        
         # Append orbital coordinate
         self._orb = np.vstack([self._orb, coord])
         # Update number of orbitals and states
@@ -2333,7 +2339,7 @@ class TBModel:
 
         Parameters
         ----------
-        to_remove : array-like | int
+        to_remove : array-like or int
             List of orbital indices to be removed, or index of single orbital to be removed
 
         Returns
@@ -2405,13 +2411,10 @@ class TBModel:
         return ret
 
     def k_uniform_mesh(self, mesh_size):
-        """
-        Returns a uniform grid of k-points that can be passed to
-        passed to function :func:`pythtb.TBModel.solve_all`.  This
-        function is useful for plotting density of states histogram
-        and similar.
+        """Uniform grid of k-points in reduced coordinates.
 
-        Returned uniform grid of k-points always contains the origin.
+        The mesh along each direction is defined from [0, 1). 
+        The mesh always contains the origin.
 
         Parameters
         ----------
@@ -2422,7 +2425,14 @@ class TBModel:
         -------
         k_vec : np.ndarray
           Array of k-vectors on the mesh that can be directly passed to function 
-          :func:`pythtb.TBModel.solve_all`.
+          :func:`pythtb.TBModel.solve_all`. The shape of the array is 
+          (nk1, nk2, ..., dim_k) where nk1, nk2, ... are the number of k-points
+          in each direction defined by `mesh_size`.
+
+        Notes
+        -----
+        The uniform grid of k-points that can be passed to
+        function :func:`pythtb.TBModel.solve_all`. 
 
         Examples
         --------
@@ -2430,6 +2440,8 @@ class TBModel:
         with three periodic directions
 
         >>> k_vec = my_model.k_uniform_mesh([10,20,30])
+        >>> print(k_vec.shape)
+        (10, 20, 30, 3)
 
         Solve model on the uniform mesh
 
@@ -2440,7 +2452,7 @@ class TBModel:
         return k_uniform_mesh(self, mesh_size)
 
     def k_path(self, kpts, nk:int, report:bool=True):
-        """
+        """Interpolates a path in reciprocal space.
 
         Interpolates a path in reciprocal space between specified
         k-points. In 2D or 3D the k-path can consist of several
@@ -2453,7 +2465,7 @@ class TBModel:
         Parameters
         ----------
 
-        kpts : array-like
+        kpts : array-like, str
           Array of k-vectors in reciprocal space between
           which interpolated path should be constructed. These
           k-vectors must be given in reduced coordinates.  As a
@@ -2474,22 +2486,12 @@ class TBModel:
         -------
         k_vec : np.ndarray
             Array of (nearly) equidistant interpolated k-points. 
-            The distance between the points is calculated in the Cartesian frame,
-            however coordinates themselves are given in dimensionless reduced coordinates!  
-            This is done so that this array can be directly passed to function
-            :func:`pythtb.TBModel.solve_ham`.
 
         k_dist : np.ndarray
             Array giving accumulated k-distance to each
             k-point in the path. This array can be used to plot path in
             the k-space so that the distances between the k-points in
             the plot are exact.
-            
-            Unlike array `k_vec` this one has dimensions! Units are defined here 
-            so that for an one-dimensional crystal with lattice constant equal to 
-            for example `10` the length of the Brillouin zone would equal
-            `1/10=0.1`. In other words factors of :math:`2\pi` are
-            absorbed into `kpts`.
 
         k_node : np.ndarray
             Array giving accumulated k-distance to each
@@ -2497,13 +2499,25 @@ class TBModel:
             typically used to plot nodes (typically special points) on
             the path in k-space.
 
+        Notes
+        -----
+        - The distance between the points is calculated in the Cartesian frame,
+          however coordinates themselves are given in dimensionless reduced coordinates!  
+          This is done so that this array can be directly passed to function
+          :func:`pythtb.TBModel.solve_ham`.
+        - Unlike array `k_vec`, `k_dist` has dimensions! Units are defined here
+          so that for a one-dimensional crystal with lattice constant equal to 
+          for example `10` the length of the Brillouin zone would equal
+          `1/10=0.1`. In other words factors of :math:`2\pi` are
+          absorbed into `kpts`.
+
         Examples
         ---------
         Construct a path connecting four nodal points in k-space
         Path will contain 401 k-points, roughly equally spaced
 
         >>> path = [[0.0, 0.0], [0.0, 0.5], [0.5, 0.5], [0.0, 0.0]]
-        >>> (k_vec,k_dist,k_node) = my_model.k_path(path,401)
+        >>> (k_vec, k_dist, k_node) = my_model.k_path(path,401)
         
         Solve for eigenvalues on that path
 
@@ -2513,13 +2527,17 @@ class TBModel:
         return k_path(self, kpts, nk, report)
 
     def ignore_position_operator_offdiagonal(self):
-        """Call to this function enables one to approximately compute
+        """Set flag to ignore off-diagonal elements of the position operator.
+
+        Call to this function enables one to approximately compute
         Berry-like objects from tight-binding models that were
-        obtained from Wannier90."""
+        obtained from Wannier90.
+        """
         self._assume_position_operator_diagonal = True
 
     def position_matrix(self, evec: np.ndarray, dir: int):
-        r"""
+        r"""Position operator matrix elements
+
         Returns matrix elements of the position operator along
         direction `dir` for eigenvectors `evec` at a single k-point.
         Position operator is defined in reduced coordinates.
@@ -2539,8 +2557,8 @@ class TBModel:
         evec : np.ndarray
             Eigenvectors for which we are computing matrix
             elements of the position operator.  The shape of this array
-            is ``evec[band,orbital]`` if `nspin` = 1 and
-            ``evec[band,orbital,spin]`` if `nspin` = 2.
+            is ``evec[band, orbital]`` if `nspin` = 1 and
+            ``evec[band, orbital, spin]`` if `nspin` = 2.
 
         dir : int
             Direction along which we are computing the center.
@@ -2556,6 +2574,11 @@ class TBModel:
             given in `evec` input array.  First index of `pos_mat` corresponds to
             bra vector (:math:`m`) and second index to ket (:math:`n`).
 
+        See Also
+        --------
+        :ref:`haldane_hwf-example` : For an example.
+        :func:`position_matrix` : For definition of matrix :math:`X`.
+
         Examples
         --------
         Diagonalizes Hamiltonian at some k-points
@@ -2567,9 +2590,6 @@ class TBModel:
 
         >>> pos_mat = my_model.position_matrix(evecs[2, :5], 0)
 
-        See Also
-        --------
-        :ref:`haldane_hwf-example`
         """
 
         # make sure specified direction is not periodic!
@@ -2628,38 +2648,51 @@ class TBModel:
         r"""Returns diagonal matrix elements of the position operator.
         
         These elements :math:`X_{n n}` can be interpreted as an
-        average position of n-th Bloch state *evec[n]* along
-        direction `dir`.  Generally speaking these centers are *not*
+        average position of n-th Bloch state ``evec[n]`` along
+        direction `dir`. 
+
+        Parameters
+        ----------
+        evec : np.ndarray
+            Eigenvectors for which we are computing matrix
+            elements of the position operator. The shape of this array
+            is ``evec[band, orbital]`` if `nspin` equals 1 and
+            ``evec[band, orbital, spin]`` if `nspin` equals 2.
+
+        dir : int
+            Direction along which we are computing matrix
+            elements. This integer must not be one of the periodic
+            directions since position operator matrix element in that
+            case is not well defined.
+
+        Returns
+        -------
+        pos_exp : np.ndarray
+            Diagonal elements of the position operator matrix :math:`X`.
+            Length of this vector is determined by number of bands given in *evec* input
+            array.
+        
+        See Also
+        --------
+        :ref:`haldane_hwf-example` : For an example.
+        position_matrix : For definition of matrix :math:`X`.
+
+        Notes
+        -----
+        Generally speaking these centers are _not_
         hybrid Wannier function centers (which are instead
         returned by :func:`pythtb.TBModel.position_hwf`).
 
-        See function :func:`pythtb.TBModel.position_matrix` for
-        definition of matrix :math:`X`.
-
-        :param evec: Eigenvectors for which we are computing matrix
-          elements of the position operator.  The shape of this array
-          is evec[band,orbital] if *nspin* equals 1 and
-          evec[band,orbital,spin] if *nspin* equals 2.
-
-        :param dir: Direction along which we are computing matrix
-          elements.  This integer must not be one of the periodic
-          directions since position operator matrix element in that
-          case is not well defined.
-
-        :returns:
-          * **pos_exp** -- Diagonal elements of the position operator matrix :math:`X`.
-            Length of this vector is determined by number of bands given in *evec* input
-            array.
-
-        Example usage::
-
-          # diagonalizes Hamiltonian at some k-points
-          (evals, evecs) = my_model.solve_all(k_vec,eig_vectors=True)
-          # computes average position for 3-rd kpoint
-          # and bottom five bands along first coordinate
-          pos_exp = my_model.position_expectation(evecs[:5,2], 0)
-
-        See also this example: :ref:`haldane_hwf-example`.
+        Examples
+        --------
+        Diagonalizes Hamiltonian at some k-points
+          
+        >>> (evals, evecs) = my_model.solve_ham(k_vec, return_eigvecs=True)
+        
+        Computes average position for 3-rd kpoint
+        and bottom five bands along first coordinate
+        
+        >>> pos_exp = my_model.position_expectation(evecs[2, :5], 0)
 
         """
 
@@ -2671,80 +2704,100 @@ class TBModel:
         return np.array(np.real(pos_exp), dtype=float)
 
     def position_hwf(self, evec, dir, hwf_evec=False, basis="orbital"):
-        r"""
+        r"""Eigenvalues and eigenvectors of the position operator
 
         Returns eigenvalues and optionally eigenvectors of the
         position operator matrix :math:`X` in basis of the orbitals
         or, optionally, of the input wave functions (typically Bloch
-        functions).  The returned eigenvectors can be interpreted as
+        functions). The returned eigenvectors can be interpreted as
         linear combinations of the input states *evec* that have
         minimal extent (or spread :math:`\Omega` in the sense of
         maximally localized Wannier functions) along direction
         *dir*. The eigenvalues are average positions of these
         localized states.
 
-        Note that these eigenvectors are not maximally localized
-        Wannier functions in the usual sense because they are
-        localized only along one direction.  They are also not the
-        average positions of the Bloch states *evec*, which are
-        instead computed by :func:`pythtb.TBModel.position_expectation`.
+        Parameters
+        ----------
+        evec : np.ndarray
+            Eigenvectors for which we are computing matrix
+            elements of the position operator.  The shape of this array
+            is evec[band,orbital] if *nspin* equals 1 and
+            evec[band,orbital,spin] if *nspin* equals 2.
 
-        See function :func:`pythtb.TBModel.position_matrix` for
-        the definition of the matrix :math:`X`.
+        dir : int
+            Direction along which we are computing matrix
+            elements.  This integer must not be one of the periodic
+            directions since position operator matrix element in that
+            case is not well defined.
 
-        See also Fig. 3 in Phys. Rev. Lett. 102, 107603 (2009) for a
-        discussion of the hybrid Wannier function centers in the
-        context of a Chern insulator.
+        hwf_evec : bool, optional
+            Default is *False*. If set to *True* this function will 
+            return not only eigenvalues but also
+            eigenvectors of :math:`X`. 
 
-        :param evec: Eigenvectors for which we are computing matrix
-          elements of the position operator.  The shape of this array
-          is evec[band,orbital] if *nspin* equals 1 and
-          evec[band,orbital,spin] if *nspin* equals 2.
+        basis : {"orbital", "wavefunction", "bloch"}, optional
+            Default is "orbital". If basis="wavefunction" or "bloch", the hybrid
+            Wannier function `hwf_evec` is returned in the basis of the input
+            wave functions. That is, the elements of ``hwf[i,j]`` give the amplitudes
+            of the i-th hybrid Wannier function on the j-th input state.
+            If basis="orbital", the elements of ``hwf[i,orb]`` (or ``hwf[i,orb,spin]``
+            if `nspin`=2) give the amplitudes of the i-th hybrid Wannier function on
+            the specified basis function. 
 
-        :param dir: Direction along which we are computing matrix
-          elements.  This integer must not be one of the periodic
-          directions since position operator matrix element in that
-          case is not well defined.
-
-        :param hwf_evec: Optional boolean variable.  If set to *True*
-          this function will return not only eigenvalues but also
-          eigenvectors of :math:`X`. Default value is *False*.
-
-        :param basis: Optional parameter. If basis="wavefunction", the hybrid
-          Wannier function *hwf_evec* is returned in the basis of the input
-          wave functions.  That is, the elements of hwf[i,j] give the amplitudes
-          of the i-th hybrid Wannier function on the j-th input state.
-          Note that option basis="bloch" is a synonym for basis="wavefunction".
-          If basis="orbital", the elements of hwf[i,orb] (or hwf[i,orb,spin]
-          if nspin=2) give the amplitudes of the i-th hybrid Wannier function on
-          the specified basis function.  Default is basis="orbital".
-
-        :returns:
-          * **hwfc** -- Eigenvalues of the position operator matrix :math:`X`
-            (also called hybrid Wannier function centers).
+        Returns
+        -------
+        hwfc : np.ndarray
+            Eigenvalues of the position operator matrix :math:`X`
+            (also called hybrid Wannier function centers). 
             Length of this vector equals number of bands given in *evec* input
             array.  Hybrid Wannier function centers are ordered in ascending order.
-            Note that in general *n*-th hwfc does not correspond to *n*-th electronic
-            state *evec*.
+            Note that in general `n`-th hwfc does not correspond to `n`-th electronic
+            state `evec`.
 
-          * **hwf** -- Eigenvectors of the position operator matrix :math:`X`.
+        hwf : np.ndarray
+            Eigenvectors of the position operator matrix :math:`X`.
             (also called hybrid Wannier functions).  These are returned only if
-            parameter *hwf_evec* is set to *True*.
-            The shape of this array is [h,x] or [h,x,s] depending on value of *basis*
-            and *nspin*.  If *basis* is "bloch" then x refers to indices of
-            Bloch states *evec*.  If *basis* is "orbital" then *x* (or *x* and *s*)
-            correspond to orbital index (or orbital and spin index if *nspin* is 2).
+            parameter `hwf_evec` is set to `True`.
 
-        Example usage::
+            The shape of this array is ``[h,x]`` or ``[h,x,s]`` depending on value of
+            `basis` and `nspin`.  
+            
+            - If `basis` is "bloch" then `x` refers to indices of
+              Bloch states `evec`.  
+            - If `basis` is "orbital" then `x` (or `x` and `s`)
+              correspond to orbital index (or orbital and spin index if `nspin` is 2).
 
-          # diagonalizes Hamiltonian at some k-points
-          (evals, evecs) = my_model.solve_all(k_vec,eig_vectors=True)
-          # computes hybrid Wannier centers (and functions) for 3-rd kpoint
-          # and bottom five bands along first coordinate
-          (hwfc, hwf) = my_model.position_hwf(evecs[:5,2], 0, hwf_evec=True, basis="orbital")
+        See Also
+        --------
+        :ref:`haldane_hwf-example` : For an example.
+        position_matrix : For the definition of the matrix :math:`X`.
+        position_expectation : For the position expectation value.
 
-        See also this example: :ref:`haldane_hwf-example`,
+        Notes
+        -----
+        Note that these eigenvectors are not maximally localized
+        Wannier functions in the usual sense because they are
+        localized only along one direction. They are also not the
+        average positions of the Bloch states `evec`, which are
+        instead computed by :func:`position_expectation`.
 
+        See Fig. 3 in [1]_ for a discussion of the hybrid Wannier function centers in the
+        context of a Chern insulator.
+
+        References
+        ----------
+        .. [1]  S. Coh, D. Vanderbilt, Phys. Rev. Lett. 102, 107603 (2009).
+
+        Examples
+        --------
+        Diagonalizes Hamiltonian at some k-points
+
+        >>> evals, evecs = my_model.solve_ham(k_vec, return_eigvecs=True)
+
+        Computes hybrid Wannier centers (and functions) for 3-rd kpoint
+        and bottom five bands along first coordinate
+
+        >>> hwfc, hwf = my_model.position_hwf(evecs[2, :5], 0, hwf_evec=True, basis="orbital")
         """
         # check if model came from w90
         if not self._assume_position_operator_diagonal:
@@ -2797,12 +2850,27 @@ class TBModel:
         cartesian: bool = False,
         abelian: bool = True,
     ):
-        """
-        Compute the Berry curvature at a list of k-points.
+        r"""Compute the Berry curvature at a list of k-points.
+
+        The Berry curvature is computed from the velocity operator
+        :math:`v_k = i \partial_k H_k`. Specifically, for :math:`(m,n) \in \text{occ}`,
+
+        .. math::
+
+            \Omega_{\mu \nu;\ mn}(k) =  \sum_{l \notin \text{occ}}
+            \frac{
+                \langle u_{mk} | v^{\mu}_k | u_{lk} \rangle
+                \langle u_{lk} | v_k^{\nu} | u_{nk} \rangle
+                -
+                \langle u_{mk} | v_k^{\nu} | u_{lk} \rangle
+                \langle u_{lk} | v_k^{\mu} | u_{nk} \rangle
+            }{
+                (E_{nk} - E_{lk})(E_{mk} - E_{lk})
+            }
 
         Parameters
         ----------
-        k_pts : (Nk, dim_k) array
+        k_pts : (Nk, dim_k) array-like
             Array of k-points with shape (Nk, dim_k), where Nk is the number of points
             and dim_k is the dimensionality of the k-space.
         evals : (Nk, n_states) array, optional
@@ -2823,32 +2891,19 @@ class TBModel:
 
         Returns
         -------
-        b_curv : {(dim_k, dim_k, Nk, n_states, n_states), (Nk, n_states, n_states), (Nk)}
+        b_curv : np.ndarray
             Berry curvature tensor. If ``dirs`` is "all", shape is (dim_k, dim_k, Nk, n_orb, n_orb).
-            If ``dirs`` is a tuple, shape is (Nk, n_orb, n_orb) and the returned tensor is restricted to the specified directions.
-            If ``abelian`` is True, returns the band-trace of the Berry curvature tensor.
+            If ``dirs`` is a tuple, shape is (Nk, n_orb, n_orb) and the returned tensor is restricted 
+            to the specified directions.
+            If ``abelian`` is True, returns the band-trace of the Berry curvature tensor and the last
+            two dimensions are not present.
 
         Notes
         -----
-        The Berry curvature is computed from the velocity operator
-        :math:`v_k = i \\partial_k H_k`. Specifically, for :math:`(m,n) \in \\text{occ}`,
-
-        .. math::
-            \\Omega_{\\mu \\nu;\ mn}(k) =  \\sum_{l \\notin \\text{occ}}
-            \\frac{
-                \\langle u_{mk} | v^{\\mu}_k | u_{lk} \\rangle
-                \\langle u_{lk} | v_k^{\\nu} | u_{nk} \\rangle
-                -
-                \\langle u_{mk} | v_k^{\\nu} | u_{lk} \\rangle
-                \\langle u_{lk} | v_k^{\\mu} | u_{nk} \\rangle
-            }{
-                (E_{nk} - E_{lk})(E_{mk} - E_{lk})
-            }
-
-        This quantity is an anti-symmetric under `μ ↔ ν`.
+        This quantity is an anti-symmetric under :math:`\mu \leftrightarrow \nu`.
         """
 
-        if self._dim_k < 2:
+        if self.dim_k < 2:
             raise Exception(
                 """
                 Berry curvature in this context is only computed for k-space dimensions. 
@@ -2929,15 +2984,22 @@ class TBModel:
             return b_curv[dirs]
 
     def chern(self, occ_idxs=None, dirs=(0, 1), nk=100):
-        """
-        Computes Chern number for occupied manifold.
+        """Computes Chern number for occupied manifold.
 
-        Args:
-            occ_idxs (list, np.ndarray, None):
-                Occupied band indices.
-            dirs (tuple):
-                Indices for reciprocal space directions defining
-                2d surface to integrate Berry flux.
+        Parameters
+        ----------
+        occ_idxs : array-like, optional
+            Occupied band indices. If none are provided, 
+            the lower half bands are considered occupied.
+
+        dirs : tuple
+            Indices for reciprocal space directions defining
+            2d surface to integrate Berry flux.
+
+        Returns
+        -------
+        float
+            Chern number for the occupied manifold.
         """
         from .k_mesh import KMesh
 
@@ -2963,14 +3025,14 @@ class TBModel:
         annotate_onsite_en=False,
         ph_color="black",
     ):
-        r"""
+        r"""Visualizes the tight-binding model geometry.
 
-        Rudimentary function for visualizing tight-binding model geometry,
-        hopping between tight-binding orbitals, and electron eigenstates.
+        Plots the tight-binding orbitals, hopping between tight-binding orbitals, 
+        and optionally the electron eigenstates.
 
         If eigenvector is not drawn, then orbitals in home cell are drawn
         as red circles, and those in neighboring cells are drawn with
-        different shade of red. Hopping term directions are drawn with
+        a lighter shade of red. Hopping term directions are drawn with
         green lines connecting two orbitals. Origin of unit cell is
         indicated with blue dot, while real space unit vectors are drawn
         with blue lines.
@@ -2979,69 +3041,74 @@ class TBModel:
         is drawn with a circle whose size is proportional to wavefunction
         amplitude while its color depends on the phase. There are various
         coloring schemes for the phase factor; see more details under
-        *ph_color* parameter. If eigenvector is drawn and coloring scheme
+        `ph_color` parameter. If eigenvector is drawn and coloring scheme
         is "red-blue" or "wheel", all other elements of the picture are
         drawn in gray or black.
 
-        :param proj_plane: tuple or list of two integers specifying
-          Cartesian coordinates to be used for plotting.  For example,
-          if proj_plane=(0,1) then x-y projection of the model is
-          drawn. If *dim_r* is zero or one then this parameter should
-          not be specified. If *dim_r* is two then this parameter
-          should be specified as a tuple or list of two integers
-          between 0 and *dim_r*-1. If *dim_r* is three then
-          proj_plane should be specified as a tuple or list of two
-          integers between 0 and *dim_r*-1, and dir_second should not
-          be specified.
+        Parameters
+        ----------
+        proj_plane : tuple or list of two integers
+            Cartesian coordinates to be used for plotting. For example,
+            if ``proj_plane=(0,1)`` then x-y projection of the model is
+            drawn. This only should be specified if `dim_r` > 2.
 
-        :param eig_dr: Optional parameter specifying eigenstate to
+        eig_dr : Optional parameter specifying eigenstate to
           plot. If specified, this should be one-dimensional array of
           complex numbers specifying wavefunction at each orbital in
           the tight-binding basis. If not specified, eigenstate is not
           drawn.
 
-        :param draw_hoppings: Optional parameter specifying whether to
+        draw_hoppings : Optional parameter specifying whether to
           draw all allowed hopping terms in the tight-binding
           model. Default value is True.
 
-        :param ph_color: Optional parameter determining the way
-          eigenvector phase factors are translated into color. Default
-          value is "black". Convention of the wavefunction phase is as
+        ph_color : {"black", "red-blue", "wheel"}, optional
+            Determines the way the eigenvector phase factors are 
+            translated into color. Default value is "black".
+
+            - "black" -- phase of eigenvectors are ignored and wavefunction
+              is always colored in black.
+
+            - "red-blue" -- zero phase is drawn red, while phases or :math:`\pi` or
+              :math:`-\pi` are drawn blue. Phases in between are interpolated between
+              red and blue. Some phase information is lost in this coloring
+              because phase of :math:`\pm \pi` have the same color.
+
+            - "wheel" -- each phase is given unique color. In steps of :math:`\pi/3`
+              starting from 0, colors are assigned (in increasing hue) as:
+              red, yellow, green, cyan, blue, magenta, red.
+
+        Returns
+        -------
+            fig : matplotlib.figure.Figure
+                Figure object from matplotlib.pyplot module
+            ax : matplotlib.axes.Axes
+                Axes object from matplotlib.pyplot module
+
+        Notes
+        -----
+        - This function is intended for visualizing tight-binding models
+          in two dimensions. For three-dimensional visualizations, consider using
+          the :func:`visualize_3d` method.
+        - Convention of the wavefunction phase is as
           in convention 1 in section 3.1 of :download:`notes on
-          tight-binding formalism  <misc/pythtb-formalism.pdf>`.  In
+          tight-binding formalism  <misc/pythtb-formalism.pdf>`. In
           other words, these wavefunction phases are in correspondence
           with cell-periodic functions :math:`u_{n {\bf k}} ({\bf r})`
           not :math:`\Psi_{n {\bf k}} ({\bf r})`.
 
-          * "black" -- phase of eigenvectors are ignored and wavefunction
-            is always colored in black.
+        Examples
+        --------
+        Draws x-y projection of tight-binding model
+        tweaks figure and saves it as a PDF.
+        
+        >>> fig, ax = tb.visualize(0, 1)
+        >>> plt.show()
 
-          * "red-blue" -- zero phase is drawn red, while phases or pi or
-            -pi are drawn blue. Phases in between are interpolated between
-            red and blue. Some phase information is lost in this coloring
-            becase phase of +phi and -phi have same color.
-
-          * "wheel" -- each phase is given unique color. In steps of pi/3
-            starting from 0, colors are assigned (in increasing hue) as:
-            red, yellow, green, cyan, blue, magenta, red.
-
-        :returns:
-          * **fig** -- Figure object from matplotlib.pyplot module
-            that can be used to save the figure in PDF, EPS or similar
-            format, for example using fig.savefig("name.pdf") command.
-          * **ax** -- Axes object from matplotlib.pyplot module that can be
-            used to tweak the plot, for example by adding a plot title
-            ax.set_title("Title goes here").
-
-        Example usage::
-
-          # Draws x-y projection of tight-binding model
-          # tweaks figure and saves it as a PDF.
-          fig, ax = tb.visualize(0, 1)
-          plt.show()
-
-        See also these examples: :ref:`edge-example`,
-        :ref:`visualize-example`.
+        See Also
+        --------
+        - :ref:`edge-example`,
+        - :ref:`visualize-example`.
 
         """
         return plot_tb_model(
@@ -3057,21 +3124,27 @@ class TBModel:
         show_model_info=True,
         ph_color="black",
     ):
-        r"""
-        Visualize a 3D tight-binding model using Plotly.
+        r"""Visualize a 3D tight-binding model using ``Plotly``.
 
         This function creates an interactive 3D plot of your tight-binding model,
         showing the unit-cell origin, lattice vectors (with arrowheads), orbitals,
         hopping lines, and (optionally) an eigenstate overlay with marker sizes
         proportional to amplitude and colors reflecting the phase.
 
-        :param eig_dr: Optional eigenstate (1D array of complex numbers) to display.
-        :param draw_hoppings: Whether to draw hopping lines between orbitals.
-        :param annotate_onsite_en: Whether to annotate orbitals with onsite energies.
-        :param ph_color: Coloring scheme for eigenstate phases (e.g. "black", "red-blue", "wheel").
+        Parameters
+        ----------
+        eig_dr : 
+            Optional eigenstate (1D array of complex numbers) to display.
+        draw_hoppings : bool, optional
+            Whether to draw hopping lines between orbitals.
+        annotate_onsite_en: bool, optional
+            Whether to annotate orbitals with onsite energies.
+        ph_color: str, optional
+            Coloring scheme for eigenstate phases (e.g. "black", "red-blue", "wheel").
 
-        :returns:
-        * **fig** -- A Plotly Figure object.
+        Returns
+        -------
+        plotly.graph_objs.Figure
         """
         return plot_tb_model_3d(
             self,
@@ -3101,25 +3174,55 @@ class TBModel:
         show=False,
         cbar=True,
     ):
-        """
-        Plots band structure along a specified path in k-space.
-        This function uses the `plot_bands` function from the `pythtb.plotting` module.
-        It allows for customization of the plot, including projection of orbitals,
+        """Plot the band structure along a specified path in k-space.
+
+        This function allows for customization of the plot, including projection of orbitals,
         spin projection, figure and axis objects, title, scatter size, line width,
         line color, line style, colormap, and whether to show a color bar.
-        This function is a wrapper around the `plot_bands` function in the `pythtb.plotting` module.
-        It is designed to be used with the `pythtb.TBModel` class.
 
-        Args:
-            k_path (list): List of high symmetry points to plot bands through
-            k_label (list[str], optional): Labels of high symmetry points. Defaults to None.
-            title (str, optional): _description_. Defaults to None.
-            save_name (str, optional): _description_. Defaults to None.
-            red_lat_idx (list, optional): _description_. Defaults to None.
-            show (bool, optional): _description_. Defaults to False.
+        Parameters
+        ----------
+        k_path : list
+            List of high symmetry points to plot bands through
+        nk : int, optional
+            Number of k-points to sample along the path. Defaults to 101.
+        k_label : list[str], optional
+            Labels of high symmetry points. Defaults to None.
+        proj_orb_idx : list[int], optional
+            List of orbital indices to project onto. Defaults to None.
+            This will give the bands a colorscale indicating the weight of 
+            the Bloch states onto the list of orbitals.
+        proj_spin : bool, optional
+            Whether to project the spin components. Defaults to ``False``.
+            If ``True``, the bands will be colored according to their spin character.
+        fig : matplotlib.figure.Figure, optional
+            Figure object to plot on. Defaults to None.
+        ax : matplotlib.axes.Axes, optional
+            Axes object to plot on. Defaults to None.
+        title : str, optional
+            Title of the plot. Defaults to None.
+        scat_size : float, optional
+            Size of the scatter points. Defaults to 3.
+        lw : float, optional
+            Line width of the band lines. Defaults to 2.
+        lc : str, optional
+            Line color of the band lines. Defaults to "b". Irrelevant
+            if `proj_spin` is True or `proj_orb_idx` is not None.
+        ls : str, optional
+            Line style of the band lines. Defaults to "solid".
+            Irrelevant if `proj_spin` is True or `proj_orb_idx` is not None.
+        cmap : str, optional
+            Colormap for the band plot. Defaults to "plasma". Only relevant if
+            `proj_spin` is True or `proj_orb_idx` is not None.
+        show : bool, optional
+            Whether to show the plot. Defaults to False.
+        cbar : bool, optional
+            Whether to show a color bar. Defaults to True.
+            Only relevant if `proj_spin` is True or `proj_orb_idx` is not None.
 
         Returns:
-            fig, ax: matplotlib fig and ax
+            fig : matplotlib.figure.Figure
+            ax: matplotlib.axes.Axes
         """
         return plot_bands(
             self,

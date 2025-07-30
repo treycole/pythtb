@@ -38,18 +38,7 @@ cp local/release/ver_*/*.tar.gz $MISC
 cp local/w90_example/wannier90_example.tar.gz $MISC
 
 # copy all example files
-cp ../examples/**/*.py $EXAMPLES
-# also files needed for w90 examples
-cp local/w90_example/wannier90_example.tar.gz $EXAMPLES
-cp -r local/w90_example/silicon_w90 $EXAMPLES
-
-(cd $EXAMPLES ; tar xvf wannier90_example.tar.gz ; rm wannier90_example.tar.gz )
-# create tar file of all examples
-(cd source ; tar --exclude='examples/pythtb.py' -zcvf pythtb-examples.tar.gz examples )
-mv source/pythtb-examples.tar.gz $MISC
-
-# also will need source file to run examples
-# cp ../pythtb.py $EXAMPLES
+rsync -a ../examples/ $EXAMPLES/
 
 # make simple figure for main page
 # ln -s ../examples/pythtb.py source/simple_fig/pythtb.py
@@ -58,6 +47,3 @@ mv source/pythtb-examples.tar.gz $MISC
 
 # now create website using sphinx
 make html
-
-# for some reason example files do not get copied, so we need to do it by hand
-# cp $EXAMPLES/*.py build/html/examples
