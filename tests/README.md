@@ -1,6 +1,6 @@
 # 📋 Test Status Report
 
-Last updated on **2025-07-30 at 13:42:56**
+Last updated on **2025-07-30 at 14:20:05**
 
 ---
 
@@ -9,109 +9,109 @@ Last updated on **2025-07-30 at 13:42:56**
     - **1d/**
       - **simple/**
         - **test_simple/**
-          - ✅ `test_example` — *2025-07-01 17:32:08*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
       - **ssh/**
         - **test_ssh/**
-          - ✅ `test_example` — *2025-07-01 17:31:54*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
     - **boron_nitride/**
       - **bn_ribbon_berry/**
         - **test_bn_ribbon_berry/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
     - **buckling/**
       - **buckled_layer/**
         - **test_buckled_layer/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
       - **trestle/**
         - **test_trestle/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
     - **checkerboard/**
       - **checkerboard/**
         - **test_checkerboard/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
     - **graphene/**
       - **cone/**
         - **test_cone/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
         - **test_cone_hardcode/**
-          - ✅ `test_answer` — *2025-07-01 17:32:44*
+          - ✅ `test_answer` — *2025-07-30 14:18:37*
       - **graphene/**
         - **test_graphene/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
     - **haldane/**
       - **edge/**
         - **test_edge/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
       - **haldane/**
         - **test_haldane/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
       - **haldane_bp/**
         - **test_haldane_bp/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
       - **haldane_fin/**
         - **test_haldane_fin/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
       - **haldane_hwf/**
         - **test_haldane_hwf/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
     - **kane_mele/**
       - **kane_mele/**
         - **test_kane_mele/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
     - **slab/**
       - **cubic_slab_hwf/**
         - **test_cubic_slab_hwf/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
     - **supercell/**
       - **supercell/**
         - **test_supercell/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
     - **three_site/**
       - **3site_cycle/**
         - **test_3site_cycle/**
-          - ✅ `test_example[-1-2]` — *2025-07-01 17:32:44*
+          - ✅ `test_example[-1-2]` — *2025-07-30 14:18:37*
       - **3site_cycle_fin/**
         - **test_2site_cycle_fin/**
-          - ✅ `test_example[-1.3-2.0]` — *2025-07-01 17:32:44*
+          - ✅ `test_example[-1.3-2.0]` — *2025-07-30 14:18:37*
     - **zero_dim/**
       - **0dim/**
         - **test_0dim/**
-          - ✅ `test_example` — *2025-07-01 17:32:44*
+          - ✅ `test_example` — *2025-07-30 14:18:37*
   - **test_tbmodel/**
     - **test_different_modes/**
-      - ✅ `test_modes` — *2025-07-01 17:32:44*
+      - ✅ `test_modes` — *2025-07-30 14:18:37*
     - **test_dimr_dimk_different/**
-      - ✅ `test_slab` — *2025-07-01 17:32:44*
+      - ✅ `test_slab` — *2025-07-30 14:18:37*
     - **test_initialization/**
-      - ✅ `test_bravais_lattice[3-3-lat_vecs0-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_bravais_lattice[3-3-lat_vecs1-2]` — *2025-07-01 17:32:44*
-      - ✅ `test_origin_orbs[1-2-lat_vecs7-2-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_origin_orbs[1-3-lat_vecs2-4-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_origin_orbs[1-3-lat_vecs5-1-2]` — *2025-07-01 17:32:44*
-      - ✅ `test_origin_orbs[2-2-lat_vecs6-1-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_origin_orbs[2-3-lat_vecs1-5-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_origin_orbs[2-3-lat_vecs4-10-2]` — *2025-07-01 17:32:44*
-      - ✅ `test_origin_orbs[2-3-lat_vecs9-2-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_origin_orbs[3-3-lat_vecs0-0-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_origin_orbs[3-3-lat_vecs3-0-2]` — *2025-07-01 17:32:44*
-      - ✅ `test_origin_orbs[3-3-lat_vecs8-4-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[1-1-lat_vecs0-orbital_pos0-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[1-1-lat_vecs1-orbital_pos1-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[1-1-lat_vecs7-orbital_pos7-2]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[1-1-lat_vecs8-orbital_pos8-2]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[1-2-lat_vecs10-orbital_pos10-2]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[1-2-lat_vecs3-orbital_pos3-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[1-3-lat_vecs13-orbital_pos13-2]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[1-3-lat_vecs6-orbital_pos6-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[2-2-lat_vecs2-orbital_pos2-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[2-2-lat_vecs9-orbital_pos9-2]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[2-3-lat_vecs12-orbital_pos12-2]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[2-3-lat_vecs5-orbital_pos5-1]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[3-3-lat_vecs11-orbital_pos11-2]` — *2025-07-01 17:32:44*
-      - ✅ `test_tbmodel_initialization[3-3-lat_vecs4-orbital_pos4-1]` — *2025-07-01 17:32:44*
+      - ✅ `test_bravais_lattice[3-3-lat_vecs0-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_bravais_lattice[3-3-lat_vecs1-2]` — *2025-07-30 14:18:37*
+      - ✅ `test_origin_orbs[1-2-lat_vecs7-2-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_origin_orbs[1-3-lat_vecs2-4-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_origin_orbs[1-3-lat_vecs5-1-2]` — *2025-07-30 14:18:37*
+      - ✅ `test_origin_orbs[2-2-lat_vecs6-1-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_origin_orbs[2-3-lat_vecs1-5-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_origin_orbs[2-3-lat_vecs4-10-2]` — *2025-07-30 14:18:37*
+      - ✅ `test_origin_orbs[2-3-lat_vecs9-2-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_origin_orbs[3-3-lat_vecs0-0-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_origin_orbs[3-3-lat_vecs3-0-2]` — *2025-07-30 14:18:37*
+      - ✅ `test_origin_orbs[3-3-lat_vecs8-4-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[1-1-lat_vecs0-orbital_pos0-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[1-1-lat_vecs1-orbital_pos1-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[1-1-lat_vecs7-orbital_pos7-2]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[1-1-lat_vecs8-orbital_pos8-2]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[1-2-lat_vecs10-orbital_pos10-2]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[1-2-lat_vecs3-orbital_pos3-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[1-3-lat_vecs13-orbital_pos13-2]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[1-3-lat_vecs6-orbital_pos6-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[2-2-lat_vecs2-orbital_pos2-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[2-2-lat_vecs9-orbital_pos9-2]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[2-3-lat_vecs12-orbital_pos12-2]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[2-3-lat_vecs5-orbital_pos5-1]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[3-3-lat_vecs11-orbital_pos11-2]` — *2025-07-30 14:18:37*
+      - ✅ `test_tbmodel_initialization[3-3-lat_vecs4-orbital_pos4-1]` — *2025-07-30 14:18:37*
     - **test_non_periodic/**
-      - ✅ `test_centers` — *2025-07-01 17:32:44*
+      - ✅ `test_centers` — *2025-07-30 14:20:05*
     - **test_set_onsite/**
-      - ✅ `test_set_onsite[1]` — *2025-07-01 17:32:44*
-      - ✅ `test_set_onsite[2]` — *2025-07-01 17:32:44*
+      - ✅ `test_set_onsite[1]` — *2025-07-30 14:18:37*
+      - ✅ `test_set_onsite[2]` — *2025-07-30 14:18:37*
     - **test_spin/**
-      - ✅ `test_spin` — *2025-07-01 17:32:44*
+      - ✅ `test_spin` — *2025-07-30 14:18:37*
