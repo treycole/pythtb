@@ -9,8 +9,8 @@ else
 fi	    
 
 # temporary folders
-MISC=source/misc
-EXAMPLES=source/examples
+MISC=/misc
+EXAMPLES=/examples
 
 # clear up temporary folders
 rm -rf $MISC
@@ -18,17 +18,17 @@ mkdir -p $MISC
 rm -rf $EXAMPLES
 mkdir -p $EXAMPLES
 
-# need this folder so that you don't get warning
-mkdir source/_static
+# # need this folder so that you don't get warning
+# mkdir source/_static
 
-# construct source tarball and put it in misc folder
-rm -rf ../dist
-rm ../MANIFEST
-(cd .. ; $PYTHON_FOR_BIN setup.py sdist --format=gztar)
-(cd .. ; $PYTHON_FOR_BIN setup.py sdist --format=zip)
-cp ../dist/*.tar.gz $MISC
-cp ../dist/*.zip $MISC
-rm -rf ../dist
+# # construct source tarball and put it in misc folder
+# rm -rf ../dist
+# rm ../MANIFEST
+# (cd .. ; $PYTHON_FOR_BIN setup.py sdist --format=gztar)
+# (cd .. ; $PYTHON_FOR_BIN setup.py sdist --format=zip)
+# cp ../dist/*.tar.gz $MISC
+# cp ../dist/*.zip $MISC
+# rm -rf ../dist
 
 # copy more stuff to misc folder
 cp ../LICENSE $MISC

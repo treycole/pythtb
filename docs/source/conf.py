@@ -50,9 +50,9 @@ extensions = [
     'matplotlib.sphinxext.plot_directive',
     'sphinx.ext.mathjax',
     "sphinx.ext.intersphinx",
+    "sphinx_copybutton",
     # "numpydoc"
 ]
-
 myst_enable_extensions = [
     "deflist",
     "fieldlist",
@@ -63,6 +63,9 @@ myst_enable_extensions = [
     "substitution",
     "colon_fence",
 ]
+
+copybutton_only_copy_prompt_lines = False
+copybutton_remove_prompts = True
 
 # intersphinx_mapping = {
 #     'python': ('https://docs.python.org/3', None),
@@ -77,63 +80,91 @@ source_suffix = {
 
 # for matplotlib plots
 plot_formats=[('png',140),('pdf',140)]
+pygments_style = "sphinx"
+pygments_dark_style = "monokai"  # for dark theme compatibility
 
 # for autodoc to work on PythTB package
 sys.path.append("../src")
 
-# (optional) tweak MyST syntax
+html_theme = 'pydata_sphinx_theme' #'sphinx_book_theme' #'classic'
+html_title = f"{project} Docs"
 
 templates_path = ['_templates']
+html_static_path = ['_static']
+html_js_files = [
+    ("custom-icons.js", {"defer": "defer"}),
+    "https://unpkg.com/thebe@latest/lib/index.js",  # 
+]
+html_extra_path = ['misc', 'examples', 'simple_fig']
+html_css_files = ["custom.css"]
 exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'pydata_sphinx_theme' #'sphinx_book_theme' #'classic'
-
-# html_theme_options = {
-#     "show_toc_level": 2,
-#     "navigation_depth": 4,
-#     "collapse_navigation": False,
-#     "show_nav_level": 2,
-#     # Optional: sticky nav
-#     "navbar_start": ["navbar-logo", "version-switcher"],
-# }
+html_context = {
+    "github_user": "treycole",
+    "github_repo": "pythtb",
+    "github_version": "main",
+    "doc_path": "docs",
+}
 
 html_theme_options = {
+    #     "navigation_depth": 4,
+#     "collapse_navigation": False,
+#     "show_nav_level": 2,
     # "logo": {
-    #     "image_light": "_static/numpylogo.svg",
-    #     "image_dark": "_static/numpylogo_dark.svg",
+    #     "image_light": "_static/logo.svg",
+    #     "image_dark": "_static/logo_dark.svg",
     # },
-    "github_url": "https://github.com/sinisacoh/pythtb",
+    # "github_url": "https://github.com/treycole/pythtb",
     "collapse_navigation": False,
     # "external_links": [
-    #     {"name": "Learn", "url": "https://numpy.org/numpy-tutorials/"},
-    #     {"name": "NEPs", "url": "https://numpy.org/neps"},
+    #     {"Changelog": "", "url": ""},
     # ],
     "header_links_before_dropdown": 6,
     "show_toc_level": 3,
     # Add light/dark mode and documentation version switcher:
+    # "navbar_start": ["navbar-logo", "version-switcher"],
+    "navbar_start": ["navbar-logo"],
+    "navbar_center": ["navbar-nav"],
     "navbar_end": [
         "search-button",
         "theme-switcher",
-        "version-switcher",
         "navbar-icon-links"
     ],
     "navbar_persistent": [],
-    "switcher": {
-        "version_match": version,
-        "json_url": "versions.json",
-    },
+    # "switcher": {
+    #     "version_match": version,
+    #     "json_url": "_static/switcher.json",
+    # },
     "show_version_warning_banner": True,
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/treycole/pythtb",
+            "icon": "fa-brands fa-github",
+        },
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/pythtb/",
+            "icon": "fa-custom fa-pypi",
+        },
+    ],
 }
 
-html_static_path = ['_static']
+html_sidebars = {
+    "index": [],
+    "install": [],
+    "about": [],
+    "CHANGELOG": [],
+    "formalism": [],
+}
+
 # html_theme_options["use_thebe"] = True  # e/nables Thebe for notebook
 # html_js_files = [
     # "https://unpkg.com/thebe@latest/lib/index.js"
 # ] # for executing code
-html_title = f"{project} v{version} Docs"
 
 # documentation.
 # html_theme_options = {

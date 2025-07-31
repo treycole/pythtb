@@ -61,7 +61,7 @@ tight-binding models, e.g., by “cutting” a cluster, ribbon, or slab
 out of a higher-dimensional crystal, and for visualizing the
 connectivity of a tight-binding model once it has been
 constructed. You can get an idea of the capabilities of the package by
-browsing the :doc:`PythTB examples <examples>`.
+browsing the :doc:`PythTB examples <examples_rst/index>`.
 
 The code is intended for pedagogical as well as research purposes. For
 example, it should be suitable for use in an undergraduate- or
@@ -88,7 +88,7 @@ Getting started
 
 The best way to explore the capabilities of ``PythTB`` and to get
 started in using it is to read through the :doc:`installation
-instructions <install>` and :doc:`PythTB examples <examples>`.
+instructions <install>` and :doc:`PythTB examples <examples_rst/index>`.
 
 If you are unfamiliar with Python or are not sure whether Python and the
 needed Python modules are installed on your system, see our

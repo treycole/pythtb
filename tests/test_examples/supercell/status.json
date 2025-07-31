@@ -1,7 +1,7 @@
 {
     "supercell": {
-        "last_pass": "2025-07-30T14:20:04.765695",
-        "pythtb_version": "2.0.0",
+        "last_pass": "2025-07-31T11:21:22.699676",
+        "pythtb_version": "2.0.0.post2+g3919c22.d20250730",
         "python_version": "3.11.11",
         "status": "pass"
     }
