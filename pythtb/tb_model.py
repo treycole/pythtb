@@ -1513,7 +1513,7 @@ class TBModel:
         Notes
         -----
         This function uses the convention described in section 3.1 of the
-        :download:`pythtb notes on tight-binding formalism <misc/pythtb-formalism.pdf>`.
+        :download:`pythtb notes on tight-binding formalism </misc/pythtb-formalism.pdf>`.
         The returned wavefunctions correspond to the cell-periodic part
         :math:`u_{n \mathbf{k}}(\mathbf{r})` and not the full Bloch function
         :math:`\Psi_{n \mathbf{k}}(\mathbf{r})`.
@@ -1756,7 +1756,7 @@ class TBModel:
         Reduces dimensionality of the model by taking a reciprocal-space
         slice of the Bloch Hamiltonian :math:`{\\cal H}_{\\bf k}`. The Bloch
         Hamiltonian (defined in :download:`notes on tight-binding
-        formalism <misc/pythtb-formalism.pdf>` in section 3.1 equation 3.7) of a
+        formalism </misc/pythtb-formalism.pdf>` in section 3.1 equation 3.7) of a
         d-dimensional model is a function of d-dimensional k-vector.
 
         Examples
@@ -3092,7 +3092,7 @@ class TBModel:
           the :func:`visualize_3d` method.
         - Convention of the wavefunction phase is as
           in convention 1 in section 3.1 of :download:`notes on
-          tight-binding formalism  <misc/pythtb-formalism.pdf>`. In
+          tight-binding formalism  </misc/pythtb-formalism.pdf>`. In
           other words, these wavefunction phases are in correspondence
           with cell-periodic functions :math:`u_{n {\bf k}} ({\bf r})`
           not :math:`\Psi_{n {\bf k}} ({\bf r})`.
