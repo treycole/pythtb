@@ -8,7 +8,7 @@ __all__ = [
     "is_Hermitian",
     "pauli_decompose",
     "get_trial_wfs",
-    "get_periodic_H"
+    "get_periodic_H",
 ]
 
 
@@ -21,6 +21,7 @@ def get_periodic_H(model, H_flat, k_vals):
     )
     H_per_flat = H_flat * orb_phase
     return H_per_flat
+
 
 def get_trial_wfs(tf_list, norb, nspin=1):
     """
@@ -427,6 +428,7 @@ def _one_berry_loop(wf, berry_evals=False):
         # sort these numbers as well
         eval_pha = np.sort(eval_pha)
         return eval_pha
+
 
 def _one_flux_plane(wfs2d):
     "Compute fluxes on a two-dimensional plane of states."

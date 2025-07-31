@@ -4,10 +4,4 @@ from .graphene import graphene
 from .haldane import haldane
 from .kane_mele import kane_mele
 
-__all__ = [
-    "checkerboard",
-    "fu_kane_mele",
-    "graphene",
-    "haldane",
-    "kane_mele"
-]
+__all__ = ["checkerboard", "fu_kane_mele", "graphene", "haldane", "kane_mele"]

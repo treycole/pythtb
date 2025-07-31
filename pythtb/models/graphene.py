@@ -1,7 +1,8 @@
 import numpy as np
 from pythtb import TBModel
 
-def graphene(delta:float, t:float) -> TBModel:
+
+def graphene(delta: float, t: float) -> TBModel:
     """
     graphene tight-binding model.
 
@@ -18,7 +19,6 @@ def graphene(delta:float, t:float) -> TBModel:
         An instance of the model.
     """
 
-        
     lat = [[1.0, 0.0], [0.5, np.sqrt(3.0) / 2.0]]
     orb = [[1.0 / 3.0, 1.0 / 3.0], [2.0 / 3.0, 2.0 / 3.0]]
 

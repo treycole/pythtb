@@ -45,7 +45,8 @@ def test_bravais_lattice(dim_k, dim_r, lat_vecs, nspin):
     """
     Test the TBModel's bravais_lattice method.
     """
-    model = TBModel(dim_k, dim_r, lat=lat_vecs, orb="bravais", nspin=nspin)
+    # don't specify orb, should put at origin
+    model = TBModel(dim_k, dim_r, lat=lat_vecs, nspin=nspin)
 
     assert model.norb == 1, "Bravais lattice should have one orbital"
     orb_vec = np.zeros((1, dim_r))

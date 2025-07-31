@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# now create website using sphinx
+make html
+

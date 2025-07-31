@@ -34,7 +34,7 @@ def generic_test_of_models(models: list[TBModel], use_dir, use_occ):
     evecs = []
     for ii, mod in enumerate(models):
         mod_cut = mod.cut_piece(4, use_dir[ii], glue_edgs=False)
-        H.append(mod_cut.get_ham([0.214]))
+        H.append(mod_cut.hamiltonian([0.214]))
         evalu, evec = mod_cut.solve_ham([0.214], return_eigvecs=True)
         evecs.append(evec)
         val.append(mod_cut.position_expectation(evec, use_dir[ii]))

@@ -1,9 +1,11 @@
 #### _Before creating a new test for an example script, please read the following information._
 
 This folder contains a test suite for all of the examples in the `~/examples` directory. The examples are grouped by category (e.g., graphene, haldane, etc.) as in the `~/examples` directory, and each example has a folder of test files. When creating a new test for an example, please use the `make_test_example.py` script to generate a skeleton of the folder of test files. The way to use this script is as follows:
+
 ```bash
 python make_test_example.py --group $NAMEOFGROUP --name $NAMEOFEXAMPLE
 ```
+
 where the `$NAMEOFGROUP` is the name of the parent directory where the example lives, and `$NAMEOFEXAMPLE` is the example's name. This script will then create a folder structure `tests/test_example/$NAMEOFGROUP/$NAMEOFEXAMPLE` with the following content:
 
 ### `/golden_data` folder
@@ -17,13 +19,3 @@ This file contains a function `run()` which returns the relevant data being gene
 
 ### `test_$NAMEOFEXAMPLE.py` script
 This file is what will be automatically detected and run by `pytest`. At the top of the file, the dictionary `OUTPUTS` must be modified to include the names of the golden data files. Be careful that the order in which the entries are added matches the order of what is returned in `run()`. If the data is something that is not savable by `NumPy`, such as pickled objects, be sure to modify the code as needed to make the appropriate comparisons. 
-
-### `status.json`
-After each run of `pytest`, the pass/fail status, along with other helpful metadata, will be written to `status.json` in the group directory. 
-
------
-To see the status of all of the examples, run
-```bash
-python report_test_status.py
-```
-This will print a table of the pass/fail status of all the tests, and write the pass/fail status in the form of a markdown checklist in `PASSING.md`.

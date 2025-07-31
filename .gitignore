@@ -6,7 +6,7 @@
 examples/**/*.pdf
 
 # Ignore docs for now
-docs
+# docs
 
 # Compiled source #
 ###################

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=42", "setuptools_scm[toml]>=7.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pythtb"
+dynamic = ["version"]
+description = "Solver for tight binding models in condensed matter physics and materials science."
+readme = "README.md"  
+requires-python = ">=3.11"
+authors = [
+  { name = "Trey Cole", email = "trey@treycole.me" },
+  { name = "Sinisa Coh", email = "sinisacoh@gmail.com" },
+  { name = "David Vanderbilt", email = "dhv@physics.rutgers.edu" }
+]
+license = { file = "LICENSE" } 
+keywords = ["tight binding", "solid state physics", "condensed matter physics", "materials science"]
+dependencies = [
+  "numpy",
+  "matplotlib"
+]
+classifiers = [
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent"
+]
+
+[project.urls]
+"Homepage" = "http://www.physics.rutgers.edu/pythtb"
+"Download" = "http://www.physics.rutgers.edu/pythtb"
+
+[tool.setuptools]
+py-modules = ["pythtb"]
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "node-and-date"
+fallback_version = "0.0.0"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pythtb*"]

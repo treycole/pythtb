@@ -67,7 +67,7 @@ def test_centers():
 
     # now enlarge model along direction 1
     sc_model = bulk_model.make_supercell(
-        [[1, 0], [0, num_wire]], to_home=False, to_home_suppress_warning=True
+        [[1, 0], [0, num_wire]], to_home=False, to_home_warning=False
     )
     sc_array = WFArray(sc_model, [numk, 100])
     sc_array.solve_on_grid([0.0, 0.0])
@@ -133,7 +133,7 @@ def test_centers():
     # now create a new finite model with a different non-periodic vector
     # code chooses automatically a non-periodic vector that is perpendicular to the periodic vector(s)
     finite_model_orthogonalized = finite_model.change_nonperiodic_vector(
-        np_dir=1, new_latt_vec=None, to_home_suppress_warning=True
+        np_dir=1, new_latt_vec=None, to_home_warning=False
     )
     # get center of charge for model with these periodicity vectors
     finite_location_orthogonalized, finite_location_orthogonalized_periodicity = (
@@ -152,7 +152,7 @@ def test_centers():
 
     # redo everything as above but with an arbitrary choice of a non-periodic vector
     finite_model_arb = finite_model.change_nonperiodic_vector(
-        np_dir=1, new_latt_vec=[-1.3, 4.8], to_home_suppress_warning=True
+        np_dir=1, new_latt_vec=[-1.3, 4.8], to_home_warning=False
     )
     finite_location_arb, finite_location_arb_periodicity = get_centers_01(
         finite_model_arb, num_wire

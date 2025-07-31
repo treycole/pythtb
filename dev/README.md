@@ -1,43 +1,14 @@
+# Welcome Developers
+This folder contains files intended primarily for developers of PythTB. They are meant to guide you
+in contributing to the project and informing you on the expectations of the maintainers. 
 
-## File structure
+### Directory
+- To get started, please see [CONTRIBUTING.md](../CONTRIBUTING.md).
+- For installation instructions, see [INSTALL.md](INSTALL.md).
+- For information about using git, see [HOWTOUSEGIT.md](HOWTOUSEGIT.md)
+- For instructions on releasing a new version, see [NEWVERSION.md](NEWVERSION.md)
+- To see how the directories are structured, see [FILESTRUCTURE.md](FILESTRUCTURE.md)
+- For testing instructions, see [TESTING.md](TESTING.md)
+- For a more detailed view of each major release, see [DEVNOTES.md](DEVNOTES.md)
+- For a log of notes left by other developers, see [DEVLOG.md](DEVLOG.md)
 
-- pythtb.py: pythtb package source
-- examples/: folder with examples
-- doc/talk/: presentation on python and PythTB
-- doc/formalism/: LaTeX document describing PythTB formalism
-- website/: source of website for PythTB written in Sphinx.
-    - To create website from scratch and generate source tar files, run script "go"
-    - To open website in browser run script "see"
-    - For quick update to website run "make html"
-    - To clean up website and all other files run "clean"
-    - To copy files to physsun run "publish"
-- notes/TODO: incomplete list of things we may want to add in the future.
-- notes/README: this file
-
-Do NOT edit following folders directly:
-- website/source/examples
-- website/source/misc
-
-## How to test code 
-
-Install tox package by running "pip install tox" in command prompt.
-
-Go into src folder and type "tox".
-
-You will need to have tox installed and tox.ini file may need to point to 
-binaries of python you wish to use in the test.  Note that tox does NOT work
-with anaconda version of python at this point (Dec 2016).
-
-## Note by David on 11/18/12
-
-If you encounter an error like
-```
-  ------------------------------------------------------
-  ERROR: Error in "xxx" directive: invalid option block.
-  ------------------------------------------------------
-```
-Then (a) leave a blank line between the directive and text block,
-and/or (b) make sure no line in text block starts with a colon
-by rewrapping the text in some way.
-(This seems to be a problem that occurs for my version of Docutils
-but not Sinisa's...)

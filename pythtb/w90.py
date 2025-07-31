@@ -567,6 +567,6 @@ class W90:
         # ignore kpath distance
         ene = ene[:, 1]
         # correct shape
-        ene = ene.reshape((self.num_wan, kpts.shape[0]))
+        ene = ene.reshape((self.num_wan, kpts.shape[0])).T
 
         return (kpts, ene)
