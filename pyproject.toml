@@ -25,6 +25,18 @@ classifiers = [
   "Operating System :: OS Independent"
 ]
 
+[project.optional-dependencies]
+docs = ["sphinx", "pydata-sphinx-theme", "sphinx-copybutton"]
+tests = ["pytest"]
+dev = [
+  "pytest",
+  "black",
+  "pre-commit"
+]
+plotting = [
+  "plotly"
+]
+
 [project.urls]
 "Homepage" = "http://www.physics.rutgers.edu/pythtb"
 "Download" = "http://www.physics.rutgers.edu/pythtb"
