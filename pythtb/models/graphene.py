@@ -3,8 +3,29 @@ from pythtb import TBModel
 
 
 def graphene(delta: float, t: float) -> TBModel:
-    """
-    graphene tight-binding model.
+    r"""Graphene tight-binding model.
+
+    .. versionadded:: 2.0.0
+
+    This function creates a graphene tight-binding model with the specified
+    hopping parameters and on-site energy. The model is defined on a 2D honeycomb
+    lattice with two sublattices. The lattice vectors are given by,
+
+    .. math::
+
+        \mathbf{a}_1 = a(1, 0), \quad \mathbf{a}_2 = a\left(\frac{1}{2}, \frac{\sqrt{3}}{2}\right),
+
+    and the orbital positions are given by,
+
+    .. math::
+
+        \mathbf{\tau}_1 = \frac{1}{3} \mathbf{a}_1 + \frac{1}{3} \mathbf{a}_2, \quad \mathbf{\tau}_2 = \frac{2}{3} \mathbf{a}_1 + \frac{2}{3} \mathbf{a}_2
+
+    The second-quantized Hamiltonian can be written as:
+
+    .. math::
+
+        H = -t \sum_{\langle i,j \rangle} c_i^\dagger c_j + \text{h.c.} + \delta \sum_i n_i
 
     Parameters
     ----------
@@ -19,8 +40,8 @@ def graphene(delta: float, t: float) -> TBModel:
         An instance of the model.
     """
 
-    lat = [[1.0, 0.0], [0.5, np.sqrt(3.0) / 2.0]]
-    orb = [[1.0 / 3.0, 1.0 / 3.0], [2.0 / 3.0, 2.0 / 3.0]]
+    lat = [[1, 0], [1.2, np.sqrt(3) / 2]]
+    orb = [[1/3, 1/3], [2/3, 2/3]]
 
     my_model = TBModel(2, 2, lat, orb)
 

@@ -9,8 +9,8 @@ else
 fi	    
 
 # temporary folders
-MISC=/misc
-EXAMPLES=/examples
+MISC=source/misc
+EXAMPLES=source/examples
 
 # clear up temporary folders
 rm -rf $MISC

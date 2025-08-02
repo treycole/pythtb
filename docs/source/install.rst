@@ -20,8 +20,8 @@ currently installed on your system, just type
 If you don't have Python 3.10 or higher, you can follow the instructions in
 :ref:`Installing or upgrading Python <install-python>` to install or upgrade.
 
-Installing with 'pip'
-----------------------
+Installing with ``pip``
+------------------------
 
 These instructions also assume that
 `pip <https://pip.pypa.io/en/stable/>`_, the standard package
@@ -61,9 +61,10 @@ PythTB requires the following Python packages to be installed:
 *  `numpy <https://numpy.org/>`_
 *  `matplotlib <https://matplotlib.org/stable/>`_
 
-Note that pip command should automatically install/upgrade the
-following python packages if they were not previously installed
-and upgraded to the latest version.
+.. note::
+   The ``pip install`` command should automatically install/upgrade the
+   following python packages if they were not previously installed
+   and upgraded to the latest version.
 
 To bypass the upgrade of these packages
 

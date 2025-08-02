@@ -24,8 +24,8 @@ version = pythtb.__version__
 autosummary_generate = True
 autodoc_default_options = {
     'members': True,
-    'undoc-members': True,
-    'show-inheritance': True,
+    'undoc-members': False,
+    'no-show-inheritance': True,
 }
 autodoc_typehints = "description"
 
@@ -110,7 +110,7 @@ html_context = {
 }
 
 html_theme_options = {
-    #     "navigation_depth": 4,
+#     "navigation_depth": 4,
 #     "collapse_navigation": False,
 #     "show_nav_level": 2,
     # "logo": {

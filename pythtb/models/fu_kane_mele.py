@@ -3,8 +3,12 @@ from pythtb import TBModel
 
 
 def fu_kane_mele(t, soc, m, beta):
-    """
-    fu_kane_mele tight-binding model.
+    """Fu-Kane-Mele tight-binding model.
+
+    .. versionadded:: 2.0.0
+
+    This function creates a Fu-Kane-Mele tight-binding model with the specified
+    parameters. 
 
     Parameters
     ----------

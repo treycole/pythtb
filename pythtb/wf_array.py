@@ -12,103 +12,122 @@ class WFArray:
 
     This class is used to store and manipulate an array of
     wavefunctions of a tight-binding model
-    :class:`pythtb.TBModel` on a regular or non-regular grid
-    These are typically the Bloch energy eigenstates of the
-    model, but this class can also be used to store a subset
-    of Bloch bands, a set of hybrid Wannier functions for a
-    ribbon or slab, or any other set of wavefunctions that
-    are expressed in terms of the underlying basis orbitals.
-    It provides methods that can be used to calculate Berry
-    phases, Berry curvatures, 1st Chern numbers, etc.
-
-    *Regular k-space grid*:
-    If the grid is a regular k-mesh (no parametric dimensions),
-    a single call to the function
-    :func:`pythtb.WFArray.solve_on_grid` will both construct a
-    k-mesh that uniformly covers the Brillouin zone, and populate
-    it with wavefunctions (eigenvectors) computed on this grid.
-    The last point in each k-dimension is set so that it represents
-    the same Bloch function as the first one (this involves the
-    insertion of some orbital-position-dependent phase factors).
-
-    Example :ref:`haldane_bp-example` shows how to use WFArray on
-    a regular grid of points in k-space. Examples :ref:`cone-example`
-    and :ref:`3site_cycle-example` show how to use non-regular grid of
-    points.
-
-    *Parametric or irregular k-space grid grid*:
-    An irregular grid of points, or a grid that includes also
-    one or more parametric dimensions, can be populated manually
-    with the help of the *[]* operator.  For example, to copy
-    eigenvectors *evec* into coordinate (2,3) in the *WFArray*
-    object *wf* one can simply do::
-
-      wf[2,3]=evec
-
-    The wavefunctions (here the eigenvectors) *evec* above
-    are expected to be in the format *evec[state,orbital]*
-    (or *evec[state,orbital,spin]* for the spinfull calculation),
-    where *state* typically runs over all bands.
-    This is the same format as returned by
-    :func:`pythtb.TBModel.solve_one` or
-    :func:`pythtb.TBModel.solve_all` (in the latter case one
-    needs to restrict it to a single k-point as *evec[:,kpt,:]*
-    if the model has *dim_k>=1*).
-
-    If WFArray is used for closed paths, either in a
-    reciprocal-space or parametric direction, then one needs to
-    include both the starting and ending eigenfunctions even though
-    they are physically equivalent.  If the array dimension in
-    question is a k-vector direction and the path traverses the
-    Brillouin zone in a primitive reciprocal-lattice direction,
-    :func:`pythtb.WFArray.impose_pbc` can be used to associate
-    the starting and ending points with each other; if it is a
-    non-winding loop in k-space or a loop in parameter space,
-    then :func:`pythtb.WFArray.impose_loop` can be used instead.
-    (These may not be necessary if only Berry fluxes are needed.)
-
-    Example :ref:`3site_cycle-example` shows how one
-    of the directions of *WFArray* object need not be a k-vector
-    direction, but can instead be a Hamiltonian parameter :math:`\lambda`
-    (see also discussion after equation 4.1 in :download:`notes on
-    tight-binding formalism <misc/pythtb-formalism.pdf>`).
+    :class:`pythtb.TBModel` on a regular or non-regular grid.
+    These could be the Bloch energy eigenstates of the
+    model, but could also be a subset of Bloch bands, 
+    a set of hybrid Wannier functions for a ribbon or slab, 
+    or any other set of wavefunctions that are expressed in terms 
+    of the underlying basis orbitals. It provides methods that can
+    be used to calculate Berry phases, Berry curvatures,
+    first Chern numbers, etc.
 
     The wavevectors stored in *WFArray* are typically Hamiltonian
     eigenstates (e.g., Bloch functions for k-space arrays),
-    with the *state* index running over all bands.  However, a
+    with the *state* index running over all bands. However, a
     *WFArray* object can also be used for other purposes, such
     as to store only a restricted set of Bloch states (e.g.,
     just the occupied ones); a set of modified Bloch states
     (e.g., premultiplied by a position, velocity, or Hamiltonian
     operator); or for hybrid Wannier functions (i.e., eigenstates
-    of a position operator in a nonperiodic direction).  For an
-    example of this kind, see :ref:`cubic_slab_hwf`.
+    of a position operator in a nonperiodic direction).
 
-    :param model: Object of type :class:`pythtb.TBModel` representing
-      tight-binding model associated with this array of eigenvectors.
+    *Regular k-space grid*:
+    If the grid is a regular k-mesh (no parametric dimensions),
+    a single call to the function :func:`pythtb.WFArray.solve_on_grid` 
+    will both construct a k-mesh that uniformly covers the Brillouin zone, 
+    and populate it with the energy eigenvectors computed on this grid.
+    This function will ensure that the last point along each k-dimension is 
+    the same Bloch function as the first one multiplied by a phase factor to
+    ensure the periodic boundary conditions are satisfied (see notes below).
 
-    :param mesh_size: List of dimensions of the mesh of the *WFArray*,
-      in order of reciprocal-space and/or parametric directions.
+    *Parametric or irregular k-space grid grid*:
+    An irregular grid of points, or a grid that includes also
+    one or more parametric dimensions, can be populated manually
+    using the ``[]`` operator (see example below). The wavefunctions
+    above are expected to be in the format `evec[state, orbital]`
+    (or `evec[state, orbital, spin]` for the spinfull calculation).
 
-    :param nstates: Optional parameter specifying the number of states
-      packed into the *WFArray* at each point on the mesh.  Defaults
-      to all states (i.e., norb*nspin).
+    Parameters
+    ----------
 
-    Example usage::
+    model : :class:`pythtb.TBModel`
+        A :class:`pythtb.TBModel` representing
+        the tight-binding model associated with this array of eigenvectors.
 
-      # Construct WFArray capable of storing an 11x21 array of
-      # wavefunctions
-      wf = WFArray(tb, [11, 21])
-      # populate this WFArray with regular grid of points in
-      # Brillouin zone
-      wf.solve_on_grid([0.0, 0.0])
+    mesh_size: list, tuple
+        A list or tuple specifying the size of the mesh of points
+        in the order of reciprocal-space and/or parametric directions.
 
-      # Compute set of eigenvectors at one k-point
-      (eval, evec) = tb.solve_one([kx, ky], eig_vectors = True)
-      # Store it manually into a specified location in the array
-      wf[3,4] = evec
-      # To access the eigenvectors from the same position
-      print(wf[3,4])
+    nstates : int, optional
+        Optional parameter specifying the number of states
+        packed into the *WFArray* at each point on the mesh. Defaults
+        to all states (i.e., `norb*nspin`).
+
+    See Also
+    --------
+    :ref:`haldane_bp-example` : For an example of using WFArray on
+    a regular grid of points in k-space. 
+
+    :ref:`cone-example` : For an example of using WFArray on a non-regular grid of points in k-space.
+
+    :ref:`3site_cycle-example` : For an example of using `WFArray` on a non-regular grid of points in parameter space.
+    This example shows how one of the directions of *WFArray* object need not be a k-vector direction, 
+    but can instead be a Hamiltonian parameter :math:`\lambda`. See also discussion after equation 4.1 in
+    :ref:`formalism`.
+
+    :ref:`cubic_slab_hwf` : For an example of using `WFArray` to store hybrid Wannier functions.
+
+    :func:`pythtb.TBModel.solve_ham`
+
+    :ref:`formalism`
+
+    Notes
+    -----
+    When using :func:`pythtb.WFArray.solve_on_grid` the last wavefunction along each mesh dimension
+    is stored according the the boundary conditions 
+
+    .. math::
+
+        u_{n, \mathbf{k} + \mathbf{G}}(\mathbf{r}) = e^{-i \mathbf{G} \cdot \mathbf{r}} u_{n, \mathbf{k}}(\mathbf{r})
+
+    where :math:`\mathbf{G}` is a reciprocal lattice vector and :math:`\mathbf{r}` is the position vector.
+    See section 4.4 in :download:`notes on tight-binding formalism </misc/pythtb-formalism.pdf>` for more details.
+
+
+    If WFArray is used for closed paths, either in a
+    reciprocal-space or parametric direction, then one needs to
+    include both the starting and ending eigenfunctions even though
+    they are physically equivalent. If the array dimension in
+    question is a k-vector direction and the path traverses the
+    Brillouin zone in a primitive reciprocal-lattice direction,
+    :func:`pythtb.WFArray.impose_pbc` can be used to associate
+    the starting and ending points with each other. If it is a
+    non-winding loop in k-space or a loop in parameter space,
+    then :func:`pythtb.WFArray.impose_loop` can be used instead.
+
+    Examples
+    --------
+    Construct `WFArray` capable of storing an 11x21 array of
+    wavefunctions
+
+    >>> wf = WFArray(tb, [11, 21])
+
+    Populate this `WFArray` with regular grid of points in
+    Brillouin zone
+    
+    >>> wf.solve_on_grid([0.0, 0.0])
+
+    Compute set of eigenvectors at one k-point
+
+    >>> eval, evec = tb.solve_one([kx, ky], eig_vectors = True)
+    
+    Store it manually into a specified location in the array
+
+    >>> wf[3,4] = evec
+    
+    To access the eigenvectors from the same position
+
+    >>> print(wf[3,4])
 
     """
 
@@ -123,6 +142,9 @@ class WFArray:
         # check that model is of type TBModel
         if not isinstance(model, TBModel):
             raise TypeError("model must be of type TBModel")
+         # store model
+        self._model = model
+
         # check that mesh_size is a list or tuple
         if not (isinstance(mesh_size, list) or isinstance(mesh_size, tuple)):
             raise TypeError("mesh_size must be a list or tuple")
@@ -132,6 +154,15 @@ class WFArray:
         # check that mesh_size contains only integers
         if not all(_is_int(x) for x in mesh_size):
             raise TypeError("mesh_size must contain only integers")
+        
+        # store dimension of array of points on which to keep wavefunctions
+        self._mesh_size = np.array(mesh_size)
+        self._dim_mesh = len(self._mesh_size)
+        # all dimensions should be 2 or larger, because pbc can be used
+        if True in (self._mesh_size <= 1).tolist():
+            raise ValueError(
+                "Dimension of WFArray object in each direction must be 2 or larger."
+            )
 
         # number of electronic states for each k-point
         if nstates is None:
@@ -139,24 +170,17 @@ class WFArray:
             # note: 'None' means to use the default, which is all bands!
         else:
             if not _is_int(nstates):
-                raise Exception("\n\nArgument nstates not an integer")
+                raise TypeError("Argument nstates is not an integer.")
             self._nstates = nstates  # set by optional argument
+
         # number of spin components
         self._nspin = model.nspin
         # number of orbitals
         self._norb = model.norb
         # store orbitals from the model
         self._orb = model.orb_vecs
-        # store entire model as well
-        self._model = model
-        # store dimension of array of points on which to keep wavefunctions
-        self._mesh_size = np.array(mesh_size)
-        self._dim_mesh = len(self._mesh_size)
-        # all dimensions should be 2 or larger, because pbc can be used
-        if True in (self._mesh_size <= 1).tolist():
-            raise Exception(
-                "\n\nDimension of WFArray object in each direction must be 2 or larger."
-            )
+        
+
         self._pbc_axes = []  # axes along which periodic boundary conditions are imposed
         self._loop_axes = []  # axes along which loops are imposed
         # generate temporary array used later to generate object ._wfs
@@ -197,57 +221,57 @@ class WFArray:
 
     @property
     def wfs(self):
-        r"""Returns the wavefunctions stored in the *WFArray* object."""
+        """The wavefunctions stored in the *WFArray* object."""
         return self._wfs
 
     @property
     def shape(self):
-        r"""Returns the shape of the wavefunction array."""
+        """The shape of the wavefunction array."""
         return self._wfs.shape
 
     @property
     def mesh_size(self):
-        r"""Returns the mesh dimensions of the *WFArray* object."""
+        """The mesh dimensions of the *WFArray* object."""
         return self._mesh_size
 
     @property
     def dim_mesh(self):
-        r"""Returns the number of dimensions of the *WFArray* object."""
+        """The number of dimensions of the *WFArray* object."""
         return self._dim_mesh
 
     @property
     def pbc_axes(self):
-        r"""Returns the axes along which periodic boundary conditions are imposed."""
+        """The axes along which periodic boundary conditions are imposed."""
         return self._pbc_axes
 
     @property
     def loop_axes(self):
-        r"""Returns the axes along which loops are imposed."""
+        """The axes along which loops are imposed."""
         return self._loop_axes
 
     @property
     def nstates(self):
-        r"""Returns the number of states (or bands) stored in the *WFArray* object."""
+        """The number of states (or bands) stored in the *WFArray* object."""
         return self._nstates
 
     @property
     def nspin(self):
-        r"""Returns the number of spin components stored in the *WFArray* object."""
+        """The number of spin components stored in the *WFArray* object."""
         return self._nspin
 
     @property
     def norb(self):
-        r"""Returns the number of orbitals stored in the *WFArray* object."""
+        """The number of orbitals stored in the *WFArray* object."""
         return self._norb
 
     @property
     def model(self):
-        r"""Returns the underlying TBModel object associated with the *WFArray*."""
+        """The underlying TBModel object associated with the *WFArray*."""
         return self._model
 
     @property
     def param_path(self):
-        r"""Returns the parameter path (e.g., k-points) along which the model was solved.
+        """The parameter path (e.g., k-points) along which the model was solved.
         This is only set if the model was solved along a path using `solve_on_path`."""
         return getattr(self, "_param_path", None)
 
@@ -263,11 +287,24 @@ class WFArray:
 
     @property
     def energies(self):
-        r"""Returns the energies of the states stored in the *WFArray*."""
+        """Returns the energies of the states stored in the *WFArray*."""
         return getattr(self, "_energies", None)
 
     def get_states(self, flatten_spin=False):
-        """Returns dictionary containing Bloch and cell-periodic eigenstates."""
+        """Returns states stored in the WFArray.
+
+        Parameters
+        ----------
+        flatten_spin : bool, optional
+            If True, the spin and orbital indices are flattened into a single index and
+            the shape of the returned states will be [nk1, ..., nkd, [n_lambda,] n_state, n_orb * n_spin].
+            If False, the original shape is preserved, [nk1, ..., nkd, [n_lambda,] n_state, n_orb, n_spin].
+
+        Returns
+        -------
+        states : np.ndarray
+            The wavefunctions stored in the WFArray.
+        """
         # shape is [nk1, ..., nkd, [n_lambda,] n_state, n_orb[, n_spin]
         wfs = self.wfs
 
@@ -278,7 +315,35 @@ class WFArray:
         return wfs
 
     def get_bloch_states(self, flatten_spin=False):
-        """Returns Bloch states from the WFArray."""
+        """Returns Bloch and cell-periodic states from the WFArray.
+
+        Parameters
+        ----------
+        flatten_spin : bool, optional
+            If True, the spin and orbital indices are flattened into a single index and
+            the shape of the returned states will be [nk1, ..., nkd, [n_lambda,] n_state, n_orb * n_spin].
+            If False, the original shape is preserved, [nk1, ..., nkd, [n_lambda,] n_state, n_orb, n_spin].
+
+        Returns
+        -------
+        states : dict
+            A dictionary containing the "bloch" and "cell" states.  The returned dictionary 
+            has the following keys:
+
+            - "bloch": Bloch states (periodic in k-space) :math:`\psi_{n\mathbf{k}}(\mathbf{r})`
+
+            - "cell": Cell-periodic states (periodic in real space) :math:`u_{n\mathbf{k}}(\mathbf{r})`
+
+        See Also
+        --------
+        get_states : For obtaining the states stored on the mesh only.
+
+        :ref:`formalism`
+
+        Notes
+        -----
+        This function assumes that the WFArray is defined on a regular k-mesh.
+        """
         # shape is [nk1, ..., nkd, [n_lambda,] n_state, n_orb[, n_spin]
         u_wfs = self.wfs
 
@@ -298,12 +363,33 @@ class WFArray:
             psi_wfs = psi_wfs.reshape((*psi_wfs.shape[:-2], -1))
 
         return_states = {
-            "u_wfs": u_wfs,
-            "psi_wfs": psi_wfs,
+            "cell": u_wfs,
+            "bloch": psi_wfs,
         }
         return return_states
 
     def get_projectors(self, return_Q=False):
+        r"""Returns the band projectors associated with the states in the WFArray.
+
+        The band projectors are defined as the outer product of the wavefunctions:
+
+        .. math::
+
+            P_{n\mathbf{k}} = |u_{n\mathbf{k}}(\mathbf{r})\rangle \langle u_{n\mathbf{k}}(\mathbf{r})| \\
+            Q_{n\mathbf{k}} = \mathbb{I} - P_{n\mathbf{k}}
+
+        Parameters
+        ----------
+        return_Q : bool, optional
+            If True, the function also returns the orthogonal projector Q.
+
+        Returns
+        -------
+        P : np.ndarray
+            The band projectors.
+        Q : np.ndarray, optional
+            The orthogonal projectors.
+        """
 
         u_wfs = self.get_states(flatten_spin=True)
 
@@ -354,44 +440,75 @@ class WFArray:
             self._energies[idx] = eigvals[idx]
             self._wfs[(idx,)] = eigvecs[idx]
 
-    # TODO: Clarify the role of start_k. When would it be anything other than [0, 0]
-    # or [-0.5, -0.5]?
-    def solve_on_grid(self, start_k=[0, 0]):
-        r"""
+    def solve_on_grid(self, start_k=None):
+        r"""Solve a tight-binding model on a regular mesh of k-points.
 
-        Solve a tight-binding model on a regular mesh of k-points covering
-        the entire reciprocal-space unit cell. Both points at the opposite
-        sides of reciprocal-space unit cell are included in the array.
+        The regular mesh of k-points covers the entire reciprocal-space unit cell. 
+        Both points at the opposite sides of reciprocal-space unit cell are included 
+        in the array. The spacing between points is defined by the mesh size specified 
+        upon initialization. The end point is ``[start_k[0]+1, start_k[1]+1]``.
+
+        Parameters
+        ----------
+        start_k : array-like (dim_k,), optional
+            The starting point of the k-mesh in reciprocal space. If not specified,
+            defaults to [0, 0] for 2D systems, [0, 0, 0] for 3D systems, etc. The
+            starting point along each dimension must be in the range [-0.5, 0.5].
+
+        Returns
+        -------
+        gaps : ndarray
+            The minimal direct bandgap between `n`-th and `n+1`-th band on 
+            all the k-points in the mesh.
+
+        See Also
+        --------
+        :func:`pythtb.WFArray.impose_pbc`
+
+        Notes
+        -----
+        One may have to use a dense k-mesh to resolve the highly-dispersive crossings.
 
         This function also automatically imposes periodic boundary
         conditions on the eigenfunctions. See also the discussion in
         :func:`pythtb.WFArray.impose_pbc`.
 
-        :param start_k: Origin of a regular grid of points in the reciprocal space.
+        Examples
+        --------
+        Solve eigenvectors on a regular grid anchored at ``[-0.5, -0.5]``
+        so that the mesh is defined from ``[-0.5, -0.5]`` to ``[0.5, 0.5]``.
 
-        :returns:
-          * **gaps** -- returns minimal direct bandgap between n-th and n+1-th
-              band on all the k-points in the mesh.  Note that in the case of band
-              crossings one may have to use very dense k-meshes to resolve
-              the crossing.
-
-        Example usage::
-
-          # Solve eigenvectors on a regular grid anchored
-          # at a given point
-          wf.solve_on_grid([-0.5, -0.5])
+        >>> wf.solve_on_grid([-0.5, -0.5])
 
         """
+        if start_k is None:
+            start_k = [0] * self.dim_mesh
+        else:
+            start_k = np.asarray(start_k, dtype=float)
+            # check dimensionality
+            if start_k.ndim != 1 or start_k.shape[0] != self.dim_mesh:
+                raise ValueError(
+                    f"Expected start_k to have shape ({self.dim_mesh},), "
+                    f"but got shape {start_k.shape}."
+                )
+            
+        # check values
+        if np.any(start_k < -0.5) or np.any(start_k > 0.5):
+            raise ValueError(
+                f"Expected start_k to be in the range [-0.5, 0.5], "
+                f"but got {start_k}."
+            )
+        
         # check dimensionality
-        if self.dim_mesh != self._model._dim_k:
+        if self.dim_mesh != self.model.dim_k:
             raise Exception(
-                "\n\nIf using solve_on_grid method, dimension of WFArray must equal"
-                "\ndim_k of the tight-binding model!"
+                "If using solve_on_grid method, dimension of WFArray must equal"
+                "dim_k of the tight-binding model."
             )
 
         # check number of states
         if self.nstates != self.model.nstate:
-            raise Exception(
+            raise ValueError(
                 "\n\nWhen initializing this object, you specified nstates to be "
                 + str(self.nstates)
                 + ", but"
@@ -408,7 +525,6 @@ class WFArray:
             nk - 1 for nk in self.mesh_size
         )  # number of k-points in each direction
 
-        # generate k-mesh
         # we use a mesh size of (nk-1) because the last point in each direction will be
         # the same as the first one, so we only need (nk-1) points
         mesh_size = tuple(nk - 1 for nk in self.mesh_size)
@@ -418,6 +534,7 @@ class WFArray:
         ]
         # stack into a grid of shape (nk1-1, nk2-1, ..., nkd-1, dim_k)
         k_pts_sq = np.stack(np.meshgrid(*k_axes, indexing="ij"), axis=-1)
+        # flatten the grid
         k_pts = k_pts_sq.reshape(-1, self.dim_mesh)
 
         # store for later
@@ -455,31 +572,35 @@ class WFArray:
             return None
 
     def solve_on_one_point(self, kpt, mesh_indices):
-        r"""
+        r"""Solve a tight-binding model on a single k-point.
 
         Solve a tight-binding model on a single k-point and store the eigenvectors
         in the *WFArray* object in the location specified by *mesh_indices*.
 
-        :param kpt: List specifying desired k-point
+        Parameters
+        ----------
+        kpt : List specifying desired k-point to solve the model on.
 
-        :param mesh_indices: List specifying associated set of mesh indices
+        mesh_indices : List specifying associated set of mesh indices to assign the wavefunction to.
 
-        :returns:
-          None
+        Examples
+        --------
+        Solve eigenvectors on a sphere of radius kappa surrounding
+        point `k_0` in 3d k-space and pack into a predefined 2d WFArray
 
-        Example usage::
-
-          # Solve eigenvectors on a sphere of radius kappa surrounding
-          # point k_0 in 3d k-space and pack into a predefined 2d WFArray
-          for i in range[n+1]:
-            for j in range[m+1]:
-              theta=np.pi*i/n
-              phi=2*np.pi*j/m
-              kx=k_0[0]+kappa*np.sin(theta)*np.cos(phi)
-              ky=k_0[1]+kappa*np.sin(theta)*np.sin(phi)
-              kz=k_0[2]+kappa*np.cos(theta)
-              wf.solve_on_one_point([kx,ky,kz],[i,j])
-
+        >>> n = 10
+        >>> m = 10
+        >>> wf = WFArray(model, [n, m])
+        >>> kappa = 0.1
+        >>> k_0 = [0, 0, 0]
+        >>> for i in range(n + 1):
+        >>>     for j in range(m + 1):
+        >>>         theta = np.pi * i / n
+        >>>         phi = 2 * np.pi * j / m
+        >>>         kx = k_0[0] + kappa * np.sin(theta) * np.cos(phi)
+        >>>         ky = k_0[1] + kappa * np.sin(theta) * np.sin(phi)
+        >>>         kz = k_0[2] + kappa * np.cos(theta)
+        >>>         wf.solve_on_one_point([kx, ky, kz], [i, j])
         """
 
         _, evec = self.model.solve_ham(kpt, return_eigvecs=True)
@@ -488,33 +609,36 @@ class WFArray:
         else:
             self._wfs[tuple(mesh_indices)] = evec
 
-    # TODO: This function should be removed or modified
-    # it does not preserve the proper nstates
+
     def choose_states(self, subset):
         r"""
 
         Create a new *WFArray* object containing a subset of the
         states in the original one.
 
-        :param subset: List of integers specifying states to keep
+        Parameters
+        ----------
+        subset : array-like of int 
+            State indices to keep.
 
-        :returns:
-          * **wf_new** -- returns a *WFArray* that is identical in all
-              respects except that a subset of states have been kept.
+        Returns
+        -------
+        wf_new : WFArray
+            Identical in all respects except that a subset of states have been kept.
 
-        Example usage::
+        Examples
+        --------
+        Make new *WFArray* object containing only two states
 
-          # Make new *WFArray* object containing only two states
-          wf_new=wf.choose_states([3,5])
+        >>> wf_new = wf.choose_states([3, 5])
 
         """
-
         # make a full copy of the WFArray
         wf_new = copy.deepcopy(self)
 
         subset = np.array(subset, dtype=int)
         if subset.ndim != 1:
-            raise Exception("\n\nParameter subset must be a one-dimensional array.")
+            raise ValueError("Parameter subset must be a one-dimensional array.")
 
         wf_new._nstates = subset.shape[0]
         if self._model.nspin == 2:
@@ -522,33 +646,32 @@ class WFArray:
         elif self._model.nspin == 1:
             wf_new._wfs = wf_new._wfs[..., subset, :]
         else:
-            raise Exception(
-                "\n\nWFArray object can only handle spinless or spin-1/2 models."
+            raise ValueError(
+                "WFArray object can only handle spinless or spin-1/2 models."
             )
 
         return wf_new
 
-    # TODO: Same as above, this function should be removed or modified
-    # it does not preserve the proper nstates
     def empty_like(self, nstates=None):
-        r"""
+        r"""Create a new empty *WFArray* object based on the original.
 
-        Create a new empty *WFArray* object based on the original,
-        optionally modifying the number of states carried in the array.
+        Parameters
+        ----------
+        nstates : int, optional
+            Specifies the number of states (or bands) to be stored in the array.
+            Defaults to the same as the original *WFArray* object.
 
-        :param nstates: Optional parameter specifying the number
-              of states (or bands) to be carried in the array.
-              Defaults to the same as the original *WFArray* object.
+        Returns
+        -------
+        wf_new : WFArray
+            WFArray except that array elements are uninitialized and 
+            the number of states may have changed.
 
-        :returns:
-          * **wf_new** -- returns a similar WFArray except that array
-              elements are unitialized and the number of states may have
-              changed.
-
-        Example usage::
-
-          # Make new empty WFArray object containing 6 bands per k-point
-          wf_new=wf.empty_like(nstates=6)
+        Examples
+        --------
+        Make new empty WFArray object containing 6 bands per k-point
+        
+        >>> wf_new=wf.empty_like(nstates=6)
 
         """
 
@@ -569,8 +692,14 @@ class WFArray:
         """
         Change between cell periodic and Bloch wfs by multiplying exp(\pm i k . tau)
 
-        Returns:
-            wfsxphase (np.ndarray): wfs with orbitals multiplied by phase factor
+        Assumes that the WFArray was populated using a regular mesh
+        of k-points and none of the states are at the same k-point. This means
+        there should be no adiabatic lambda points in the mesh.
+
+        Returns
+        -------
+        wfsxphase : np.ndarray
+            wfs with orbitals multiplied by phase factor
         """
         lam = -1 if inverse else 1  # overall minus if getting cell periodic from Bloch
 
@@ -614,24 +743,42 @@ class WFArray:
         return wfs * phases
 
     def impose_pbc(self, mesh_dir: int, k_dir: int):
-        r"""
+        r"""Impose periodic boundary conditions on the WFArray.
 
+        This routine sets the cell-periodic Bloch function
+        at the end of the mesh in direction `k_dir` equal to the first,
+        multiplied by a phase factor, overwriting the previous value.
+        Explicitly, this means we set
+        :math:`u_{n,{\bf k_0+G}}=e^{-i{\bf G}\cdot{\bf r}} u_{n {\bf k_0}}` for the
+        corresponding reciprocal lattice vector :math:`\mathbf{G} = \mathbf{b}_{\texttt{k_dir}}`,
+        where :math:`\mathbf{b}_{\texttt{k_dir}}` is the reciprocal lattice basis vector corresponding to the
+        direction `k_dir`. The state :math:`u_{n{\bf k_0}}` is the state populated in the first element
+        of the mesh along the `mesh_dir` axis.
+
+        Parameters
+        ----------
+        mesh_dir : int
+            Direction of `WFArray` along which you wish to impose periodic boundary conditions.
+
+        k_dir : int
+            Corresponding to the periodic k-vector direction
+            in the Brillouin zone of the underlying *TBModel*. Since
+            version 1.7.0 this parameter is defined so that it is
+            specified between 0 and *dim_r-1*.
+
+        See Also
+        --------
+        :ref:`3site_cycle-example` : For an example where the periodic boundary 
+        condition is applied only along one direction of *WFArray*.
+
+        :ref:`formalism` : Section 4.4 and equation 4.18
+
+        Notes
+        -----
         If the *WFArray* object was populated using the
         :func:`pythtb.WFArray.solve_on_grid` method, this function
         should not be used since it will be called automatically by
         the code.
-
-        The eigenfunctions :math:`\Psi_{n {\bf k}}` are by convention
-        chosen to obey a periodic gauge, i.e.,
-        :math:`\Psi_{n,{\bf k+G}}=\Psi_{n {\bf k}}` not only up to a
-        phase, but they are also equal in phase.  It follows that
-        the cell-periodic Bloch functions are related by
-        :math:`u_{n,{\bf k+G}}=e^{-i{\bf G}\cdot{\bf r}} u_{n {\bf k}}`.
-        See :download:`notes on tight-binding formalism
-        <misc/pythtb-formalism.pdf>` section 4.4 and equation 4.18 for
-        more detail.  This routine sets the cell-periodic Bloch function
-        at the end of the string in direction :math:`{\bf G}` according
-        to this formula, overwriting the previous value.
 
         This function will impose these periodic boundary conditions along
         one direction of the array. We are assuming that the k-point
@@ -641,26 +788,26 @@ class WFArray:
         does not store the k-vectors on which the model was solved;
         it only stores the eigenvectors (wavefunctions).
 
-        :param mesh_dir: Direction of WFArray along which you wish to
-          impose periodic boundary conditions.
+        The eigenfunctions :math:`\psi_{n {\bf k}}` are by convention
+        chosen to obey a periodic gauge, i.e.,
+        :math:`\psi_{n,{\bf k+G}}=\psi_{n {\bf k}}` not only up to a
+        phase, but they are also equal in phase. It follows that
+        the cell-periodic Bloch functions are related by
+        :math:`u_{n,{\bf k_0+G}}=e^{-i{\bf G}\cdot{\bf r}} u_{n {\bf k_0}}`.
+        See :download:`notes on tight-binding formalism </misc/pythtb-formalism.pdf>` 
+        section 4.4 and equation 4.18 for more detail.
 
-        :param k_dir: Corresponding to the periodic k-vector direction
-          in the Brillouin zone of the underlying *TBModel*.  Since
-          version 1.7.0 this parameter is defined so that it is
-          specified between 0 and *dim_r-1*.
+        Examples
+        --------
 
-        See example :ref:`3site_cycle-example`, where the periodic boundary
-        condition is applied only along one direction of *WFArray*.
+        Imposes periodic boundary conditions along the mesh_dir=0
+        direction of the `WFArray` object, assuming that along that
+        direction the `k_dir=1` component of the k-vector is increased
+        by one reciprocal lattice vector.  This could happen, for
+        example, if the underlying TBModel is two dimensional but
+        `WFArray` is a one-dimensional path along :math:`k_y` direction.
 
-        Example usage::
-
-          # Imposes periodic boundary conditions along the mesh_dir=0
-          # direction of the WFArray object, assuming that along that
-          # direction the k_dir=1 component of the k-vector is increased
-          # by one reciprocal lattice vector.  This could happen, for
-          # example, if the underlying TBModel is two dimensional but
-          # WFArray is a one-dimensional path along k_y direction.
-          wf.impose_pbc(mesh_dir=0,k_dir=1)
+        >>> wf.impose_pbc(mesh_dir=0, k_dir=1)
 
         """
 
@@ -704,32 +851,46 @@ class WFArray:
         self._wfs[tuple(slc_lft)] = self._wfs[tuple(slc_rt)] * phase
 
     def impose_loop(self, mesh_dir):
-        r"""
+        r"""Impose a loop condition along a given mesh direction.
 
-        If the user knows that the first and last points along the
-        *mesh_dir* direction correspond to the same Hamiltonian (this
-        is **not** checked), then this routine can be used to set the
+        This routine can be used to set the
         eigenvectors equal (with equal phase), by replacing the last
-        eigenvector with the first one (for each band, and for each
-        other mesh direction, if any).
+        eigenvector with the first one along the `mesh_dir` direction
+        (for each band).
 
+
+        Parameters
+        ----------
+        mesh_dir: int
+            Direction of `WFArray` along which you wish to
+            impose periodic boundary conditions.
+
+        See Also
+        --------
+        :func:`pythtb.WFArray.impose_pbc`
+
+        Notes
+        -----
         This routine should not be used if the first and last points
         are related by a reciprocal lattice vector; in that case,
         :func:`pythtb.WFArray.impose_pbc` should be used instead.
 
-        :param mesh_dir: Direction of WFArray along which you wish to
-          impose periodic boundary conditions.
+        It is assumed that the first and last points along the
+        `mesh_dir` direction correspond to the same Hamiltonian (this
+        is **not** checked).
 
-        Example usage::
+        Examples
+        --------
+        Suppose the WFArray object is three-dimensional
+        corresponding to `(kx, ky, lambda)` where `(kx, ky)` are
+        wavevectors of a 2D insulator and lambda is an
+        adiabatic parameter that goes around a closed loop.
+        Then to insure that the states at the ends of the lambda
+        path are equal (with equal phase) in preparation for
+        computing Berry phases in lambda for given `(kx, ky)`,
+        do 
 
-          # Suppose the WFArray object is three-dimensional
-          # corresponding to (kx,ky,lambda) where (kx,ky) are
-          # wavevectors of a 2D insulator and lambda is an
-          # adiabatic parameter that goes around a closed loop.
-          # Then to insure that the states at the ends of the lambda
-          # path are equal (with equal phase) in preparation for
-          # computing Berry phases in lambda for given (kx,ky),
-          # do wf.impose_loop(mesh_dir=2)
+        >>> wf.impose_loop(mesh_dir = 2)
 
         """
         if not _is_int(mesh_dir):
@@ -751,11 +912,52 @@ class WFArray:
         # set the last point in the mesh_dir direction equal to the first one
         self._wfs[tuple(slc_lft)] = self._wfs[tuple(slc_rt)]
 
-    def position_matrix(self, key, occ, dir):
-        """Similar to :func:`pythtb.TBModel.position_matrix`.  Only
-        difference is that, in addition to specifying *dir*, one also
-        has to specify *key* (k-point of interest) and *occ* (list of
-        states to be included, which can optionally be 'All')."""
+    def position_matrix(self, k_idx, occ, dir):
+        r"""Position matrix for a given k-point and set of states.
+
+        Position operator is defined in reduced coordinates.
+        The returned object :math:`X` is
+
+        .. math::
+
+          X_{m n {\bf k}}^{\alpha} = \langle u_{m {\bf k}} \vert
+          r^{\alpha} \vert u_{n {\bf k}} \rangle
+
+        Here :math:`r^{\alpha}` is the position operator along direction
+        :math:`\alpha` that is selected by `dir`.
+
+        This routine can be used to compute the position matrix for a
+        given k-point and set of states (which can be all states, or
+        a specific subset).
+
+        Parameters
+        ----------
+        k_idx: array-like of int 
+            Set of integers specifying the k-point of interest in the mesh.
+        occ: array-like, 'all'
+            List of states to be included (can be 'all' to include all states).
+        dir: int
+            Direction along which to compute the position matrix.
+
+        Returns
+        -------
+        pos_mat : np.ndarray
+            Position operator matrix :math:`X_{m n}` as defined above. 
+            This is a square matrix with size determined by number of bands
+            given in `evec` input array.  First index of `pos_mat` corresponds to
+            bra vector (:math:`m`) and second index to ket (:math:`n`).
+
+        
+        See Also
+        --------
+        :func:`pythtb.TBModel.position_matrix`
+        
+        Notes
+        -----
+        The only difference in :func:`pythtb.TBModel.position_matrix` is that, 
+        in addition to specifying `dir`, one also has to specify `k_idx` (k-point of interest) 
+        and `occ` (list of states to be included, which can optionally be 'all').
+        """
 
         # Check for special case of parameter occ
         if isinstance(occ, str) and occ.lower() == "all":
@@ -778,14 +980,52 @@ class WFArray:
         if not self._model._assume_position_operator_diagonal:
             _offdiag_approximation_warning_and_stop()
         #
-        evec = self._wfs[tuple(key)][occ]
-        return self._model.position_matrix(evec, dir)
+        evec = self.wfs[tuple(k_idx)][occ]
+        return self.model.position_matrix(evec, dir)
 
-    def position_expectation(self, key, occ, dir):
-        """Similar to :func:`pythtb.TBModel.position_expectation`.  Only
-        difference is that, in addition to specifying *dir*, one also
-        has to specify *key* (k-point of interest) and *occ* (list of
-        states to be included, which can optionally be 'All')."""
+    def position_expectation(self, k_idx, occ, dir):
+        """Position expectation value for a given k-point and set of states.
+
+        These elements :math:`X_{n n}` can be interpreted as an
+        average position of n-th Bloch state ``evec[n]`` along
+        direction `dir`. 
+
+        This routine can be used to compute the position expectation value for a
+        given k-point and set of states (which can be all states, or
+        a specific subset). 
+
+        Parameters
+        ----------
+        k_idx: array-like of int
+            Set of integers specifying the k-point of interest in the mesh.
+        occ: array-like, 'all'
+            List of states to be included (can be 'all' to include all states).
+        dir: int
+            Direction along which to compute the position expectation value.
+
+        Returns
+        -------
+        pos_exp : np.ndarray
+            Diagonal elements of the position operator matrix :math:`X`.
+            Length of this vector is determined by number of bands given in *evec* input
+            array.
+
+        See Also
+        --------
+        :func:`pythtb.TBModel.position_expectation`
+        :ref:`haldane_hwf-example` : For an example.
+        position_matrix : For definition of matrix :math:`X`.
+
+        Notes
+        -----
+        The only difference in :func:`pythtb.TBModel.position_expectation` is that,
+        in addition to specifying *dir*, one also has to specify *k_idx* (k-point of interest)
+        and *occ* (list of states to be included, which can optionally be 'all').
+
+        Generally speaking these centers are _not_
+        hybrid Wannier function centers (which are instead
+        returned by :func:`position_hwf`).
+        """
 
         # Check for special case of parameter occ
         if isinstance(occ, str) and occ.lower() == "all":
@@ -808,13 +1048,61 @@ class WFArray:
         if not self.model._assume_position_operator_diagonal:
             _offdiag_approximation_warning_and_stop()
 
-        evec = self.wfs[tuple(key)][occ]
+        evec = self.wfs[tuple(k_idx)][occ]
         return self.model.position_expectation(evec, dir)
 
-    def position_hwf(self, key, occ, dir, hwf_evec=False, basis="wavefunction"):
-        """Similar to :func:`pythtb.TBModel.position_hwf`, except that
+    def position_hwf(self, k_idx, occ, dir, hwf_evec=False, basis="wavefunction"):
+        """Eigenvalues and eigenvectors of the position operator in a given basis.
+
+        Parameters
+        ----------
+        k_idx: array-like of int
+            Set of integers specifying the k-point of interest in the mesh.
+        occ: array-like, 'all'
+            List of states to be included (can be 'all' to include all states).
+        dir: int
+            Direction along which to compute the position operator.
+        hwf_evec: bool, optional
+            Default is `False`. If `True`, return the eigenvectors along with eigenvalues
+            of the position operator.
+        basis: {"orbital", "wavefunction", "bloch"}, optional
+            The basis in which to compute the position operator.
+
+        Returns
+        -------
+        hwfc : np.ndarray
+            Eigenvalues of the position operator matrix :math:`X`
+            (also called hybrid Wannier function centers). 
+            Length of this vector equals number of bands given in *evec* input
+            array.  Hybrid Wannier function centers are ordered in ascending order.
+            Note that in general `n`-th hwfc does not correspond to `n`-th electronic
+            state `evec`.
+
+        hwf : np.ndarray
+            Eigenvectors of the position operator matrix :math:`X`.
+            (also called hybrid Wannier functions).  These are returned only if
+            parameter ``hwf_evec=True``.
+
+            The shape of this array is ``[h,x]`` or ``[h,x,s]`` depending on value of
+            `basis` and `nspin`.  
+            
+            - If `basis` is "bloch" then `x` refers to indices of
+              Bloch states `evec`.  
+            - If `basis` is "orbital" then `x` (or `x` and `s`)
+              correspond to orbital index (or orbital and spin index if `nspin` is 2).
+
+        See Also
+        --------
+        :ref:`haldane_hwf-example` : For an example.
+        position_matrix : For the definition of the matrix :math:`X`.
+        position_expectation : For the position expectation value.
+        :func:`pythtb.TBModel.position_hwf`
+
+        Notes
+        -----
+        Similar to :func:`pythtb.TBModel.position_hwf`, except that
         in addition to specifying *dir*, one also has to specify
-        *key*, the k-point of interest, and *occ*, a list of states to
+        *k_idx*, the k-point of interest, and *occ*, a list of states to
         be included (typically the occupied states).
 
         For backwards compatibility the default value of *basis* here is different
@@ -840,40 +1128,65 @@ class WFArray:
         if not self.model._assume_position_operator_diagonal:
             _offdiag_approximation_warning_and_stop()
 
-        evec = self.wfs[tuple(key)][occ]
+        evec = self.wfs[tuple(k_idx)][occ]
         return self.model.position_hwf(evec, dir, hwf_evec, basis)
 
     def get_links(self, state_idx=None, dirs=None):
-        """
-        Compute the links (unitary matrices) for the wavefunctions in the *WFArray* object
-        along a given direction. The links are defined as the unitary part of the overlap
-        between the wavefunctions and their neighbors in the forward direction along each
-        mesh directions. Specifcally, the links are computed as
+        r"""Compute the overlap links (unitary matrices) for the wavefunctions.
 
-        :math:`U_{nk}^{\mu} = \langle u_{nk} | u_{n, k + \delta k_{\mu}} \rangle`
+        The overlap links for the wavefunctions in the `WFArray` object
+        along a given direction are defined as the unitary part of the overlap
+        between the wavefunctions and their neighbors in the forward direction along each
+        mesh directions. Specifcally, the overlap matrices are computed as
+
+        :math:`M_{nm}^{\mu}(\mathbf{k}) = \langle u_{nk} | u_{m, k + \delta k_{\mu}} \rangle`
 
         where :math:`\mu` is the direction along which the link is computed, and
         :math:`\delta k_{\mu}` is the shift in the wavevector along that direction. The
-        :math:`k` here could also be a parameter path.
+        :math:`k` here could be a point in an arbitrary parameter mesh. The unitary link that
+        is returned by the function is obtained through the singular value decomposition
+        (SVD) of the overlap matrix :math:`M^{\mu}(\mathbf{k}) = V^{\mu} \Sigma^{\mu} (W^{\mu})^\dagger`
+        as,
 
-        The neighbor at the boundary is defined with periodic boundary conditions by default.
-        If the *WFArray* object does not have periodic boundary conditions or a loop
-        imposed in a given link direction :math:`\mu`, then the neighbor at the boundary is
-        undefined and the value of :math:`U_{nk}^{\mu}` at the boundary can be disregarded.
+        :math:`U^{\mu}(\mathbf{k}) = V^{\mu} (W^{\mu})^\dagger`
 
-        Args:
-            state_idx (int or list of int):
-                Index or indices of the states for which to compute the links.
-                If an integer is provided, only that state will be considered.
-                If a list is provided, links for all specified states will be computed.
-            dirs (list of int, optional):
-                List of directions along which to compute the links.
-                If not provided, links will be computed for all directions in the mesh.
-        Returns:
-            U_forward (np.ndarray):
-                Array of shape [dim, nk1, nk2, ..., nkd, n_states, n_states]
-                where dim is the number of dimensions of the mesh, (nk1, nk2, ..., nkd) are the sizes
-                of the mesh in each dimension, and n_states is the number of states in the *WFArray* object.
+        .. warning:: 
+            The neighbor at the boundary is defined with periodic boundary conditions by default.
+            In most cases, this means that the last point in the mesh of :math:`U^{\mu}(\mathbf{k})`
+            along each direction should be disregarded (see Notes for further details).
+
+        Parameters
+        ----------
+        state_idx : int or list of int
+            Index or indices of the states for which to compute the links.
+            If an integer is provided, only that state will be considered.
+            If a list is provided, links for all specified states will be computed.
+        dirs : list of int, optional
+            List of directions along which to compute the links.
+            If not provided, links will be computed for all directions in the mesh.
+
+        Returns
+        -------
+        U_forward (np.ndarray):
+            Array of shape [dim, nk1, nk2, ..., nkd, n_states, n_states]
+            where dim is the number of dimensions of the mesh,
+            (nk1, nk2, ..., nkd) are the sizes of the mesh in each dimension, 
+            and n_states is the number of states in the *WFArray* object. The first 
+            axis corresponds to :math:`\mu`, the last two axes are the matrix elements,
+            and the remaining axes are the mesh points.
+
+        Notes
+        -----
+        The last points in the mesh of `U_forward` should be treated carefully. Periodic boundary
+        conditions are always implied here, so that the 0'th wavefunction is the forward neighbor of
+        the last wavefunction (-1'st element) along each direction. If the `WFArray` mesh has already
+        been defined with periodic boundary conditions, with either :func:`impose_pbc` or :func:`impose_loop`,
+        then the last points are identified with the first points. This means the overlap links at the boundary
+        should be disregarded, since the overlap is not between neighbors. If the last and first wavefunctions 
+        are not neighbors, then the forward neighbor at the boundary is undefined and the value 
+        of :math:`U_{nk}^{\mu}` at the boundary can again be disregarded. The only time these points should not be 
+        disregarded is when the last and first wavefunctions are truly neighbors, which would only happen if
+        the wavefunctions on the mesh were manually populated that way.
         """
         wfs = self.get_states(flatten_spin=True)
 
@@ -911,20 +1224,45 @@ class WFArray:
 
     @staticmethod
     def wilson_loop(wfs_loop, evals=False):
-        """Compute Wilson loop unitary matrix and its eigenvalues for multiband Berry phases.
+        r"""Wilson loop unitary matrix
+        
+        Compute Wilson loop unitary matrix and its eigenvalues for multiband Berry phases.
+        The Wilson loop is a geometric quantity that characterizes the topology of the
+        band structure. It is defined as the product of the overlap matrices between
+        neighboring wavefunctions in the loop. Specifically, it is given by
 
-        Multiband Berry phases always returns numbers between -pi and pi.
+        .. math::
 
-        Args:
-            wfs_loop (np.ndarray):
-                Has format [loop_idx, band, orbital(, spin)] and loop has to be one dimensional.
-                Assumes that first and last loop-point are the same. Therefore if
-                there are n wavefunctions in total, will calculate phase along n-1
-                links only!
-            berry_evals (bool):
-                If berry_evals is True then will compute phases for
-                individual states, these corresponds to 1d hybrid Wannier
-                function centers. Otherwise just return one number, Berry phase.
+            U_{Wilson} = \prod_{n} U_{n}
+
+        where :math:`U_{n}` is the unitary part of the overlap matrix between neighboring wavefunctions
+        in the loop, and the index :math:`n` labels the position in the loop 
+        (see :func:`get_links` for more details).
+
+        Multiband Berry phases always returns numbers between :math:`-\pi` and :math:`\pi`.
+
+        Parameters
+        ----------
+        wfs_loop : np.ndarray
+            Has format [loop_idx, band, orbital(, spin)] and loop has to be one dimensional.
+            Assumes that first and last loop-point are the same. Therefore if
+            there are n wavefunctions in total, will calculate phase along n-1
+            links only!
+        berry_evals : bool, optional
+            If berry_evals is True then will compute phases for
+            individual states, these corresponds to 1d hybrid Wannier
+            function centers. Otherwise just return one number, Berry phase.
+
+        Returns
+        -------
+        np.ndarray
+            If berry_evals is True then will return phases for individual states.
+            If berry_evals is False then will return one number, the Berry phase.
+
+        See Also
+        --------
+        :func:`berry_loop`
+        :func:`get_links`
         """
         # check that wfs_loop has appropriate shape
         if wfs_loop.ndim < 3 or wfs_loop.ndim > 4:
@@ -955,39 +1293,56 @@ class WFArray:
 
     @staticmethod
     def berry_loop(wfs_loop, evals=False):
-        r"""
-        Computes the Berry phase along a one-dimensional loop of
-        wavefunctions. The loop is assumed to be one-dimensional,
-        meaning that the first and last points in the loop are
-        assumed to be the same, and the wavefunctions at these
-        points are also assumed to be the same.
-
-        The wavefunctions in the loop should be ordered such that
-        the first point corresponds to the first wavefunction, the
-        second point to the second wavefunction, and so on, up to
-        the last point, which corresponds to the last wavefunction.
-        The wavefunctions should be in the format [loop_idx, band, orbital, spin],
-        where loop_idx is the index of the wavefunction in the loop.
+        r"""Berry phase along a one-dimensional loop of wavefunctions.
 
         The Berry phase is computed as the logarithm of the determinant
         of the product of the overlap matrices between neighboring
-        wavefunctions in the loop. The Berry phase is returned as a
+        wavefunctions in the loop. In otherwords, the Berry phase is
+        given by the formula:
+
+        .. math::
+
+            \phi = -\text{Im} \ln \det U_{\rm Wilson}
+
+        where :math:`U` is the Wilson loop unitary matrix obtained from
+        :func:`wilson_loop`. The Berry phase is returned as a
         single number, which is the total Berry phase for the loop.
 
-        Args:
-            wfs_loop (np.ndarray): Wavefunctions in the loop, with shape
-                [loop_idx, band, orbital, spin]. The first and last points
-                in the loop are assumed to be the same.
-            evals (bool): If True, will return the eigenvalues of the Wilson loop
-                unitary matrix instead of the Berry phase. The eigenvalues
-                correspond to the "maximally localized Wannier centers" or
-                "Wilson loop eigenvalues". If False, will return the total
-                Berry phase for the loop.
-        Returns:
-            np.ndarray: If evals is True, returns the eigenvalues of the Wilson loop
-                unitary matrix, which are the Berry phases for each band.
-                If evals is False, returns the total Berry phase for the loop,
-                which is a single number.
+        Parameters
+        ----------
+        wfs_loop : np.ndarray
+            Wavefunctions in the loop, with shape `[loop_idx, band, orbital, spin]`. 
+            The first and last points in the loop are assumed to be the same.
+        evals : bool, optional
+            Default is `False`. If `True`, will return the eigenvalues
+            of the Wilson loop unitary matrix instead of the total Berry phase.
+            The eigenvalues correspond to the "maximally localized Wannier centers" or
+            "Wilson loop eigenvalues". If False, will return the total
+            Berry phase for the loop.
+
+        Returns
+        -------
+        np.ndarray, float:
+            If evals is True, returns the eigenvalues of the Wilson loop
+            unitary matrix, which are the Berry phases for each band.
+            If evals is False, returns the total Berry phase for the loop,
+            which is a single number.
+
+        See Also
+        --------
+        :func:`berry_phase`
+        :func:`get_links`
+        :func:`wilson_loop`
+        :ref:`formalism` : Section 4.5
+
+        Notes
+        -----
+        The loop is assumed to be one-dimensional, meaning that the first 
+        and last points in the loop are assumed to be the same, and the wavefunctions
+        at these points are also assumed to be the same. The wavefunctions in the loop
+        should be ordered such that the first point corresponds to the first wavefunction,
+        the second point to the second wavefunction, and so on, up to the last point,
+        which corresponds to the last wavefunction.
         """
 
         U_wilson = WFArray.wilson_loop(wfs_loop, evals=evals)
@@ -1000,100 +1355,110 @@ class WFArray:
             return berry_phase
 
     def berry_phase(self, occ="All", dir=None, contin=True, berry_evals=False):
-        r"""
+        r"""Berry phase along a given array direction.
 
         Computes the Berry phase along a given array direction
-        and for a given set of states.  These are typically the
-        occupied Bloch states, in which case *occ* should range
-        over all occupied bands.  In this context, the occupied
-        and unoccupied bands should be well separated in energy;
-        it is the responsibility of the user to check that this
-        is satisfied.  If *occ* is not specified or is specified
-        as 'All', all states are selected. By default, the
-        function returns the Berry phase traced over the
-        specified set of bands, but optionally the individual
+        and for a given set of states. These are typically the
+        occupied Bloch states, but can also include unoccupied
+        states if desired. 
+        
+        By default, the function returns the Berry phase traced
+        over the specified set of bands, but optionally the individual
         phases of the eigenvalues of the global unitary rotation
         matrix (corresponding to "maximally localized Wannier
         centers" or "Wilson loop eigenvalues") can be requested
-        (see parameter *berry_evals* for more details).
-
-        For an array of size *N* in direction $dir$, the Berry phase
-        is computed from the *N-1* inner products of neighboring
-        eigenfunctions.  This corresponds to an "open-path Berry
-        phase" if the first and last points have no special
-        relation.  If they correspond to the same physical
-        Hamiltonian, and have been properly aligned in phase using
-        :func:`pythtb.WFArray.impose_pbc` or
-        :func:`pythtb.WFArray.impose_loop`, then a closed-path
-        Berry phase will be computed.
+        by setting the parameter *berry_evals* to `True`.
 
         For a one-dimensional WFArray (i.e., a single string), the
-        computed Berry phases are always chosen to be between -pi and pi.
-        For a higher dimensional WFArray, the Berry phase is computed
-        for each one-dimensional string of points, and an array of
+        computed Berry phases are always chosen to be between :math:`-\pi` 
+        and :math:`\pi`. For a higher dimensional WFArray, the Berry phase 
+        is computed for each one-dimensional string of points, and an array of
         Berry phases is returned. The Berry phase for the first string
-        (with lowest index) is always constrained to be between -pi and
-        pi. The range of the remaining phases depends on the value of
-        the input parameter *contin*.
+        (with lowest index) is always constrained to be between :math:`-\pi` and
+        :math:`\pi`. The range of the remaining phases depends on the value of
+        the input parameter `contin`.
 
-        The discretized formula used to compute Berry phase is described
-        in Sec. 4.5 of :download:`notes on tight-binding formalism
-        <misc/pythtb-formalism.pdf>`.
+        Parameters
+        ----------
+        occ : array-like, "all"
+            Optional array of indices of states to be included
+            in the subsequent calculations, typically the indices of
+            bands considered occupied. If 'all', all states are selected.
+            Default is all bands.
 
-        :param occ: Optional array of indices of states to be included
-          in the subsequent calculations, typically the indices of
-          bands considered occupied.  Default is all bands.
+        dir : int
+            Index of WFArray direction along which Berry phase is
+            computed. This parameters needs not be specified for
+            a one-dimensional WFArray.
 
-        :param dir: Index of WFArray direction along which Berry phase is
-          computed. This parameters needs not be specified for
-          a one-dimensional WFArray.
+        contin : bool, optional
+            If True then the branch choice of the Berry phase (which is indeterminate
+            modulo :math:`2\pi`) is made so that neighboring strings (in the
+            direction of increasing index value) have as close as
+            possible phases. The phase of the first string (with lowest
+            index) is always constrained to be between :math:`-\pi` and :math:`\pi`.
+            If False, the Berry phase for every string is constrained to be
+            between :math:`-\pi` and :math:`\pi`. The default value is True.
 
-        :param contin: Optional boolean parameter. If True then the
-          branch choice of the Berry phase (which is indeterminate
-          modulo 2*pi) is made so that neighboring strings (in the
-          direction of increasing index value) have as close as
-          possible phases. The phase of the first string (with lowest
-          index) is always constrained to be between -pi and pi. If
-          False, the Berry phase for every string is constrained to be
-          between -pi and pi. The default value is True.
+        berry_evals : bool, optional
+            If True then will compute and return the phases of the eigenvalues of the
+            product of overlap matrices. (These numbers correspond also
+            to hybrid Wannier function centers.) These phases are either
+            forced to be between :math:`-\pi` and :math:`\pi` (if *contin* is *False*) or
+            they are made to be continuous (if *contin* is True).
 
-        :param berry_evals: Optional boolean parameter. If True then
-          will compute and return the phases of the eigenvalues of the
-          product of overlap matrices. (These numbers correspond also
-          to hybrid Wannier function centers.) These phases are either
-          forced to be between -pi and pi (if *contin* is *False*) or
-          they are made to be continuous (if *contin* is True).
-
-        :returns:
-          * **pha** -- If *berry_evals* is False (default value) then
+        Returns
+        -------
+        pha :
+            If *berry_evals* is False (default value) then
             returns the Berry phase for each string. For a
             one-dimensional WFArray this is just one number. For a
-            higher-dimensional WFArray *pha* contains one phase for
+            higher-dimensional `WFArray` *pha* contains one phase for
             each one-dimensional string in the following format. For
             example, if *WFArray* contains k-points on mesh with
-            indices [i,j,k] and if direction along which Berry phase
+            indices `[i,j,k]` and if direction along which Berry phase
             is computed is *dir=1* then *pha* will be two dimensional
-            array with indices [i,k], since Berry phase is computed
+            array with indices `[i,k]`, since Berry phase is computed
             along second direction. If *berry_evals* is True then for
             each string returns phases of all eigenvalues of the
             product of overlap matrices. In the convention used for
             previous example, *pha* in this case would have indices
-            [i,k,n] where *n* refers to index of individual phase of
+            `[i,k,n]` where *n* refers to index of individual phase of
             the product matrix eigenvalue.
 
-        Example usage::
+        See Also
+        ---------
+        :ref:`haldane_bp-example` : For an example
+        :ref:`cone-example` : For an example
+        :ref:`3site_cycle-example` : For an example
+        :func:`berry_loop` : For a function that computes Berry phase in a 1d loop.
+        :ref:`formalism` : Sec. 4.5 for the discretized formula used to compute Berry phase.
 
-          # Computes Berry phases along second direction for three lowest
-          # occupied states. For example, if wf is threedimensional, then
-          # pha[2,3] would correspond to Berry phase of string of states
-          # along wf[2,:,3]
-          pha = wf.berry_phase([0, 1, 2], 1)
+        Notes
+        -----
+        For an array of size *N* in direction $dir$, the Berry phase
+        is computed from the *N-1* inner products of neighboring
+        eigenfunctions. This corresponds to an "open-path Berry
+        phase" if the first and last points have no special
+        relation. If they correspond to the same physical
+        Hamiltonian, and have been properly aligned in phase using
+        :func:`pythtb.WFArray.impose_pbc` or :func:`pythtb.WFArray.impose_loop`,
+        then a closed-path Berry phase will be computed.
 
-        See also these examples: :ref:`haldane_bp-example`,
-        :ref:`cone-example`, :ref:`3site_cycle-example`,
+        In the case *occ* should range over all occupied bands,
+        the occupied and unoccupied bands should be well separated in energy; 
+        it is the responsibility of the user to check that this is satisfied.
 
+        Examples
+        ---------
+        Computes Berry phases along second direction for three lowest
+        occupied states. For example, if wf is threedimensional, then
+        ``pha[2, 3]`` would correspond to Berry phase of string of states
+        along ``wf[2, :, 3]``
+
+        >>> pha = wf.berry_phase([0, 1, 2], 1)
         """
-        # Get wavefunctions in the array, flattening spin if necessary
+        # Get wavefunctions in the array, flattening spin if present
         # wfs is of shape [nk1, nk2, ..., nkd, nstate, nstate]
         wfs = self.get_states(flatten_spin=True)
 
@@ -1154,62 +1519,92 @@ class WFArray:
         return ret
 
     def berry_flux(self, state_idx=None, plane=None, abelian=True):
-        r"""
+        r"""Berry flux tensor.
+
+        .. versionremoved:: 2.0.0
+            The `individual_phases` parameter has been removed.
+
+        The Berry flux tensor is a measure of the geometric phase acquired by
+        the wavefunction as it is adiabatically transported around a closed loop
+        in parameter space. The flux is computed around the small plaquettes in
+        the parameter mesh, using the product of overlap matrices around the loops.
+        The Berry flux is simply the integral of the Berry curvature around the plaquette
+        loop. The (non-Abelian) Berry flux tensor is defined as 
+
+        .. math::
+
+            \mathcal{F}_{\mu\nu}(\mathbf{k}) = 
+            \mathrm{Im}\ln\det[U_{\mu}(\mathbf{k}) U_{\nu}(\mathbf{k} + \hat{\mu}) 
+            U_{\mu}^{-1}(\mathbf{k} + \hat{\nu}) U_{\nu}^{-1}(\mathbf{k})].
+        
+        The Berry curvature can be approximated by the flux by simply dividing by the
+        area of the plaquette, approximating the flux as a constant over the small loop.
+
+        .. math::
+
+            \Omega_{\mu\nu}(\mathbf{k}) \approx \frac{\mathcal{F}_{\mu\nu}(\mathbf{k})}{A_{\mu\nu}},
+
+        where :math:`A_{\mu\nu}` is the area of the plaquette in parameter space. The
+        Abelian Berry flux is defined as the trace over the band indices of the non-Abelian
+        Berry flux tensor.
+
+        .. math::
+
+            \mathcal{F}_{\mu\nu}(\mathbf{k}) = \sum_{n} (\mathcal{F}_{\mu\nu}(\mathbf{k}))_{n, n}.
 
         In the case of a 2-dimensional *WFArray* array calculates the
-        integral of Berry curvature over the entire plane.  In higher
-        dimensional case (3 or 4) it will compute integrated curvature
-        over all 2-dimensional slices of a higher-dimensional
-        *WFArray*.
+        Berry curvature over the entire plane.  In higher dimensional case
+        it will compute flux over all 2-dimensional slices of a 
+        higher-dimensional *WFArray*.
 
-        :param state_idx: Optional array of indices of states to be included
-          in the subsequent calculations, typically the indices of
-          bands considered occupied. If not specified, or None, all bands are
-          included.
+        Parameters
+        ----------
+        state_idx : array_like, optional
+            Optional array of indices of states to be included
+            in the subsequent calculations, typically the indices of
+            bands considered occupied. If not specified, or None, all bands are
+            included.
 
-        :param plane: Array or tuple of two indices defining the axes in the
+        plane : array_like, optional
+            Array or tuple of two indices defining the axes in the
             WFArray mesh which the Berry flux is computed over. By default,
             all directions are considered, and the full Berry flux tensor is
             returned.
 
-        :param abelian: If *True* then the Berry flux is computed
-          using the abelian formula, which corresponds to the band-traced
-          non-Abelian Berry curvature. If *False* then the non-Abelian Berry
-          flux tensor is computed. Default value is *True*.
+        abelian : bool, optional
+            If *True* then the Berry flux is computed
+            using the abelian formula, which corresponds to the band-traced
+            non-Abelian Berry curvature. If *False* then the non-Abelian Berry
+            flux tensor is computed. Default value is *True*.
 
-        :param integrate: If *True* then the plaquette fluxes are summed to
-          return the integrated Berry flux over the entire plane.
-          If *False* then the function returns the Berry phase around each
-          plaquette in the array. In the 2-dimensional case this
-          corresponds to the integral of Berry curvature over the entire
-          plane, while in higher dimensions it corresponds to the integral of
-          Berry curvature over all slices defined with directions *dirs*.
 
-        :returns:
-
-          * **flux** --
+        Returns
+        -------
+        flux : ndarray
             The Berry flux tensor, which is an array of general shape
-            [dim_mesh, dim_mesh, *flux_shape, n_states, n_states]. The
+            `[dim_mesh, dim_mesh, *flux_shape, n_states, n_states]`. The
             shape will depend on the parameters passed to the function.
 
-            If plane is *None* (default), then the first two axes
-            (dim_mesh, dim_mesh) correspond to the plane directions, otherwise,
+            If plane is `None` (default), then the first two axes
+            `(dim_mesh, dim_mesh)` correspond to the plane directions, otherwise,
             these axes are absent.
 
-            If *abelian* is *False* then the last two axes are the band indices
-            running over the selected *state_idx* indices.
-            If *abelian* is *True* (default) then the last two axes are absent, and
+            If `abelian` is `False` then the last two axes are the band indices
+            running over the selected `state_idx` indices.
+            If `abelian` is `True` (default) then the last two axes are absent, and
             the returned flux is a scalar value, not a matrix.
 
-        Example usage::
+        Examples
+        --------
+        Computes Berry curvature of first three bands in 2D model
 
-          # Computes Berry curvature of first three bands in 2D model
-          flux = wf.berry_flux([0, 1, 2]) # shape: (dim1, dim2, nk1, nk2)
-          flux = wf.berry_flux([0, 1, 2], plane=(0, 1)) # shape: (nk1, nk2)
-          flux = wf.berry_flux([0, 1, 2], plane=(0, 1), abelian=False) # shape: (nk1, nk2, n_states, n_states)
+        >>> flux = wf.berry_flux([0, 1, 2]) # shape: (dim1, dim2, nk1, nk2)
+        >>> flux = wf.berry_flux([0, 1, 2], plane=(0, 1)) # shape: (nk1, nk2)
+        >>> flux = wf.berry_flux([0, 1, 2], plane=(0, 1), abelian=False) # shape: (nk1, nk2, n_states, n_states)
 
-          # 3D model example
-          flux = wf.berry_flux([0, 1, 2], plane=(0, 1)) # shape: (nk1, nk2, nk3)
+        3D model example
+
+        >>> flux = wf.berry_flux([0, 1, 2], plane=(0, 1)) # shape: (nk1, nk2, nk3)
         """
         # Validate state_idx
         if state_idx is None:
@@ -1324,28 +1719,46 @@ class WFArray:
         r"""
         Computes the Chern number for a *WFArray* in the specified plane.
         The Chern number is computed as the integral of the Berry flux
-        over the specified plane, divided by 2 * pi.
-        The plane is specified by a tuple of two indices, which correspond
-        to the directions in the parameter mesh.
+        over the specified plane, divided by :math:`2 \pi`.
 
-        :param plane: Tuple of two indices specifying the plane in which
-            the Chern number is computed. The indices should be between 0
-            and the number of mesh dimensions minus 1. If None, the
-            Chern number is computed for the first two dimensions of the mesh.
+        .. math::
+            C = \frac{1}{2\pi} \sum_{\mathbf{k}_{\mu}, \mathbf{k}_{\nu}} F_{\mu\nu}(\mathbf{k}).
 
-        :param state_idx: Optional array of indices of states to be included
-          in the Chern number calculation. If None, all states are included.
+        The plane :math:`(\mu, \nu)` is specified by `plane`, a tuple of two indices.
 
-        :returns: The Chern number for the specified plane. If the WFArray
-            is defined in a higher-dimensional space, the Chern number
+        Parameters
+        ----------
+        plane : tuple
+            A tuple of two indices specifying the plane in which the Chern number is computed.
+            The indices should be between 0 and the number of mesh dimensions minus 1. 
+            If None, the Chern number is computed for the first two dimensions of the mesh.
+
+        state_idx : array-like, optional array
+            Indices of states to be included in the Chern number calculation.
+            If None, all states are included. None by default.
+
+        Returns
+        -------
+        chern : np.ndarray, float
+            In the two-dimensional case, the result
+            will be a floating point approximation of the integer Chern number
+            for that plane. In a higher-dimensional space, the Chern number
             is computed for each 2D slice of the higher-dimensional space.
-            The shape of the returned array is (nk3, ..., nkd) if the plane is (0, 1),
-            where nk3, ..., nkd are the sizes of the mesh in the remaining dimensions.
+            E.g., the shape of the returned array is `(nk3, ..., nkd)` if the plane is 
+            `(0, 1)`, where `(nk3, ..., nkd)` are the sizes of the mesh in the remaining
+            dimensions.
 
-        Example usage::
-            chern = wfs.chern_num(plane=(0, 1), state_idx=np.arange(n_occ))
-            # shape: (nk3, nk4, ..., nkd)
+        Examples
+        --------
+        Suppose we have a `WFArray` mesh in three-dimensional space
+        of shape `(nk1, nk2, nk3)`. We can compute the Chern number for the
+        `(0, 1)` plane as follows:
 
+        >>> wfs = WFArray(model, [10, 11, 12])
+        >>> wfs.solve_on_grid()
+        >>> chern = wfs.chern_num(plane=(0, 1), state_idx=np.arange(n_occ))
+        >>> print(chern.shape)
+        (12,)  # shape of the Chern number array
         """
         if state_idx is None:
             state_idx = np.arange(self.nstates)  # assume half-filled occupied

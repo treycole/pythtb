@@ -3,11 +3,11 @@ Examples
 
 If you are unfamiliar with Python or are not sure whether Python and
 the needed Python modules are installed on your system, see our
-:doc:`python introduction <../resources>` and :doc:`installation
-instructions <../install>`.
+:doc:`python introduction <../resources>` 
+and :doc:`installation instructions <../install>`.
 
-You can download each example script below indvidually by clicking on
-the 'Source code' link under each example. 
+You can download each example script below individually by clicking on
+the 'Source code' link under each example.
 
 Note that there is also a useful `collection of PythTB sample programs
 <https://minisites.cambridgecore.org/berryphases/ptb_samples.html>`_ that

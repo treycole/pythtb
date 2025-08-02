@@ -1,3 +1,5 @@
+.. _formalism:
+
 Formalism
 =========
 

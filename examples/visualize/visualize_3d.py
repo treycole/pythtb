@@ -7,5 +7,5 @@ m = 1  # magnetic field magnitude
 beta = 1  # Adiabatic parameter
 fkm_model = fu_kane_mele(t, soc, m, beta)
 
-fig = fkm_model.visualize_3d(draw_hoppings=True)
+fig = fkm_model.visualize_3d(draw_hoppings=True) 
 fig.show()

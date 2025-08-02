@@ -2,24 +2,44 @@ from pythtb import TBModel
 import numpy as np
 
 
-def kane_mele(
-    onsite: int | float | np.integer | np.floating,
-    t: int | float | complex | np.integer | np.floating | np.complexfloating,
-    soc: int | float | complex | np.integer | np.floating | np.complexfloating,
-    rashba: int | float | complex | np.integer | np.floating | np.complexfloating,
-) -> TBModel:
-    """
-    kane_mele tight-binding model.
+def kane_mele(delta, t, soc, rashba) -> TBModel:
+    r"""Kane-Mele tight-binding model.
+
+    .. versionadded:: 2.0.0
+
+    This function creates a Kane-Mele tight-binding model with the specified
+    parameters. The model is defined on a 2D honeycomb lattice with two sublattices.
+    The lattice vectors are given by:
+
+    .. math::
+
+        \mathbf{a}_1 = a(1, 0), \quad \mathbf{a}_2 = a\left(\frac{1}{2}, \frac{\sqrt{3}}{2}\right),
+
+    and the orbital positions are given by:
+
+    .. math::
+
+        \mathbf{r}_1 = \frac{1}{3} \mathbf{a}_1 + \frac{1}{3} \mathbf{a}_2, \quad \mathbf{r}_2 = \frac{2}{3} \mathbf{a}_1 + \frac{2}{3} \mathbf{a}_2
+
+    The Hamiltonian in second-quantized form is given by:
+
+    .. math::
+
+        H = \Delta \sum_{i} c_i^\dagger c_i + 
+        t \sum_{\langle i,j \rangle} ( c_i^\dagger c_j + h.c.) +
+        \lambda_{SO} \sum_{\langle \langle i,j \rangle \rangle} ( c_i^\dagger \sigma_z c_j + h.c.) +
+        \lambda_{R} \sum_{\langle i,j \rangle} ( c_i^\dagger \mathbf{sigma} \times 
+        \mathbf{\hat{d}}_{\langle i,j \rangle} c_j + h.c.)
 
     Parameters
     ----------
-    onsite : int | float
+    onsite : float
         On-site energy.
-    t : int | float | complex
+    t : float, complex
         Hopping parameter.
-    soc : int | float | complex
+    soc : float, complex
         Spin-orbit coupling strength.
-    rashba : int | float | complex
+    rashba : float, complex
         Rashba coupling strength.
 
     Returns
@@ -29,15 +49,15 @@ def kane_mele(
     """
 
     # define lattice vectors
-    lat = [[1.0, 0.0], [0.5, np.sqrt(3.0) / 2.0]]
+    lat = [[1, 0], [1/2, np.sqrt(3)/2]]
     # define coordinates of orbitals
-    orb = [[1.0 / 3.0, 1.0 / 3.0], [2.0 / 3.0, 2.0 / 3.0]]
+    orb = [[1/3, 1/3], [2/3, 2/3]]
 
     # make two dimensional tight-binding Kane-Mele model
     ret_model = TBModel(2, 2, lat, orb, nspin=2)
 
     # set on-site energies
-    ret_model.set_onsite([onsite, -onsite])
+    ret_model.set_onsite([delta, -delta])
 
     # useful definitions
     sigma_x = np.array([0, 1, 0, 0])

@@ -116,9 +116,9 @@ def plot_tb_model(
     ph_color="black",
     orb_color="r",
 ):
-    r"""
+    r"""Plot the tight-binding model.
 
-    Rudimentary function for visualizing tight-binding model geometry,
+    Function for visualizing tight-binding model geometry,
     hopping between tight-binding orbitals, and electron eigenstates.
 
     If eigenvector is not drawn, then orbitals in home cell are drawn
@@ -132,70 +132,78 @@ def plot_tb_model(
     is drawn with a circle whose size is proportional to wavefunction
     amplitude while its color depends on the phase. There are various
     coloring schemes for the phase factor; see more details under
-    *ph_color* parameter. If eigenvector is drawn and coloring scheme
+    ``ph_color`` parameter. If eigenvector is drawn and coloring scheme
     is "red-blue" or "wheel", all other elements of the picture are
     drawn in gray or black.
 
-    :param dir_first: First index of Cartesian coordinates used for
-        plotting.
+    Parameters
+    ----------
+    proj_plane : array-like shape (2,)
+        The projection plane onto which the 3D model is projected.
+        This should be a 2-element array specifying the indices of the
+        Cartesian coordinates to use for the x and y axes of the
+        plot.
 
-    :param dir_second: Second index of Cartesian coordinates used for
-        plotting. For example if dir_first=0 and dir_second=2, and
-        Cartesian coordinates of some orbital is [2.0,4.0,6.0] then it
-        will be drawn at coordinate [2.0,6.0]. If dimensionality of real
-        space (*dim_r*) is zero or one then dir_second should not be
-        specified.
-
-    :param eig_dr: Optional parameter specifying eigenstate to
-        plot. If specified, this should be one-dimensional array of
-        complex numbers specifying wavefunction at each orbital in
+    eig_dr : np.ndarray, optional
+        Eigenstate (1D array of complex numbers) to display.
         the tight-binding basis. If not specified, eigenstate is not
         drawn.
 
-    :param draw_hoppings: Optional parameter specifying whether to
-        draw all allowed hopping terms in the tight-binding
-        model. Default value is True.
+    draw_hoppings : bool, optional
+        Whether to draw hopping terms between orbitals. Default is
+        ``True``.
 
-    :param ph_color: Optional parameter determining the way
-        eigenvector phase factors are translated into color. Default
-        value is "black". Convention of the wavefunction phase is as
+    ph_color : str, optional
+        Optional parameter determining the way eigenvector phase
+        factors are translated into color. Default value is "black".
+        Convention of the wavefunction phase is as
         in convention 1 in section 3.1 of :download:`notes on
-        tight-binding formalism  <misc/pythtb-formalism.pdf>`.  In
+        tight-binding formalism </misc/pythtb-formalism.pdf>`.  In
         other words, these wavefunction phases are in correspondence
         with cell-periodic functions :math:`u_{n {\bf k}} ({\bf r})`
-        not :math:`\Psi_{n {\bf k}} ({\bf r})`.
+        not :math:`\psi_{n {\bf k}} ({\bf r})`.
 
-        * "black" -- phase of eigenvectors are ignored and wavefunction
-        is always colored in black.
+        * "black" : 
+            phase of eigenvectors are ignored and wavefunction
+            is always colored in black.
 
-        * "red-blue" -- zero phase is drawn red, while phases or pi or
-        -pi are drawn blue. Phases in between are interpolated between
-        red and blue. Some phase information is lost in this coloring
-        becase phase of +phi and -phi have same color.
+        * "red-blue" : 
+            zero phase is drawn red, while phases or :math:`\pi` or
+            :math:`-\pi` are drawn blue. Phases in between are interpolated between
+            red and blue. Some phase information is lost in this coloring
+            because phase of :math:`+\phi` and :math:`-\phi` have same color.
 
-        * "wheel" -- each phase is given unique color. In steps of pi/3
-        starting from 0, colors are assigned (in increasing hue) as:
-        red, yellow, green, cyan, blue, magenta, red.
+        * "wheel" : 
+            each phase is given unique color. In steps of :math:`\pi/3`
+            starting from 0, colors are assigned (in increasing hue) as:
+            red, yellow, green, cyan, blue, magenta, red.
 
-    :returns:
-        * **fig** -- Figure object from matplotlib.pyplot module
-        that can be used to save the figure in PDF, EPS or similar
-        format, for example using fig.savefig("name.pdf") command.
-        * **ax** -- Axes object from matplotlib.pyplot module that can be
-        used to tweak the plot, for example by adding a plot title
-        ax.set_title("Title goes here").
 
-    Example usage::
+    Returns
+    -------
+    fig, ax : matplotlib.figure.Figure, matplotlib.axes.Axes
+        Figure and axes objects for the plot.
 
-        # Draws x-y projection of tight-binding model
-        # tweaks figure and saves it as a PDF.
-        (fig, ax) = tb.visualize(0, 1)
-        ax.set_title("Title goes here")
-        fig.savefig("model.pdf")
+    See Also
+    --------
+    :ref:`visualize-example`
+    :ref:`edge-example`
 
-    See also these examples: :ref:`edge-example`,
-    :ref:`visualize-example`.
+    Examples
+    --------
+    Draws x-y projection of tight-binding model
+    tweaks figure and saves it as a PDF.
 
+    >>> from pythtb import TBModel
+    >>> tb = TBModel(
+    ...        dim_k=1, dim_r=2,
+    ...        lat=[[1, 1/2], [0, 2]],
+    ...        orb=[[0.2, 0.3], [0.1, 0.1], [0.2, 0.2]],
+    ...        per=[1]
+    ...    )
+    >>> (fig, ax) = tb.visualize(0, 1)
+    >>> ax.set_title("Title goes here")
+    >>> fig.savefig("model.pdf")
     """
 
     cmap = plt.get_cmap("hsv", model._norb)
@@ -491,21 +499,30 @@ def plot_tb_model_3d(
     site_names=None,
     ph_color="black",
 ):
-    r"""
-    Visualize a 3D tight-binding model using Plotly.
+    """Visualize a 3D tight-binding model using Plotly.
 
     This function creates an interactive 3D plot of your tight-binding model,
     showing the unit-cell origin, lattice vectors (with arrowheads), orbitals,
     hopping lines, and (optionally) an eigenstate overlay with marker sizes
     proportional to amplitude and colors reflecting the phase.
 
-    :param eig_dr: Optional eigenstate (1D array of complex numbers) to display.
-    :param draw_hoppings: Whether to draw hopping lines between orbitals.
-    :param annotate_onsite_en: Whether to annotate orbitals with onsite energies.
-    :param ph_color: Coloring scheme for eigenstate phases (e.g. "black", "red-blue", "wheel").
+    Parameters
+    ----------
+    model : TBModel
+        The tight-binding model to use for the calculation.
+    eig_dr : np.ndarray, optional
+        Eigenstate (1D array of complex numbers) to display.
+    draw_hoppings : bool, optional
+        Whether to draw hopping lines between orbitals.
+    annotate_onsite_en : bool, optional
+        Whether to annotate orbitals with onsite energies.
+    ph_color : str, optional
+        Coloring scheme for eigenstate phases (e.g. "black", "red-blue", "wheel").
 
-    :returns:
-    * **fig** -- A Plotly Figure object.
+    Returns
+    -------
+    fig : go.Figure
+        A Plotly Figure object.
     """
     import plotly.graph_objects as go
 
@@ -848,13 +865,40 @@ def plot_bands(
 ):
     """
 
-    Args:
-        k_path (list): List of high symmetry points to plot bands through
-        k_label (list[str], optional): Labels of high symmetry points. Defaults to None.
-        title (str, optional): _description_. Defaults to None.
-        save_name (str, optional): _description_. Defaults to None.
-        red_lat_idx (list, optional): _description_. Defaults to None.
-        show (bool, optional): _description_. Defaults to False.
+    Parameters
+    ----------
+    model : TBModel
+        The tight-binding model to use for the calculation.
+    k_path : list
+        List of high symmetry points to plot bands through
+    nk : int, optional
+        Number of k-points to sample between high symmetry points. Defaults to 101.
+    evals : np.ndarray, optional
+        Eigenvalues to plot. If None, they will be computed.
+    evecs : np.ndarray, optional
+        Eigenvectors to use for projections. If None, they will be computed.
+    k_label : list[str], optional
+        Labels of high symmetry points. Defaults to None.
+    proj_orb_idx : list[int], optional
+        List of orbital indices to project onto. Defaults to None.
+    proj_spin : bool, optional
+        Whether to project onto spin states. Defaults to False.
+    title : str, optional
+        Title of the plot. Defaults to None.
+    scat_size : int, optional
+        Size of the scatter points. Defaults to 3.
+    lw : int, optional
+        Line width for the band lines. Defaults to 2.
+    lc : str, optional
+        Line color for the band lines. Defaults to "b".
+    ls : str, optional
+        Line style for the band lines. Defaults to "solid".
+    cmap : str, optional
+        Colormap for the scatter points. Defaults to "plasma".
+    show : bool, optional
+        Whether to show the plot. Defaults to False.
+    cbar : bool, optional
+        Whether to show the colorbar. Defaults to True.
 
     Returns:
         fig, ax: matplotlib fig and ax

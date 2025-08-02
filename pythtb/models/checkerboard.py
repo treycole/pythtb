@@ -1,16 +1,35 @@
 from pythtb import TBModel
 
 
-def checkerboard(t0, tprime, delta) -> TBModel:
-    """
-    checkerboard tight-binding model.
+def checkerboard(t, delta) -> TBModel:
+    r"""Checkerboard tight-binding model.
+
+    .. versionadded:: 2.0.0
+
+    This function creates a checkerboard tight-binding model with the specified
+    hopping parameters and on-site energy. The model is defined on a 2D square
+    lattice with two sublattices. The lattice vectors are given by,
+
+    .. math::
+
+        \mathbf{a}_1 = (1, 0), \quad \mathbf{a}_2 = (0, 1)
+
+    and the orbital positions are given by,
+
+    .. math::
+
+        \mathbf{\tau}_1 = \left(0, 0\right), \quad \mathbf{\tau}_2 = \left(\frac{1}{2}, \frac{1}{2}\right)
+
+    The second-quantized Hamiltonian can be written as:
+
+    .. math::
+
+        H = -t \sum_{\langle i,j \rangle} c_i^\dagger c_j + \text{h.c.} + \Delta \sum_i n_i
 
     Parameters
     ----------
-    t0 : float
+    t : float
         Nearest neighbor hopping amplitude.
-    tprime : float
-        Next-nearest neighbor hopping amplitude. Pierls phase is included.
 
     delta : float
         On-site energy. Positive for one sublattice, negative for the other.
@@ -21,23 +40,17 @@ def checkerboard(t0, tprime, delta) -> TBModel:
         An instance of the model.
     """
 
-    lat = [[1.0, 0.0], [0.0, 1.0]]
-    orb = [[0.0, 0.0], [0.5, 0.5]]
+    lat = [[1, 0], [0, 1]]
+    orb = [[0, 0], [1/2, 1/2]]
 
     model = TBModel(2, 2, lat=lat, orb=orb)
 
     # set on-site energies
     model.set_onsite([-delta, delta], mode="set")
 
-    # set NN hoppings
-    model.set_hop(-t0, 0, 0, [1, 0], mode="set")
-    model.set_hop(-t0, 0, 0, [0, 1], mode="set")
-    model.set_hop(t0, 1, 1, [1, 0], mode="set")
-    model.set_hop(t0, 1, 1, [0, 1], mode="set")
-    # set NNN hoppings
-    model.set_hop(tprime, 1, 0, [1, 1], mode="set")
-    model.set_hop(tprime * 1j, 1, 0, [0, 1], mode="set")
-    model.set_hop(-tprime, 1, 0, [0, 0], mode="set")
-    model.set_hop(-tprime * 1j, 1, 0, [1, 0], mode="set")
+    model.set_hop(t, 1, 0, [0, 0])
+    model.set_hop(t, 1, 0, [1, 0])
+    model.set_hop(t, 1, 0, [0, 1])
+    model.set_hop(t, 1, 0, [1, 1])
 
     return model

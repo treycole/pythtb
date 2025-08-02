@@ -65,49 +65,49 @@ class TBModel:
 
     orb : int, array_like, optional
         Array containing reduced coordinates of all
-        tight-binding orbitals. If `orb` is an integer code will assume 
+        tight-binding orbitals. If ``orb`` is an integer code will assume
         that there are these many orbitals all at the origin of the unit cell.  
-        By default `orb`=1 and the code will assume a single orbital at the origin.
+        By default ``orb=1`` and the code will assume a single orbital at the origin.
 
     per : array_like, optional
         Specifies the indices of lattice vectors which are considered to be periodic.
-        By default, all lattice vectors are assumed to be periodic. If `dim_k` is smaller than `dim_r`, 
-        then by default the first `dim_k` vectors are considered to be periodic.
+        By default, all lattice vectors are assumed to be periodic. If ``dim_k`` is smaller than ``dim_r``, 
+        then by default the first ``dim_k`` vectors are considered to be periodic.
 
         In the example below, only the vector ``[0.0,2.0]`` is considered to be periodic 
         (since ``per=[1]``). 
 
     nspin : {1, 2}, optional
         Number of explicit spin components assumed for each
-        orbital in `orb`. Allowed values of `nspin` are `1` and `2`. If
-        `nspin` is 1 then the model is spinless, if `nspin` is 2 then it
+        orbital in ``orb``. Allowed values of ``nspin`` are ``1`` and ``2``. If
+        ``nspin=1`` then the model is spinless, if ``nspin=2`` then it
         is explicitly a spinfull model and each orbital is assumed to
         have two spin components. Default value of this parameter is
-        `1`. 
-    
+        ``nspin=1``.
+
     Notes
     -----
-    Parameter `dim_r` can be larger than `dim_k`! For example,
+    Parameter ``dim_r`` can be larger than ``dim_k``! For example,
     a polymer is a three-dimensional molecule (one needs three
     coordinates to specify orbital positions), but it is periodic
     along only one direction. For a polymer, therefore, we should
-    have `dim_k` equal to 1 and `dim_r` equal to 3. See :ref:`trestle-example`.
+    have ``dim_k`` equal to 1 and ``dim_r`` equal to 3. See :ref:`trestle-example`.
 
     Examples
     --------
     Creates model that is two-dimensional in real space but only
     one-dimensional in reciprocal space. The first lattice vector has coordinates
-    ``[1.0,0.5]`` while the second  one has coordinates ``[0.0,2.0]``.
+    ``[1, 1/2]`` while the second  one has coordinates ``[0, 2]``.
     The second lattice vector is chosen to be periodic (since ``per=[1]``).
     Three orbital coordinates are specified in reduced units. The first orbital
-    is defined with reduced coordinates ``[0.2,0.3]``. Its Cartesian coordinates
+    is defined with reduced coordinates ``[0.2, 0.3]``. Its Cartesian coordinates
     are therefore 0.2 times the first lattice vector plus 0.3 times the second lattice 
     vector.
 
     >>> from pythtb import TBModel
     >>> tb = TBModel(
     ...        dim_k=1, dim_r=2,
-    ...        lat=[[1.0, 0.5], [0.0, 2.0]],
+    ...        lat=[[1, 1/2], [0, 2]],
     ...        orb=[[0.2, 0.3], [0.1, 0.1], [0.2, 0.2]],
     ...        per=[1]
     ...    )
@@ -314,6 +314,10 @@ class TBModel:
 
     def report(self, show: bool = True, short: bool = False):
         """Print or return a report about the tight-binding model.
+
+        .. versionadded:: 2.0.0
+            The `short` parameter was added to control the verbosity of the report.
+            The `show` parameter was added to control whether to print the report or return it as a string.
 
         Parameters
         ----------
@@ -527,65 +531,75 @@ class TBModel:
     # Property decorators for read-only access to model attributes
     @property
     def dim_r(self) -> int:
-        """
-        The dimensionality of real space.
+        """The dimensionality of real space.
+
+        .. versionadded:: 2.0.0
         """
         return self._dim_r
 
     @property
     def dim_k(self) -> int:
-        """
-        The dimensionality of reciprocal space (periodic directions).
+        """The dimensionality of reciprocal space (periodic directions).
+
+        .. versionadded:: 2.0.0
         """
         return self._dim_k
 
     @property
     def nspin(self) -> int:
-        """
-        The number of spin components.
+        """The number of spin components.
+
+        .. versionadded:: 2.0.0
         """
         return self._nspin
 
     @property
     def per(self) -> list[int]:
-        """
-        Periodic directions as a list of indices.
+        """Periodic directions as a list of indices.
+
+        .. versionadded:: 2.0.0
+
         Each index corresponds to a lattice vector in the model.
         """
         return self._per
 
     @property
     def norb(self) -> int:
-        """
-        The number of tight-binding orbitals in the model.
+        """The number of tight-binding orbitals in the model.
+
+        .. versionadded:: 2.0.0
         """
         return self._norb
 
     @property
     def nstate(self) -> int:
-        """
-        The number of electronic states in the model = ``norb * nspin``.
+        """The number of electronic states in the model is ``norb * nspin``.
+
+        .. versionadded:: 2.0.0
         """
         return self._nstate
 
     @property
     def lat_vecs(self) -> np.ndarray:
-        """
-        Lattice vectors in Cartesian coordinates with shape ``(dim_r, dim_r)``.
+        """Lattice vectors in Cartesian coordinates with shape ``(dim_r, dim_r)``.
+
+        .. versionadded:: 2.0.0
         """
         return self._lat.copy()
 
     @property
     def orb_vecs(self) -> np.ndarray:
-        """
-        Orbital vectors in reduced coordinates with shape ``(norb, dim_r)``.
+        """Orbital vectors in reduced coordinates with shape ``(norb, dim_r)``.
+
+        .. versionadded:: 2.0.0
         """
         return self._orb.copy()
 
     @property
     def site_energies(self) -> np.ndarray:
-        """
-        On-site energies for each orbital. 
+        """On-site energies for each orbital. 
+
+        .. versionadded:: 2.0.0
 
         Shape is ``(norb,)`` for spinless models, ``(norb, 2, 2)`` for spinful models.
         """
@@ -593,8 +607,9 @@ class TBModel:
 
     @property
     def hoppings(self) -> list[dict]:
-        """
-        List of hopping dictionaries for the model.
+        """List of hopping dictionaries for the model.
+
+        .. versionadded:: 2.0.0
 
         Each hopping is represented as a dictionary with keys:
             - 'amplitude': hopping amplitude (complex or matrix)
@@ -681,6 +696,9 @@ class TBModel:
     def get_orb(self, cartesian=False):
         """Return orbital positions.
 
+        .. versionadded:: 2.0.0
+            Added support for Cartesian coordinates with the `cartesian` parameter.
+
         Parameters
         ----------
         cartesian : bool, optional
@@ -710,8 +728,7 @@ class TBModel:
 
     # TODO: Fix to work with systems where not all lattice vectors are periodic
     def get_recip_lat(self):
-        """
-        Return reciprocal lattice vectors in Cartesian coordinates.
+        """Reciprocal lattice vectors in Cartesian coordinates.
 
         .. versionadded:: 2.0.0
 
@@ -748,10 +765,10 @@ class TBModel:
     def get_recip_vol(self):
         """Return the volume of the reciprocal lattice.
 
+        .. versionadded:: 2.0.0
+
         The volume is defined as the absolute value of the determinant
         of the reciprocal lattice vectors.
-
-        .. versionadded:: 2.0.0
 
         Returns
         -------
@@ -1264,7 +1281,7 @@ class TBModel:
         ----------
         k_pts : (Nk, dim_k) array, optional
             Array of k-points in reduced coordinates.
-            If `None`, the Hamiltonian is computed at a single point (dim_k = 0),
+            If `None`, the Hamiltonian is computed at a single point (`dim_k = 0`),
             corresponding to a finite sample.
 
         Returns
@@ -1474,6 +1491,9 @@ class TBModel:
         
         Solve for eigenvalues and optionally eigenvectors of the tight-binding model
         at a list of one-dimensional k-vectors.
+
+        .. versionadded:: 2.0.0
+            Merged :func:`solve_all` and :func:`solve_one` into this function.
 
         Parameters
         ----------
@@ -1830,6 +1850,10 @@ class TBModel:
         to_home_warning:bool=True
     ) -> "TBModel":
         """Change non-periodic lattice vector 
+
+        .. versionchanged:: 2.0.0
+            Parameter `to_home_supress_warning` has been renamed to `to_home_warning`.
+            Note: this change inverts the meaning of the boolean parameter.
         
         Returns tight-binding model :class:`pythtb.TBModel` in which one of
         the non-periodic "lattice vectors" is changed.  Non-periodic vectors are those 
@@ -1978,6 +2002,10 @@ class TBModel:
         to_home_warning: bool=True,
     ) -> "TBModel":
         """Make model on a super-cell.
+
+        .. versionchanged:: 2.0.0
+            Parameter `to_home_supress_warning` has been renamed to `to_home_warning`.
+            Note: this change inverts the meaning of the boolean parameter.
 
         Constructs a :class:`pythtb.TBModel` representing a super-cell 
         of the current object. This function can be used together with :func:`cut_piece`
@@ -2577,7 +2605,6 @@ class TBModel:
         See Also
         --------
         :ref:`haldane_hwf-example` : For an example.
-        :func:`position_matrix` : For definition of matrix :math:`X`.
 
         Examples
         --------
@@ -2656,8 +2683,8 @@ class TBModel:
         evec : np.ndarray
             Eigenvectors for which we are computing matrix
             elements of the position operator. The shape of this array
-            is ``evec[band, orbital]`` if `nspin` equals 1 and
-            ``evec[band, orbital, spin]`` if `nspin` equals 2.
+            is ``evec[band, orbital]`` if ``nspin=1`` and
+            ``evec[band, orbital, spin]`` if ``nspin=2``.
 
         dir : int
             Direction along which we are computing matrix
@@ -2681,7 +2708,7 @@ class TBModel:
         -----
         Generally speaking these centers are _not_
         hybrid Wannier function centers (which are instead
-        returned by :func:`pythtb.TBModel.position_hwf`).
+        returned by :func:`TBModel.position_hwf`).
 
         Examples
         --------
@@ -2710,62 +2737,61 @@ class TBModel:
         position operator matrix :math:`X` in basis of the orbitals
         or, optionally, of the input wave functions (typically Bloch
         functions). The returned eigenvectors can be interpreted as
-        linear combinations of the input states *evec* that have
+        linear combinations of the input states ``evec`` that have
         minimal extent (or spread :math:`\Omega` in the sense of
         maximally localized Wannier functions) along direction
-        *dir*. The eigenvalues are average positions of these
+        ``dir``. The eigenvalues are average positions of these
         localized states.
 
         Parameters
         ----------
         evec : np.ndarray
             Eigenvectors for which we are computing matrix
-            elements of the position operator.  The shape of this array
-            is evec[band,orbital] if *nspin* equals 1 and
-            evec[band,orbital,spin] if *nspin* equals 2.
+            elements of the position operator. The shape of this array
+            is ``evec[band, orbital]`` if ``nspin=1`` and
+            ``evec[band, orbital, spin]`` if ``nspin=2``.
 
         dir : int
             Direction along which we are computing matrix
-            elements.  This integer must not be one of the periodic
+            elements. This integer must not be one of the periodic
             directions since position operator matrix element in that
             case is not well defined.
 
         hwf_evec : bool, optional
-            Default is *False*. If set to *True* this function will 
-            return not only eigenvalues but also
-            eigenvectors of :math:`X`. 
+            Default is ``False``. If set to ``True`` this function will
+            return not only eigenvalues but also eigenvectors of :math:`X`. 
 
         basis : {"orbital", "wavefunction", "bloch"}, optional
-            Default is "orbital". If basis="wavefunction" or "bloch", the hybrid
-            Wannier function `hwf_evec` is returned in the basis of the input
-            wave functions. That is, the elements of ``hwf[i,j]`` give the amplitudes
+            Default is "orbital". If ``basis="wavefunction"`` or ``basis="bloch"``, the hybrid
+            Wannier function `hwf` is returned in the basis of the input
+            wave functions. That is, the elements of ``hwf[i, j]`` give the amplitudes
             of the i-th hybrid Wannier function on the j-th input state.
-            If basis="orbital", the elements of ``hwf[i,orb]`` (or ``hwf[i,orb,spin]``
-            if `nspin`=2) give the amplitudes of the i-th hybrid Wannier function on
+            If ``basis="orbital"``, the elements of ``hwf[i, orb]`` (or ``hwf[i, orb, spin]``
+            if ``nspin=2``) give the amplitudes of the i-th hybrid Wannier function on
             the specified basis function. 
 
         Returns
         -------
         hwfc : np.ndarray
             Eigenvalues of the position operator matrix :math:`X`
-            (also called hybrid Wannier function centers). 
-            Length of this vector equals number of bands given in *evec* input
-            array.  Hybrid Wannier function centers are ordered in ascending order.
-            Note that in general `n`-th hwfc does not correspond to `n`-th electronic
-            state `evec`.
+            (also called hybrid Wannier function centers).
+            Length of this vector equals number of bands given in ``evec``
+            input array. Hybrid Wannier function centers are ordered in ascending order.
+            Note that in general `n`-th hwfc does not correspond to `n`-th
+            state in ``evec``.
 
         hwf : np.ndarray
             Eigenvectors of the position operator matrix :math:`X`.
             (also called hybrid Wannier functions).  These are returned only if
-            parameter `hwf_evec` is set to `True`.
+            parameter ``hwf_evec = True``.
 
             The shape of this array is ``[h,x]`` or ``[h,x,s]`` depending on value of
-            `basis` and `nspin`.  
-            
-            - If `basis` is "bloch" then `x` refers to indices of
-              Bloch states `evec`.  
-            - If `basis` is "orbital" then `x` (or `x` and `s`)
-              correspond to orbital index (or orbital and spin index if `nspin` is 2).
+            ``basis`` and ``nspin``.
+
+            - If ``basis`` is "bloch" then ``x`` refers to indices of
+              Bloch states.
+            - If ``basis`` is "orbital" then ``x`` (or ``x`` and ``s``)
+              correspond to orbital index (or orbital and spin index if ``nspin=2``).
 
         See Also
         --------

@@ -10,9 +10,10 @@ Quick Wannier90 example
 -----------------------
 
 To run the interface with Wannier90, you must first download the
-following :download:`wannier90 output example
-<misc/wannier90_example.tar.gz>` and unpack it with the following
-command in unix command::
+following :download:`wannier90 output example <../misc/wannier90_example.tar.gz>` 
+and unpack it with the following command in unix command
+
+.. code-block:: bash
 
         tar -zxf wannier90_example.tar.gz
 
@@ -22,7 +23,6 @@ terms are ignored, and finally plot the interpolated band structure.
 
 .. plot :: examples/w90/w90_quick.py
    :include-source:
-
 
 .. _w90_long:
 
@@ -34,7 +34,7 @@ Wannier90.  Unlike the example above, this one includes some
 diagnostics as well.
 
 To run the interface with Wannier90, first download
-:download:`wannier90 output example <misc/wannier90_example.tar.gz>`
+:download:`wannier90 output example <../misc/wannier90_example.tar.gz>`
 and unpack it with the following command in unix command::
 
         tar -zxf wannier90_example.tar.gz

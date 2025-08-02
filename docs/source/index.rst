@@ -48,17 +48,6 @@ model with first neighbour hopping only. Below is the source code and
 plot of the resulting band structure. Here you can find :doc:`more
 examples <examples_rst/index>`.
 
-<button onclick="thebelab.bootstrap()">Launch Code</button>
-
-.. code-block:: python
-    :class: thebe
-
-    from pythtb import TBModel
-    # create a simple tight-binding model
-    my_model = TBModel(1, 1, [-0.5, 0.5])
-    print(my_model)
-
-
 .. raw:: html
 
     <table style="margin-left: 20px;" align="center" border="0"><tbody><tr>

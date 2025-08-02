@@ -7,15 +7,17 @@ __all__ = ["W90"]
 
 class W90:
     r"""
-
     This class of the PythTB package imports tight-binding model
     parameters from an output of a `Wannier90 <http://www.wannier.org>`_ code.
+    Upon instantiation, this class will read in the entire Wannier90 output.
+    To create :class:`pythtb.TBModel` object user needs to call
+    :func:`pythtb.w90.model`.
 
     The `Wannier90 <http://www.wannier.org>`_ code is a
     post-processing tool that takes as an input electron wavefunctions
     and energies computed from first-principles using any of the
     following codes: Quantum-Espresso (PWscf), AbInit, SIESTA, FLEUR,
-    Wien2k, VASP.  As an output Wannier90 will create files that
+    Wien2k, VASP. As an output Wannier90 will create files that
     contain parameters for a tight-binding model that exactly
     reproduces the first-principles calculated electron band
     structure.
@@ -36,93 +38,84 @@ class W90:
     *prefix*\_centres.dat) one needs to include the following flags in the win
     file::
 
-       hr_plot = True
+       write_hr = True
        write_xyz = True
        translate_home_cell = False
 
     These lines ensure that *prefix*\_hr.dat and *prefix*\_centres.dat
     are written and that the centers of the Wannier functions written
     in the *prefix*\_centres.dat file are not translated to the home
-    cell.  The *prefix*\_hr.dat file contains the onsite and hopping
+    cell. The *prefix*\_hr.dat file contains the onsite and hopping
     terms.
 
     The final two files (*prefix*\_band.kpt and *prefix*\_band.dat)
-    are optional.  Please see documentation of function
+    are optional. Please see documentation of function
     :func:`pythtb.w90.w90_bands_consistency` for more detail.
 
-    So far we tested only Wannier90 version 2.0.1.
+    Parameters
+    ----------
+    path : str
+        Relative path to the folder that contains Wannier90
+        files. These are *prefix*.win, *prefix*\_hr.dat,
+        *prefix*\_centres.dat and optionally *prefix*\_band.kpt and
+        *prefix*\_band.dat.
 
-    .. warning:: For the time being PythTB is not optimized to be used
-      with very large tight-binding models.  Therefore it is not
-      advisable to use the interface to Wannier90 with large
-      first-principles calculations that contain many k-points and/or
-      electron bands.  One way to reduce the computational cost is to
-      wannierize with Wannier90 only the bands of interest (for
-      example, bands near the Fermi level).
+    prefix : str
+        This is the prefix used by `Wannier90` code.
+        Typically the input to the `Wannier90` code is name *prefix*.win.
 
+    See Also
+    --------
+    :ref:`w90_quick`
+    :ref:`w90_long`
+
+    Notes
+    -----
     Units used throught this interface with Wannier90 are
     electron-volts (eV) and Angstroms.
 
-    .. warning:: User needs to make sure that the Wannier functions
-      computed using Wannier90 code are well localized.  Otherwise the
-      tight-binding model might not interpolate well the band
-      structure.  To ensure that the Wannier functions are well
-      localized it is often enough to check that the total spread at
-      the beginning of the minimization procedure (first total spread
-      printed in .wout file) is not more than 20% larger than the
-      total spread at the end of the minimization procedure.  If those
-      spreads differ by much more than 20% user needs to specify
-      better initial projection functions.
+    .. warning::
+        So far we have only tested Wannier90 version 2.0.1.
 
-      In addition, please note that the interpolation is valid only
-      within the frozen energy window of the disentanglement
-      procedure.
+    .. warning:: 
+        The user needs to make sure that the Wannier functions
+        computed using Wannier90 code are well localized. Otherwise the
+        tight-binding model may not accurately interpolate the band
+        structure. To ensure that the Wannier functions are well
+        localized it is often enough to check that the total spread at
+        the beginning of the minimization procedure (first total spread
+        printed in .wout file) is not more than 20% larger than the
+        total spread at the end of the minimization procedure. If those
+        spreads differ by much more than 20% user needs to specify
+        better initial projection functions.
 
-    .. warning:: So far PythTB assumes that the position operator is
-      diagonal in the tight-binding basis.  This is discussed in the
-      :download:`notes on tight-binding formalism
-      <misc/pythtb-formalism.pdf>` in Eq. 2.7.,
-      :math:`\langle\phi_{{\bf R} i} \vert {\bf r} \vert \phi_{{\bf
-      R}' j} \rangle = ({\bf R} + {\bf t}_j) \delta_{{\bf R} {\bf R}'}
-      \delta_{ij}`.  However, this relation does not hold for Wannier
-      functions!  Therefore, if you use tight-binding model derived
-      from this class in computing Berry-like objects that involve
-      position operator such as Berry phase or Berry flux, you would
-      not get the same result as if you computed those objects
-      directly from the first-principles code!  Nevertheless, this
-      approximation does not affect other properties such as band
-      structure dispersion.
+    .. warning::
+        The interpolation is only exact within the frozen energy window
+        of the disentanglement procedure.
 
-    For the testing purposes user can download the following
-    :download:`wannier90 output example
-    <misc/wannier90_example.tar.gz>` and use the following
-    :ref:`script <w90_quick>` to test the functionality of the interface to
-    PythTB. Run the following command in unix terminal to decompress
-    the tarball::
+    .. warning:: 
+        So far PythTB assumes that the position operator is
+        diagonal in the tight-binding basis. This is discussed in the
+        :download:`notes on tight-binding formalism
+        </misc/pythtb-formalism.pdf>` in Eq. 2.7.,
+        :math:`\langle\phi_{{\bf R} i} \vert {\bf r} \vert \phi_{{\bf
+        R}' j} \rangle = ({\bf R} + {\bf t}_j) \delta_{{\bf R} {\bf R}'}
+        \delta_{ij}`. However, this relation does not hold for Wannier
+        functions! Therefore, if you use tight-binding model derived
+        from this class in computing Berry-like objects that involve
+        position operator such as Berry phase or Berry flux, you would
+        not get the same result as if you computed those objects
+        directly from the first-principles code! Nevertheless, this
+        approximation does not affect other properties such as band
+        structure dispersion.
 
-        tar -zxf wannier90_example.tar.gz
 
-    and then run the following :ref:`script <w90_quick>` in the same
-    folder.
+    Examples
+    --------
+    Read Wannier90 from folder called *example_a*
+    This assumes that that folder contains files "silicon.win" (and so on)
 
-    :param path: Relative path to the folder that contains Wannier90
-       files.  These are *prefix*.win, *prefix*\_hr.dat,
-       *prefix*\_centres.dat and optionally *prefix*\_band.kpt and
-       *prefix*\_band.dat.
-
-    :param prefix: This is the prefix used by Wannier90 code.
-        Typically the input to the Wannier90 code is name *prefix*.win.
-
-    Initially this function will read in the entire Wannier90 output.
-    To create :class:`pythtb.TBModel` object user needs to call
-    :func:`pythtb.w90.model`.
-
-    Example usage::
-
-      # reads Wannier90 from folder called *example_a*
-      # it assumes that that folder contains files "silicon.win" and so on
-      silicon=w90("example_a", "silicon")
-
+    >>> silicon = w90("example_a", "silicon")
     """
 
     def __init__(self, path, prefix):
@@ -251,7 +244,7 @@ class W90:
         max_distance=None,
         ignorable_imaginary_part=None,
     ):
-        """
+        """Get TBModel associated with this Wannier90 calculation.
 
         This function returns :class:`pythtb.TBModel` object that can
         be used to interpolate the band structure at arbitrary
@@ -259,62 +252,82 @@ class W90:
 
         The tight-binding basis orbitals in the returned object are
         maximally localized Wannier functions as computed by
-        Wannier90.  The orbital character of these functions can be
-        inferred either from the *projections* block in the
-        *prefix*.win or from the *prefix*.nnkp file.  Please note that
-        the character of the maximally localized Wannier functions is
-        not exactly the same as that specified by the initial
-        projections.  One way to ensure that the Wannier functions are
-        as close to the initial projections as possible is to first
-        choose a good set of initial projections (for these initial
-        and final spread should not differ more than 20%) and then
-        perform another Wannier90 run setting *num_iter=0* in the
-        *prefix*.win file.
+        Wannier90. Locations of the orbitals in the returned
+        :class:`pythtb.TBModel` object are the centers of
+        the Wannier functions computed by Wannier90.
 
-        Number of spin components is always set to 1, even if the
+        Parameters
+        ----------
+
+        zero_energy : float
+            Sets the zero of the energy in the band structure. 
+            This value is typically set to the Fermi level
+            computed by the density-functional code (or to the top of the valence band). 
+            Units are electron-volts.
+
+        min_hopping_norm : float
+            Hopping terms read from Wannier90 with complex norm less than
+            *min_hopping_norm* will not be included in the returned
+            tight-binding model. This parameters is specified in
+            electron-volts. By default all terms regardless of their
+            norm are included.
+
+        max_distance : float
+            Hopping terms from site *i* to site *j+R* will be ignored if
+            the distance from orbital *i* to *j+R* is larger than
+            *max_distance*. This parameter is given in Angstroms.
+            By default all terms regardless of the distance are included.
+
+        ignorable_imaginary_part : float
+            The hopping term will be assumed to be exactly real if the
+            absolute value of the imaginary part as computed by Wannier90
+            is less than *ignorable_imaginary_part*. By default imaginary
+            terms are not ignored. Units are again eV.
+
+        Returns
+        -------
+        tb : :class:`pythtb.TBModel`
+            The :class:`pythtb.TBModel` that can be used to
+            interpolate Wannier90 band structure to an arbitrary k-point as well
+            as to analyze the character of the wavefunctions. 
+
+        Notes
+        -----
+        The character of the maximally localized Wannier functions is
+        not exactly the same as that specified by the initial
+        projections. The orbital character of the Wannier functions can be 
+        inferred either from the *projections* block in the *prefix*.win or 
+        from the *prefix*.nnkp file.
+
+        One way to ensure that the Wannier functions are as close to
+        the initial projections as possible is to first choose a good set
+        of initial projections (for these initial and final spread should
+        not differ more than 20%) and then perform another Wannier90 run
+        setting *num_iter=0* in the *prefix*.win file.
+
+        The tight-binding model returned by this function is only as good as
+        the input from Wannier90. In particular, the choice of initial
+        projections can have a significant impact on the quality of the
+        resulting Wannier functions. It is recommended to experiment with
+        different sets of initial projections and to carefully analyze the
+        resulting Wannier functions to ensure that they are physically
+        meaningful.
+
+        The number of spin components is always set to 1, even if the
         underlying DFT calculation includes spin.  Please refer to the
         *projections* block or the *prefix*.nnkp file to see which
         orbitals correspond to which spin.
 
-        Locations of the orbitals in the returned
-        :class:`pythtb.TBModel` object are equal to the centers of
-        the Wannier functions computed by Wannier90.
+        Examples
+        --------
+        Get `TBModel` with all hopping parameters
 
-        :param zero_energy: Sets the zero of the energy in the band
-          structure.  This value is typically set to the Fermi level
-          computed by the density-functional code (or to the top of the
-          valence band).  Units are electron-volts.
+        >>> my_model = silicon.model()
 
-        :param min_hopping_norm: Hopping terms read from Wannier90 with
-          complex norm less than *min_hopping_norm* will not be included
-          in the returned tight-binding model.  This parameters is
-          specified in electron-volts.  By default all terms regardless
-          of their norm are included.
+        Simplified model that contains only hopping terms above 0.01 eV
 
-        :param max_distance: Hopping terms from site *i* to site *j+R* will
-          be ignored if the distance from orbital *i* to *j+R* is larger
-          than *max_distance*.  This parameter is given in Angstroms.
-          By default all terms regardless of the distance are included.
-
-        :param ignorable_imaginary_part: The hopping term will be assumed to
-          be exactly real if the absolute value of the imaginary part as
-          computed by Wannier90 is less than *ignorable_imaginary_part*.
-          By default imaginary terms are not ignored.  Units are again
-          eV.
-
-        :returns:
-           * **tb** --  The object of type :class:`pythtb.TBModel` that can be used to
-               interpolate Wannier90 band structure to an arbitrary k-point as well
-               as to analyze the character of the wavefunctions.  Please note
-
-        Example usage::
-
-          # returns TBModel with all hopping parameters
-          my_model=silicon.model()
-
-          # simplified model that contains only hopping terms above 0.01 eV
-          my_model_simple=silicon.model(min_hopping_norm=0.01)
-          my_model_simple.display()
+        >>> my_model_simple = silicon.model(min_hopping_norm=0.01)
+        >>> my_model_simple.display()
 
         """
 
@@ -396,32 +409,39 @@ class W90:
         return tb
 
     def dist_hop(self):
-        """
-
-        This is one of the diagnostic tools that can be used to help
-        in determining *min_hopping_norm* and *max_distance* parameter in
-        :func:`pythtb.w90.model` function call.
+        """Get distances and hopping terms of Hamiltonian in Wannier basis.
 
         This function returns all hopping terms (from orbital *i* to
         *j+R*) as well as the distances between the *i* and *j+R*
-        orbitals.  For well localized Wannier functions hopping term
+        orbitals. For well localized Wannier functions hopping term
         should decay exponentially with distance.
 
-        :returns:
-           * **dist** --  Distances between Wannier function centers (*i* and *j+R*) in Angstroms.
+        Returns
+        -------
+        dist : np.ndarray
+            Distances between Wannier function centers (*i* and *j+R*) in Angstroms.
 
-           * **ham** --  Corresponding hopping terms in eV.
+        ham : np.ndarray
+            Corresponding hopping terms in eV.
 
-        Example usage::
+        Notes
+        -----
+        This function can be used to help determine the *min_hopping_norm*
+        and *max_distance* parameters in the :func:`pythtb.w90.model` function
+        call.
 
-          # get distances and hopping terms
-          (dist,ham)=silicon.dist_hop()
+        Examples
+        --------
+        Get distances and hopping terms
 
-          # plot logarithm of the hopping term as a function of distance
-          import matplotlib.pyplot as plt
-          fig, ax = plt.subplots()
-          ax.scatter(dist,np.log(np.abs(ham)))
-          fig.savefig("localization.pdf")
+        >>> (dist, ham) = silicon.dist_hop()
+
+        Plot logarithm of the hopping term as a function of distance
+
+        >>> import matplotlib.pyplot as plt
+        >>> fig, ax = plt.subplots()
+        >>> ax.scatter(dist, np.log(np.abs(ham)))
+        >>> fig.savefig("localization.pdf")
 
         """
 
@@ -458,23 +478,27 @@ class W90:
         return (np.array(ret_dist), np.array(ret_ham))
 
     def shells(self, num_digits=2):
-        """
+        """Get all shells of distances between Wannier function centers.
 
         This is one of the diagnostic tools that can be used to help
         in determining *max_distance* parameter in
         :func:`pythtb.w90.model` function call.
 
-        :param num_digits: Distances will be rounded up to these many
-          digits.  Default value is 2.
+        Parameters
+        ----------
+        num_digits : int
+            Distances will be rounded up to these many digits. Default value is 2.
 
-        :returns:
-           * **shells** --  All distances between all Wannier function centers (*i* and *j+R*) in Angstroms.
+        Returns
+        -------
+        shells : list
+            All distances between all Wannier function centers (*i* and *j+R*) in Angstroms.
 
-        Example usage::
+        Examples
+        --------
+        Print all shells
 
-          # prints on screen all shells
-          print(silicon.shells())
-
+        >>> print(silicon.shells())
         """
 
         shells = []
@@ -498,23 +522,16 @@ class W90:
         return shells
 
     def w90_bands_consistency(self):
-        """
+        """Read interpolated band structure from Wannier90 output files.
+
+        .. versionchanged:: 2.0.0
+            Returned energies now have axes `(kpts, band)` instead of `(band, kpts)`.
 
         This function reads in band structure as interpolated by
-        Wannier90.  Please note that this is not the same as the band
-        structure calculated by the underlying DFT code.  The two will
+        Wannier90. Please note that this is not the same as the band
+        structure calculated by the underlying DFT code. The two will
         agree only on the coarse set of k-points that were used in
         Wannier90 generation.
-
-        The purpose of this function is to compare the interpolation
-        in Wannier90 with that in PythTB.  If no terms were ignored in
-        the call to :func:`pythtb.w90.model` then the two should
-        be exactly the same (up to numerical precision).  Otherwise
-        one should expect deviations.  However, if one carefully
-        chooses the cutoff parameters in :func:`pythtb.w90.model`
-        it is likely that one could reproduce the full band-structure
-        with only few dominant hopping terms.  Please note that this
-        tests only the eigenenergies, not eigenvalues (wavefunctions).
 
         The code assumes that the following files were generated by
         Wannier90,
@@ -525,35 +542,53 @@ class W90:
         These files will be generated only if the *prefix*.win file
         contains the *kpoint_path* block.
 
-        :returns:
+        Returns
+        -------
 
-          * **kpts** -- k-points in reduced coordinates used in the
-            interpolation in Wannier90 code.  The format of *kpts* is
+        kpts : array
+            k-points in reduced coordinates used in the
+            interpolation in Wannier90 code. The format of *kpts* is
             the same as the one used by the input to
             :func:`pythtb.TBModel.solve_all`.
 
-          * **ene** -- energies interpolated by Wannier90 in
-            eV. Format is ene[band,kpoint].
+        ene : array
+            Energies interpolated by Wannier90 in eV. Format is ``ene[kpt,band]``.
 
-        Example usage::
+        Notes
+        -----
+        The purpose of this function is to compare the interpolation
+        in Wannier90 with that in PythTB. If no terms were ignored in
+        the call to :func:`pythtb.w90.model` then the two should
+        be exactly the same (up to numerical precision). Otherwise
+        one should expect deviations. However, if one carefully
+        chooses the cutoff parameters in :func:`pythtb.w90.model`
+        it is likely that one could reproduce the full band-structure
+        with only few dominant hopping terms. Please note that this
+        tests only the eigenenergies, not eigenvalues (wavefunctions).
 
-          # get band structure from wannier90
-          (w90_kpt,w90_evals)=silicon.w90_bands_consistency()
+        Examples
+        --------
+        Get band structure from `Wannier90`
 
-          # get simplified model
-          my_model_simple=silicon.model(min_hopping_norm=0.01)
+        >>> (w90_kpt, w90_evals) = silicon.w90_bands_consistency()
 
-          # solve simplified model on the same k-path as in wannier90
-          evals=my_model.solve_all(w90_kpt)
+        Get simplified model
 
-          # plot comparison of the two
-          import matplotlib.pyplot as plt
-          fig, ax = plt.subplots()
-          for i in range(evals.shape[0]):
-              ax.plot(range(evals.shape[1]),evals[i],"r-",zorder=-50)
-          for i in range(w90_evals.shape[0]):
-              ax.plot(range(w90_evals.shape[1]),w90_evals[i],"k-",zorder=-100)
-          fig.savefig("comparison.pdf")
+        >>> my_model_simple = silicon.model(min_hopping_norm=0.01)
+
+        Solve simplified model on the same k-path as in `Wannier90`
+
+        >>> evals = my_model.solve_ham(w90_kpt)
+
+        Now plot the comparison of the two
+        
+        >>> import matplotlib.pyplot as plt
+        >>> fig, ax = plt.subplots()
+        >>> for i in range(evals.shape[0]):
+        >>>     ax.plot(range(evals.shape[1]), evals[i], "r-", zorder=-50)
+        >>> for i in range(w90_evals.shape[0]):
+        >>>     ax.plot(range(w90_evals.shape[1]), w90_evals[i], "k-", zorder=-100)
+        >>> fig.savefig("comparison.pdf")
 
         """
 
