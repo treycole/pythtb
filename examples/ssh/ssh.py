@@ -14,7 +14,7 @@ import numpy as np
 
 def ssh(v, w):
     lat = [[1]]
-    orb = [[0], [1]]
+    orb = [[0], [1/2]]
     my_model = TBModel(1, 1, lat, orb)
 
     my_model.set_hop(v, 1, 0, [1])
@@ -26,14 +26,16 @@ v = -1         # intercell hopping
 w_init = -.5  # initial intracell hopping
 
 # define a path in k-space
-(k_vec, k_dist, k_node) = ssh(v, w_init).k_path("full", 100)
+(k_vec, k_dist, k_node) = ssh(v, w_init).k_path("full", 200)
 k_label = [r"$0$", r"$\pi$", r"$2\pi$"]
+print(k_vec)
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
 
 model = ssh(v, w_init)
 evals, evecs = model.solve_ham(k_vec, return_eigvecs=True)
 ham = model.hamiltonian(k_vec)
+print(ham[0], ham[-1])
 
 # Compute phase difference
 numerator = evecs[:, :, 1]
@@ -68,14 +70,34 @@ cbar.set_label("Phase difference  $\\arg(\\psi_1/\\psi_0)$", fontsize=11)
 d_vec = np.zeros((len(k_vec), 4), dtype=complex)
 for k in range(len(k_vec)):
     d_vec[k] = pauli_decompose(ham[k])
+
+# print(d_vec)
 # Plot the path of the endpoints of d-vec in the dx-dy plane
+dx = d_vec[:, 1].real
+dy = d_vec[:, 2].real
+# ax2.plot(np.append(dx, dx[0]), np.append(dy, dy[0]), 'b-')
+ax2.plot(0, 0, 'ro')  # mark origin
+
 ax2.plot(d_vec[:, 1].real, d_vec[:, 2].real, 'b-')
+
 ax2.set_xlabel(r'$d_x$')
 ax2.set_ylabel(r'$d_y$')
 ax2.set_xlim(-2.5, 1.5)
 ax2.set_ylim(-2.5, 2.5)
 ax2.grid()
 
+I = np.array([[1, 0], [0, 1]], dtype=complex)
+sigma_x = np.array([[0, 1], [1, 0]], dtype=complex)
+sigma_y = np.array([[0, -1j], [1j, 0]], dtype=complex)
+sigma_z = np.array([[1, 0], [0, -1]], dtype=complex)
+
+assert np.allclose(pauli_decompose(sigma_x), [0, 1, 0, 0])
+assert np.allclose(pauli_decompose(sigma_y), [0, 0, 1, 0])
+assert np.allclose(pauli_decompose(sigma_z), [0, 0, 0, 1])
+
+# check that the d_vec decomp reproduces the hamiltonian
+for k in range(len(k_vec)):
+    assert np.allclose(ham[k], d_vec[k, 0] * I + d_vec[k, 1] * sigma_x + d_vec[k, 2] * sigma_y + d_vec[k, 3] * sigma_z)
 
 # wf_arr = WFArray(model, [100])
 # wf_arr.solve_on_grid(k_vec)
@@ -145,6 +167,10 @@ def update(val):
 
     # Plot the path of the endpoints of d-vec in the dx-dy plane
     ax2.cla()
+    dx = d_vec[:, 1].real
+    dy = d_vec[:, 2].real
+    # ax2.plot(np.append(dx, dx[0]), np.append(dy, dy[0]), 'b-')
+    ax2.plot(0, 0, 'ro')  # mark origin
     ax2.plot(d_vec[:, 1].real, d_vec[:, 2].real, 'b-')
     ax2.set_xlabel(r'$d_x$')
     ax2.set_ylabel(r'$d_y$')
