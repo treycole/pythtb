@@ -1,5 +1,6 @@
 Three Site Examples
-===============
+====================
+
 Below are examples of a finite one-dimensional tight-binding model
 with three sites, which can be used to illustrate various concepts
 in tight-binding theory, such as the Wannier center and the effect of

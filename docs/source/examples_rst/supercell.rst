@@ -1,5 +1,6 @@
 Supercell Examples
-===============
+===================
+
 Below are examples of how to use the supercell generator
 to calculate and plot the surface band structure for an arbitrary
 surface orientation.

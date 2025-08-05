@@ -1,10 +1,14 @@
 About
 =====
 
-The "**Pyth**\ on **T**\ ight **B**\ inding" (``PythTB``) code was
-developed and is maintained by Sinisa Coh (University of California at
-Riverside) and David Vanderbilt (Rutgers University) with assistance
-from :ref:`many other individuals <history>`.
+The "**Pyth**\ on **T**\ ight **B**\ inding" (``PythTB``) package is
+designed to facilitate the construction and manipulation of tight-binding
+models for the electronic structure of materials. It includes tools for
+defining lattice structures, hopping parameters, and other model
+ingredients, as well as for computing electronic properties such as
+band structures and quantum geometry (Berry curvature, Berry phases,
+hybrid Wannier functions, etc.). Additionally, it interfaces with
+Wannier90 to allow for the construction of Wannierized tight-binding models.
 
 The primary location for this package is at
 `<http://www.physics.rutgers.edu/pythtb>`_ where the most up-to-date
@@ -79,9 +83,6 @@ including
    visualization modules
 -  In general, the easy extensibility of Python programs
 
-On the other hand, please note that Python is not a computationally
-efficient platform when applied to large systems requiring heavy
-computation.
 
 Getting started
 ---------------
@@ -122,18 +123,39 @@ State Physics” offered by D. Vanderbilt in Fall 2010 at Rutgers
 University. The students were asked to use the code as provided, or to
 make extensions on their own as needed, in order to compute properties
 of simple systems, such as a 2D honeycomb model of graphene, in the
-tight-binding (TB) approximation.
+tight-binding (TB) approximation. Sinisa Coh, who was a PhD student
+with Vanderbilt at the time, was the initial developer and primary maintainer
+of the package. Since then, many others have contributed to its development,
+including those listed in the :ref:`Acknowledgments <Acknowledgments>` section.
 
-From the beginning, Sinisa Coh, who was a PhD student with Vanderbilt at
-the time, has been the primary developer of the package. However, many
-other individuals made contributions to this code, including
-Wenshuo Liu, Victor Alexandrov, Tahir Yusufaly, and Maryam Taherinejad.
+.. _Acknowledgments:
+
+Acknowledgments
+----------------
+`PythTB` has benefited from the contributions of many individuals over the years. 
+Below is a list of the current maintainers and contributors, along with their affiliations.
+We apologize for any omissions, and welcome feedback and corrections. 
+
+Maintainers
+^^^^^^^^^^^^^^^^
+- `Trey Cole <mailto: trey@treycole.me>`_ - Rutgers University
+- `David Vanderbilt <mailto: dhv@physics.rutgers.edu>`_ - Rutgers University
+- `Sinisa Coh <mailto: sinisacoh@gmail.com>`_ - University of California at Riverside (formerly Rutgers University)
+
+Contributors
+^^^^^^^^^^^^^^^^
+We gratefully acknowledge additional contributions to PythTB from:
+
+- Wenshuo Liu - Reddit Inc. (formerly Rutgers University)
+- Victor Alexandrov - (formerly Rutgers University)
+- Tahir Yusufaly - Johns Hopkins University (formerly Rutgers University)
+- Maryam Taherinejad - Hilti Group (formerly Rutgers University)
 
 Feedback
 --------
 
 Please send comments or suggestions for improvement to `these email
-addresses <mailto:dhv@physics.rutgers.edu,sinisacoh@gmail.com>`_.
+addresses <mailto: trey@treycole.me, dhv@physics.rutgers.edu, sinisacoh@gmail.com>`_.
 
 Acknowledgments and Disclaimer
 ------------------------------

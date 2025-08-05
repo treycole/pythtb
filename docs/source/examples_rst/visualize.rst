@@ -19,9 +19,11 @@ Demonstrates visualization capabilities of the code.
 ------------------------------------
 
 
-.. literalinclude:: examples/visualize/visualize_3d.py
+.. literalinclude:: ../examples/visualize/visualize_3d.py
    :language: python
    :linenos:
+
+Source code: :download:`visualize_3d.py <../examples/visualize/visualize_3d.py>`
 
 .. raw:: html
 
@@ -31,8 +33,6 @@ Demonstrates visualization capabilities of the code.
         height="600"
         frameborder="0"
     ></iframe>
-
-Source code: :download:`visualize_3d.py <../examples/visualize/visualize_3d.py>`
 
 
 Plotting band structure

@@ -1,5 +1,5 @@
 Hybrid Wannier functions Examples
-================================
+===================================
 This section contains examples of how to use the
 :class:`pythtb.WFArray` class to work with hybrid Wannier functions
 and related calculations.

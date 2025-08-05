@@ -33,20 +33,32 @@ PythTB module consists of these primary classes:
    Wannier
    Bloch
 
-In addition, PythTB provides a visualization module for plotting and analyzing the results obtained 
+In addition, PythTB provides a visualization module :mod:`pythtb.plotting` 
+for plotting and analyzing the results obtained 
 from the tight-binding models. This module includes functions for visualizing band structures, 
 density of states, and the geometry of the tight-binding model. 
 
-* :module:`pythtb.plotting` - Visualization functions for plotting band structures, density of states, and other properties.
-* :module:`pythtb.models` - Predefined tight-binding models for common materials and structures.
+.. autosummary::
+   :toctree: generated/
+   :caption: PythTB Plotting
+
+   plotting.plot_bands
+   plotting.plot_tb_model
+   plotting.plot_tb_model_3d
+
+Lastly, there is a collection of predefined tight-binding models available in PythTB in
+:mod:`pythtb.models`.
 
 .. autosummary::
    :toctree: generated/
-   :caption: PythTB Modules
-   :recursive:
+   :caption: PythTB Models
 
-   plotting
-   models
+   models.ssh
+   models.checkerboard
+   models.graphene
+   models.haldane
+   models.kane_mele
+   models.fu_kane_mele
 
 .. .. automodule:: pythtb
 ..    :undoc-members:

@@ -1,5 +1,5 @@
 Boron Nitride examples
-=================
+=======================
 
 .. _bn_ribbon_berry:
 

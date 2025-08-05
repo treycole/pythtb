@@ -1,5 +1,6 @@
 Checkerboard examples
-=================
+======================
+
 This example shows how to define a simple two-dimensional checkerboard
 tight-binding model with first neighbour hopping only.
 
