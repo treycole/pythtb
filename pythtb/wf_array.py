@@ -1,6 +1,6 @@
 from .utils import _is_int, _offdiag_approximation_warning_and_stop
 from .tb_model import TBModel
-from .mesh import Mesh
+from .mesh2 import Mesh
 import numpy as np
 import copy  # for deepcopying
 from itertools import product
@@ -131,7 +131,7 @@ class WFArray:
 
     """
 
-    def __init__(self, model: TBModel, mesh_size: list | tuple, nstates=None):
+    def __init__(self, model: TBModel, mesh: Mesh, nstates=None):
         # TODO: We would like to have a KMesh object associated with the WFArray
         # this way we can store information about the k-points corresponding to each
         # point in the WFArray, and also the k-points can be used to impose PBC automatically.
@@ -145,19 +145,19 @@ class WFArray:
          # store model
         self._model = model
 
-        # check that mesh_size is a list or tuple
-        if not (isinstance(mesh_size, list) or isinstance(mesh_size, tuple)):
-            raise TypeError("mesh_size must be a list or tuple")
-        # check that mesh_size is not empty
-        if len(mesh_size) == 0:
-            raise ValueError("mesh_size must not be empty")
-        # check that mesh_size contains only integers
-        if not all(_is_int(x) for x in mesh_size):
-            raise TypeError("mesh_size must contain only integers")
+        # check that mesh is of type Mesh
+        if not isinstance(mesh, Mesh):
+            raise TypeError("mesh must be of type Mesh")
         
-        # store dimension of array of points on which to keep wavefunctions
-        self._mesh_size = np.array(mesh_size)
-        self._dim_mesh = len(self._mesh_size)
+        # store mesh
+        self._mesh = mesh
+        
+        # derive mesh dimensions from the Mesh object
+        # mesh.grid has shape (*dims, coord_dim)
+        self._mesh_size = np.array(self._mesh.grid.shape[:-1], dtype=int)
+        self._dim_mesh = self._mesh_size.size
+
+        # ensure each mesh dimension is at least 2
         # all dimensions should be 2 or larger, because pbc can be used
         if True in (self._mesh_size <= 1).tolist():
             raise ValueError(
@@ -179,7 +179,6 @@ class WFArray:
         self._norb = model.norb
         # store orbitals from the model
         self._orb = model.orb_vecs
-        
 
         self._pbc_axes = []  # axes along which periodic boundary conditions are imposed
         self._loop_axes = []  # axes along which loops are imposed
@@ -189,8 +188,10 @@ class WFArray:
         wfs_dim = np.append(wfs_dim, self._norb)
         if self._nspin == 2:
             wfs_dim = np.append(wfs_dim, self._nspin)
+
         # store wavefunctions in the form [kx_index, ky_index,..., state, orb, spin]
         self._wfs = np.zeros(wfs_dim, dtype=complex)
+        self._energies = np.zeros(tuple(self._mesh_size) + (self._nstates,), dtype=float)
 
     def __getitem__(self, key):
         self._check_key(key)
@@ -400,6 +401,52 @@ class WFArray:
         if return_Q:
             return P, Q
         return P
+    
+    def solve_k_mesh(self, lambda_idx=None):
+        """Solve the Hamiltonian on the k-mesh for a given parameter slice."""
+        dim_k = self._mesh.dim_k
+        shape_k = self._mesh.shape_k or ()
+        shape_param = self._mesh.shape_param or ()
+        Nk = int(np.prod(shape_k)) if shape_k else 1
+        Np = int(np.prod(shape_param)) if shape_param else 1
+
+        # Parameter index check
+        if self._mesh.dim_param > 0:
+            if lambda_idx is None:
+                raise ValueError("lambda_idx must be provided when mesh has parameter dimensions")
+            if not (0 <= lambda_idx < Np):
+                raise IndexError(f"lambda_idx {lambda_idx} out of range [0, {Np})")
+            
+            k_pts = self._mesh.grid[..., lambda_idx, :dim_k] if self._mesh.dim_param > 0 else self._mesh.grid
+            # flatten
+            k_pts = k_pts.reshape(-1, dim_k)
+        else:
+            # ignore lambda_idx if no parameter dimensions
+            lambda_idx = None
+
+            k_pts = self._mesh.flat
+
+        # Solve Hamiltonian
+        evals, evecs = self._model.solve_ham(k_pts, return_eigvecs=True)
+
+        evals_shape = tuple(shape_k) + (self.model.nstate,)
+        if self.model.nspin > 1:
+            evecs_shape = tuple(shape_k) + (self.model.nstate, self.model.norb, self.model.nspin)
+        else:
+            evecs_shape = tuple(shape_k) + (self.model.nstate, self.model.nstate)
+
+        evecs = evecs.reshape(evecs_shape)
+        evals = evals.reshape(evals_shape)
+
+        # Now set the WFArray at the lambda_idx
+        if lambda_idx is not None:
+            slice_wfs = tuple([slice(None)]*len(shape_k)) + (lambda_idx,)
+        else:
+            slice_wfs = tuple([slice(None)]*len(shape_k))
+
+        self._wfs[slice_wfs] = evecs
+        self._energies[slice_wfs] = evals
+
 
     def solve_on_path(self, k_arr):
         """
@@ -439,6 +486,7 @@ class WFArray:
         for idx, pt in enumerate(k_arr):
             self._energies[idx] = eigvals[idx]
             self._wfs[(idx,)] = eigvecs[idx]
+
 
     def solve_on_grid(self, start_k=None):
         r"""Solve a tight-binding model on a regular mesh of k-points.

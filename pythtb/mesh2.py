@@ -226,9 +226,8 @@ class Mesh:
     def __init__(
         self,
         model: "TBModel",
-        dim_k: int,
-        dim_param: int,
-        shape_k  = None,
+        dim_param = None,
+        shape_k  = None, # for full mesh
         shape_param = None,
         path_k:  np.ndarray = None,   # (N_k_nodes, dim_k)
         path_param: np.ndarray = None, # (N_p_nodes, dim_param)
@@ -237,6 +236,12 @@ class Mesh:
         r"""
         You must supply *either* a full-grid (shape_k & shape_param), 
         *or* a piecewise path (path_k and/or path_param) + interpolation count.
+
+        - full k + full λ:      pass shape_k & shape_param
+        - full k + λ‐path:       pass shape_k & path_param + n_interp
+        - k‐path + full λ:       pass path_k + n_interp & shape_param
+        - plane in k + full λ:    shape_k=(nx,ny,1) + shape_param
+        - etc.
 
         - Full grid:
             path_* is None, shape_* given.
@@ -248,63 +253,118 @@ class Mesh:
             both path_k & path_param given, n_interp.
 
         After init, `.grid` will be
-          • shape (*shape_k, *shape_param, dim_k+dim_param) for full-grid,  
-          • shape (N_nodes·n_interp, dim_k+dim_param) for any path.  
+            - shape ``(*shape_k, *shape_param, dim_k+dim_param)`` for full-grid,  
+            - shape ``(N_nodes*n_interp, dim_k+dim_param)`` for any path.  
+
+        Parameters
+        ----------
+        model : TBModel
+            The tight-binding model to use.
+        shape_k : list or tuple, optional
+            The shape of the k-space grid (must be specified for full grids).
+        shape_param : list or tuple, optional
+            The shape of the parameter space grid (must be specified for full grids).
+        path_k : np.ndarray, optional
+            The k-path to follow (must be specified for path-based meshes).
+        path_param : np.ndarray, optional
+            The parameter path to follow (must be specified for path-based meshes).
+        n_interp : int, optional
+            The number of interpolation points between each node in the path.
+    
         """
-        self.model      = model
-        self.dim_k      = dim_k
-        self.dim_param  = dim_param
 
-        # Decide full-grid vs path:
-        is_full  = (shape_k is not None or shape_param is not None) and (path_k is path_param is None)
-        is_path  = (path_k is not None or path_param is not None)
+        self.model = model
+        self.dim_k = model.dim_k
+        self.dim_param = dim_param if dim_param is not None else 0
 
-        if is_full:
-            # build 0→1 linspaces
-            k_axes = [ np.linspace(0,1,n,endpoint=True) for n in (shape_k or []) ]
-            p_axes = [ np.linspace(0,1,m,endpoint=True) for m in (shape_param or []) ]
-            # meshgrid
-            mesh = np.meshgrid(*k_axes, *p_axes, indexing="ij")
-            # each mesh[i] gives coordinates along axis i; stack last axis
-            self.grid = np.stack(mesh, axis=-1)   # shape = (*shape_k, *shape_param, dim_k+dim_param)
-            self.shape_k     = tuple(shape_k or [])
-            self.shape_param = tuple(shape_param or [])
+        # --- build k-space points ---
+        if shape_k is not None: # Full k-space grid
+            if len(shape_k) != model.dim_k:
+                raise ValueError(f"Expected k-space dimension {model.dim_k}, got {len(shape_k)}")
+            
+            k_axes = [np.linspace(0, 1, n, endpoint=True) for n in shape_k]
+            k_grid = np.stack(np.meshgrid(*k_axes, indexing="ij"), axis=-1)
+            k_flat = k_grid.reshape(-1, k_grid.shape[-1])
+        elif path_k is not None: # k-path
+            if n_interp is None:
+                raise ValueError("n_interp must be specified for k-path")
+            k_flat = _interpolate_path(np.asarray(path_k), n_interp)
+        else: # No k-space information
+            k_flat = np.zeros((1, 0))
 
-        elif is_path:
-            # build piecewise nodes for k and/or param
-            # e.g. for k-path: path_k: (R, dim_k), n_interp → R·n_interp points
-            # we interpolate each segment linearly
-            coords_k = _interpolate_path(path_k,   n_interp) if path_k   is not None else np.zeros((n_interp,0))
-            coords_p = _interpolate_path(path_param,n_interp) if path_param is not None else np.zeros((n_interp,0))
-            # tile to match mixed dims: if both present, tile coords_k for every λ and vice versa
-            if path_k is not None and path_param is not None:
-                # coords_k: (Rk, dim_k), coords_p: (Rp, dim_param)
-                k_rep = np.repeat(coords_k[:,None,:],  coords_p.shape[0], axis=1)  # (Rk,Rp,dim_k)
-                p_rep = np.repeat(coords_p[None,:,:],  coords_k.shape[0], axis=0)  # (Rk,Rp,dim_param)
-                stacked = np.concatenate([k_rep, p_rep], axis=-1)                  # (Rk,Rp,dim_k+dim_param)
-                self.grid = stacked.reshape(-1, dim_k+dim_param)
+        # check parameter space consistency
+        if shape_param is not None or path_param is not None:
+            if dim_param is None:
+                raise ValueError("dim_param must be specified if shape_param or path_param is given")
+            if shape_param is not None and len(shape_param) != dim_param:
+                raise ValueError(f"Expected parameter-space dimension {dim_param}, got {len(shape_param)}")
+            if path_param is not None and np.asarray(path_param).shape[1] != dim_param:
+                raise ValueError(f"Expected parameter-space dimension {dim_param}, got {np.asarray(path_param).shape[1]}")
 
-            else:
-                # pure k or pure λ
-                self.grid = np.concatenate([coords_k, coords_p], axis=1)  # (N, dim_k+dim_param)
+        # build parameter-space points
+        if shape_param is not None: # Full parameter-space grid
+            p_axes = [np.linspace(0, 1, m, endpoint=True) for m in shape_param]
+            p_grid = np.stack(np.meshgrid(*p_axes, indexing="ij"), axis=-1)
+            p_flat = p_grid.reshape(-1, p_grid.shape[-1])
+        elif path_param is not None: # parameter path
+            if n_interp is None:
+                raise ValueError("n_interp must be specified for parameter path")
+            p_flat = _interpolate_path(np.asarray(path_param), n_interp)
+        else: # No parameter-space information
+            p_flat = np.zeros((1, 0))
 
-            self.shape_k     = ()
-            self.shape_param = ()
+        # cross product of k_flat and p_flat 
+        Nk, dim_k = k_flat.shape
+        Np, dim_p = p_flat.shape
 
+        if dim_k != self.dim_k:
+            raise ValueError(f"Expected k-space dimension {self.dim_k}, got {dim_k}")
+        if dim_p != self.dim_param:
+            raise ValueError(f"Expected parameter-space dimension {self.dim_param}, got {dim_p}")
+
+        # flattened mesh points (N_points, dim_total)
+        k_rep = np.repeat(k_flat, Np, axis=0)
+        p_rep = np.tile(p_flat, (Nk, 1))
+        flat_mesh = np.hstack([k_rep, p_rep])
+        self.flat = flat_mesh
+
+        # structured grid of shape (*dims, dim_total)
+        if shape_k is not None or shape_param is not None:
+            dims = []
+            # k-space dimension(s):
+            if shape_k is not None:
+                dims.extend(shape_k)
+            elif path_k is not None:
+                # one “grid‐axis” of length = number of path points
+                dims.append(k_flat.shape[0])
+            # parameter‐space dimension(s):
+            if shape_param is not None:
+                dims.extend(shape_param)
+            elif path_param is not None:
+                dims.append(p_flat.shape[0])
+            # now reshape into (*dims, total_dim)
+            self.grid = flat_mesh.reshape(*dims, flat_mesh.shape[-1])
         else:
-            raise ValueError("Must specify either full-grid shapes or path nodes + n_interp")
+            # pure path: no multi-D grid
+            self.grid = flat_mesh
 
-        # Flatten vs structured
-        self.flat    = self.grid.reshape(-1, dim_k + dim_param)
-        self.axis_types = ['k']*dim_k + ['param']*dim_param
-        self.k_axes     = [i for i,t in enumerate(self.axis_types) if t=='k']
-        self.p_axes     = [i for i,t in enumerate(self.axis_types) if t=='param']
+        # label each structured axis as k-space or parameter-space
+        n_k_axes = len(shape_k) if shape_k is not None else (1 if path_k is not None else 0)
+        n_p_axes = len(shape_param) if shape_param is not None else (1 if path_param is not None else 0)
+        self.axis_types = ['k'] * n_k_axes + ['param'] * n_p_axes
+        # indices of axes
+        self.k_axes     = list(range(n_k_axes))
+        self.param_axes = list(range(n_k_axes, n_k_axes + n_p_axes))
 
-        # Precompute any k-space phases only if dim_k > 0
-        if self.dim_k:
-            self.recip_lat_vecs = model.get_recip_lat()
-            self.orb_phases     = self.get_orb_phases()
-            self.bc_phase       = self.get_boundary_phase()
+        self.shape_k = self.grid.shape[:n_k_axes] if n_k_axes > 0 else None
+        self.shape_param = self.grid.shape[n_k_axes:n_k_axes + n_p_axes] if n_p_axes > 0 else None
+
+        # --- precompute k-space phases if present ---
+        if self.dim_k > 0:
+            pass
+            # self.recip_lat_vecs = model.get_recip_lat()
+            # self.orb_phases = self.get_orb_phases()
+            # self.bc_phase = self.get_boundary_phase()
 
     def gen_k_mesh(
         self, centered: bool = False, flat: bool = True, endpoint: bool = False
