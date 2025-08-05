@@ -1,6 +1,6 @@
 from .utils import _is_int, _offdiag_approximation_warning_and_stop
 from .tb_model import TBModel
-from .mesh import Mesh
+from .mesh2 import Mesh
 import numpy as np
 import copy  # for deepcopying
 from itertools import product
@@ -407,6 +407,52 @@ class WFArray:
         if return_Q:
             return P, Q
         return P
+    
+    def solve_k_mesh(self, lambda_idx=None):
+        """Solve the Hamiltonian on the k-mesh for a given parameter slice."""
+        dim_k = self._mesh.dim_k
+        shape_k = self._mesh.shape_k or ()
+        shape_param = self._mesh.shape_param or ()
+        Nk = int(np.prod(shape_k)) if shape_k else 1
+        Np = int(np.prod(shape_param)) if shape_param else 1
+
+        # Parameter index check
+        if self._mesh.dim_param > 0:
+            if lambda_idx is None:
+                raise ValueError("lambda_idx must be provided when mesh has parameter dimensions")
+            if not (0 <= lambda_idx < Np):
+                raise IndexError(f"lambda_idx {lambda_idx} out of range [0, {Np})")
+            
+            k_pts = self._mesh.grid[..., lambda_idx, :dim_k] if self._mesh.dim_param > 0 else self._mesh.grid
+            # flatten
+            k_pts = k_pts.reshape(-1, dim_k)
+        else:
+            # ignore lambda_idx if no parameter dimensions
+            lambda_idx = None
+
+            k_pts = self._mesh.flat
+
+        # Solve Hamiltonian
+        evals, evecs = self._model.solve_ham(k_pts, return_eigvecs=True)
+
+        evals_shape = tuple(shape_k) + (self.model.nstate,)
+        if self.model.nspin > 1:
+            evecs_shape = tuple(shape_k) + (self.model.nstate, self.model.norb, self.model.nspin)
+        else:
+            evecs_shape = tuple(shape_k) + (self.model.nstate, self.model.nstate)
+
+        evecs = evecs.reshape(evecs_shape)
+        evals = evals.reshape(evals_shape)
+
+        # Now set the WFArray at the lambda_idx
+        if lambda_idx is not None:
+            slice_wfs = tuple([slice(None)]*len(shape_k)) + (lambda_idx,)
+        else:
+            slice_wfs = tuple([slice(None)]*len(shape_k))
+
+        self._wfs[slice_wfs] = evecs
+        self._energies[slice_wfs] = evals
+
 
     # TODO: Figure out how to solve over lambda as well
     # May want to pass model constructor to generate Hamiltonians along lambda 
