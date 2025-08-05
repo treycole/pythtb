@@ -14,4 +14,4 @@ identical band structures, the Berry phase is consistent with
 the polarization in the extended direction only after the change.
 
 .. plot :: examples/boron_nitride/bn_ribbon_berry.py
-   :include-source:
+   :include-source: 

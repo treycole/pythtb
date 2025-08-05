@@ -67,7 +67,7 @@ def run_model(model, panel):
     n_bands = eval.shape[-1]
     for band in range(n_bands):
         ax[panel].plot(k_vec, eval[:, band], "k-", linewidth=0.5)
-    
+    #
     # compute and print Berry phase at half filling
     wf = WFArray(model, [numk])
     wf.solve_on_grid([0.0])

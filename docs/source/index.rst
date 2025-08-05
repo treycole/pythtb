@@ -25,7 +25,7 @@ phases and related properties.
    about
    install
    usage
-   examples_rst/index
+   examples
    CHANGELOG
    formalism
    resources
@@ -45,8 +45,7 @@ Quick example
 
 This is a simple example showing how to define graphene tight-binding
 model with first neighbour hopping only. Below is the source code and
-plot of the resulting band structure. Here you can find :doc:`more
-examples <examples_rst/index>`.
+plot of the resulting band structure. Here you can find :doc:`more examples <examples>`.
 
 .. raw:: html
 
