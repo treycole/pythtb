@@ -79,7 +79,7 @@ to enhance your experience with PythTB:
 *  `jupyter <https://jupyter.org/>`_ - for running Jupyter notebooks.
 *  `plotly <https://plotly.com/python/>`_ - for interactive plotting capabilities with 3D models.
 
-You should now be ready to run any of the  :doc:`examples <examples_rst/index>`.
+You should now be ready to run any of the  :doc:`examples <examples>`.
 
 .. _install-alternative:
 

@@ -44,15 +44,19 @@ extensions = [
     'sphinx.ext.napoleon',  
     'sphinx.ext.viewcode',
     "sphinx.ext.autosummary",
-    'myst_parser',        # <-- enable Markdown
+    # 'myst_parser',        # <-- enable Markdown
+    "myst_nb",
     'sphinx.ext.doctest',
    # 'sphinx.ext.imgmath',
     'matplotlib.sphinxext.plot_directive',
+    'sphinx_thebe',
     'sphinx.ext.mathjax',
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
+    "sphinxcontrib.programoutput"
     # "numpydoc"
 ]
+
 myst_enable_extensions = [
     "deflist",
     "fieldlist",
@@ -64,6 +68,16 @@ myst_enable_extensions = [
     "colon_fence",
 ]
 
+nb_execution_mode = "auto"     # run notebooks when building
+nb_execution_timeout = 600     # seconds per notebook
+
+thebe_config = {
+    "repository_url": "https://github.com/youruser/yourrepo",
+    "repository_branch": "v2",
+    # CSS selector for code cells
+    "selector": "div.nbinput",
+}
+
 copybutton_only_copy_prompt_lines = False
 copybutton_remove_prompts = True
 
@@ -74,8 +88,10 @@ copybutton_remove_prompts = True
 
 # tell Sphinx to treat .md files as sources
 source_suffix = {
-    '.md': 'markdown',
     '.rst': 'restructuredtext',
+    '.md': 'myst-nb',
+    '.ipynb': 'myst-nb',
+    '.myst': 'myst-nb',
 }
 
 # for matplotlib plots
@@ -86,7 +102,7 @@ pygments_dark_style = "monokai"  # for dark theme compatibility
 # for autodoc to work on PythTB package
 sys.path.append("../src")
 
-html_theme = 'pydata_sphinx_theme' #'sphinx_book_theme' #'classic'
+html_theme = 'pydata_sphinx_theme' #'sphinx_book_theme' #'classic' pydata_sphinx_theme
 html_title = f"{project} Docs"
 
 templates_path = ['_templates']
@@ -97,7 +113,7 @@ html_js_files = [
 ]
 html_extra_path = ['misc', 'examples', 'simple_fig']
 html_css_files = ["custom.css"]
-exclude_patterns = []
+exclude_patterns = ['generated/*.md', 'examples_rst/*']
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -151,6 +167,7 @@ html_theme_options = {
             "icon": "fa-custom fa-pypi",
         },
     ],
+    "use_thebe": True
 }
 
 html_sidebars = {
