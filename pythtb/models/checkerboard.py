@@ -1,7 +1,7 @@
 from pythtb import TBModel
 
 
-def checkerboard(t, delta) -> TBModel:
+def checkerboard(delta, t) -> TBModel:
     r"""Checkerboard tight-binding model.
 
     .. versionadded:: 2.0.0
@@ -24,7 +24,7 @@ def checkerboard(t, delta) -> TBModel:
 
     .. math::
 
-        H = -t \sum_{\langle i,j \rangle} c_i^\dagger c_j + \text{h.c.} + \Delta \sum_i n_i
+        H = t \sum_{\langle i,j \rangle} (c_i^\dagger c_j + \text{h.c.}) + \Delta \sum_i n_i
 
     Parameters
     ----------

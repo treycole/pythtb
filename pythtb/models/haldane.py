@@ -19,14 +19,15 @@ def haldane(delta: float, t1: float, t2: float) -> TBModel:
 
     .. math::
 
-        \mathbf{\tau}_1 = \frac{1}{3} \mathbf{a}_1 + \frac{1}{3} \mathbf{a}_2, \quad \mathbf{\tau}_2 = \frac{2}{3} \mathbf{a}_1 + \frac{2}{3} \mathbf{a}_2
+        \mathbf{\tau}_1 = \frac{1}{3} \mathbf{a}_1 + \frac{1}{3} \mathbf{a}_2, 
+        \quad \mathbf{\tau}_2 = \frac{2}{3} \mathbf{a}_1 + \frac{2}{3} \mathbf{a}_2
 
     The second-quantized Hamiltonian can be written as:
 
     .. math::
 
-        H = \Delta \sum_i (-)^i c_i^\dagger c_i + t_1 \sum_{\langle i,j \rangle} c_i^\dagger c_j 
-        + \text{h.c.} + t_2 \sum_{\langle\langle i,j \rangle\rangle} ic_i^\dagger c_j + \text{h.c.}
+        H = \Delta \sum_i (-)^i c_i^\dagger c_i + t_1 \sum_{\langle i,j \rangle} (c_i^\dagger c_j 
+        + \text{h.c.}) + t_2 \sum_{\langle\langle i,j \rangle\rangle} (ic_i^\dagger c_j + \text{h.c.})
 
     Parameters
     ----------
