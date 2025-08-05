@@ -1,5 +1,5 @@
 from .tb_model import TBModel
-from .k_mesh import KMesh
+from .mesh import Mesh
 from .wf_array import WFArray
 import numpy as np
 from itertools import product
@@ -36,7 +36,7 @@ class Bloch(WFArray):
         # set k_mesh
         self.model.set_k_mesh(*self.nks)
         # stores k-points on a uniform mesh, calculates nearest neighbor points given the model lattice
-        self.k_mesh: KMesh = model.k_mesh
+        self.k_mesh: Mesh = model.k_mesh
 
         # adiabatic dimension
         self.dim_lam = len(param_dims) - self.dim_k

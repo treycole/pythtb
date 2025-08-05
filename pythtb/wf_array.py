@@ -1,6 +1,6 @@
 from .utils import _is_int, _offdiag_approximation_warning_and_stop
 from .tb_model import TBModel
-from .k_mesh import KMesh
+from .mesh import Mesh
 import numpy as np
 import copy  # for deepcopying
 from itertools import product
@@ -1792,7 +1792,7 @@ class Bloch(WFArray):
         # set k_mesh
         self.model.set_k_mesh(*self.nks)
         # stores k-points on a uniform mesh, calculates nearest neighbor points given the model lattice
-        self.k_mesh: KMesh = model.k_mesh
+        self.k_mesh: Mesh = model.k_mesh
 
         # adiabatic dimension
         self.dim_lam = len(param_dims) - self.dim_k

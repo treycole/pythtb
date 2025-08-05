@@ -40,17 +40,17 @@ from .wf_array import *
 from .w90 import *
 from .wannier import *
 from .bloch import *
-from .k_mesh import *
+from .mesh import *
 from .utils import *
 
-from . import tb_model, wf_array, w90, bloch, k_mesh, wannier, utils
+from . import mesh2, tb_model, wf_array, w90, bloch, wannier, utils
 
 __all__ = []
 __all__ += tb_model.__all__
 __all__ += wf_array.__all__
 __all__ += w90.__all__
 __all__ += bloch.__all__
-__all__ += k_mesh.__all__
+__all__ += mesh2.__all__
 __all__ += wannier.__all__
 __all__ += utils.__all__
 

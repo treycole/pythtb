@@ -5,7 +5,7 @@ from itertools import product
 import warnings
 import functools
 from .plotting import plot_bands, plot_tb_model, plot_tb_model_3d
-from .k_mesh import k_path, k_uniform_mesh
+from .mesh import k_path, k_uniform_mesh
 from .utils import _is_int, _offdiag_approximation_warning_and_stop, is_Hermitian
 
 # set up logging
@@ -446,7 +446,7 @@ class TBModel:
         --------
         >>> tb.set_k_mesh([10, 10])
         """
-        from .k_mesh import KMesh
+        from .mesh import Mesh
 
         dim_k = len(nks)
         if dim_k != self.dim_k:
@@ -456,10 +456,10 @@ class TBModel:
             )
         if hasattr(self, "k_mesh") and self.k_mesh.nks == nks:
             logger.warning(
-                "KMesh already set and 'nks' are the same as specified. Doing nothing."
+                "Mesh already set and 'nks' are the same as specified. Doing nothing."
             )
             return
-        self.k_mesh = KMesh(self, *nks)
+        self.k_mesh = Mesh(self, *nks)
         self.nks = nks
 
     def get_k_mesh(self, flat: bool = False):
@@ -3027,10 +3027,10 @@ class TBModel:
         float
             Chern number for the occupied manifold.
         """
-        from .k_mesh import KMesh
+        from .mesh import Mesh
 
         nks = (nk,) * self._dim_k
-        k_mesh = KMesh(self, *nks)
+        k_mesh = Mesh(self, *nks)
         flat_mesh = k_mesh.flat_mesh
 
         Omega = self.berry_curvature(flat_mesh, occ_idxs=occ_idxs)

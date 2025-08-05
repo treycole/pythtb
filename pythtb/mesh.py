@@ -9,14 +9,14 @@ if TYPE_CHECKING:
 __all__ = [
     "k_uniform_mesh",
     "k_path",
-    "KMesh",
+    "Mesh",
 ]
 
 
 def k_uniform_mesh(model, mesh_size) -> np.ndarray:
     r"""
     Returns a uniform grid of k-points that can be passed to
-    passed to function :func:`pythtb.tb_model.solve_all`.  This
+    passed to function :func:`pythtb.tb_model.solve_all`. This
     function is useful for plotting density of states histogram
     and similar.
 
@@ -208,7 +208,7 @@ def _report(k_list, lat_per, k_metric, k_node, node_index):
     print("-------------------------")
 
 
-class KMesh:
+class Mesh:
     def __init__(self, model: "TBModel", *nks):
         """Class for storing and manipulating a regular mesh of k-points."""
         self.model = model
