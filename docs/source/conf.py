@@ -49,7 +49,7 @@ extensions = [
     'sphinx.ext.doctest',
    # 'sphinx.ext.imgmath',
     'matplotlib.sphinxext.plot_directive',
-    'sphinx_thebe',
+    # 'sphinx_thebe',
     'sphinx.ext.mathjax',
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
@@ -169,7 +169,7 @@ html_theme_options = {
             "icon": "fa-custom fa-pypi",
         },
     ],
-    "use_thebe": True
+    # "use_thebe": True
 }
 
 html_sidebars = {
