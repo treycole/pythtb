@@ -66,6 +66,7 @@ myst_enable_extensions = [
     "amsmath",
     "substitution",
     "colon_fence",
+    "attrs_inline"
 ]
 
 nb_execution_mode = "auto"     # run notebooks when building
@@ -109,11 +110,12 @@ templates_path = ['_templates']
 html_static_path = ['_static']
 html_js_files = [
     ("custom-icons.js", {"defer": "defer"}),
-    "https://unpkg.com/thebe@latest/lib/index.js",  # 
+    "https://unpkg.com/thebe@latest/lib/index.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
 ]
-html_extra_path = ['misc', 'examples', 'simple_fig']
+html_extra_path = ['misc', 'simple_fig']
 html_css_files = ["custom.css"]
-exclude_patterns = ['generated/*.md', 'examples_rst/*']
+exclude_patterns = ['generated/*.md', 'examples_rst/*', 'examples_py/*']
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

@@ -59,8 +59,6 @@ numbers. Finally, the Berry curvature is calculated and printed.
 Hybrid Wannier centers in Haldane model
 ---------------------------------------
 
-Calculates Berry phases for the Haldane model and compares it to the
-hybrid Wannier centers for a ribbon of the Haldane model.
 
 .. plot :: examples/haldane/haldane_hwf.py
    :include-source:
