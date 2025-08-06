@@ -42,6 +42,18 @@ def haldane(delta: float, t1: float, t2: float) -> TBModel:
     -------
     TBModel
         An instance of the model.
+
+    Notes
+    -----
+    The Haldane model describes a two-dimensional topological insulator with a
+    non-trivial band structure. It is characterized by a finite Chern number
+    and exhibits edge states that are protected by time-reversal symmetry [haldane]_. 
+
+    References
+    ----------
+    .. [haldane] Haldane, F. D. M. (1988).
+        O(3) Nonlinear :math:`\sigma` Model and the Quantum Hall Effect in Two Dimensions. 
+        *Physical Review Letters*, 61(20), 2015–2018.
     """
 
     lat = [[1, 0], [1/2, sqrt(3) / 2]]

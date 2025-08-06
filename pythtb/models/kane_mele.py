@@ -47,6 +47,15 @@ def kane_mele(delta, t, soc, rashba) -> TBModel:
     -------
     TBModel
         An instance of the model.
+
+    Notes
+    -----
+    The Kane-Mele model describes a two-dimensional topological insulator with spin-orbit coupling.
+    It is defined on a honeycomb lattice and includes both intrinsic and Rashba spin-orbit coupling [kane-mele]_.
+
+    References
+    ----------
+    .. [kane-mele] Kane, C. L., & Mele, E. J. (2005). Quantum Spin Hall Effect in Graphene. *Physical Review Letters*, 95(22), 226801.
     """
 
     # define lattice vectors
