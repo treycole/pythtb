@@ -1,0 +1,1035 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Changelog &#8212; PythTB Docs</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=7f41d439"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=cbcfbdad"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = "div.nbinput"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'CHANGELOG';</script>
+    <script defer="defer" src="_static/custom-icons.js?v=7518156e"></script>
+    <script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Formalism" href="formalism.html" />
+    <link rel="prev" title="Visualize 3D tight-binding model" href="examples_ipynb/visualize_3d.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">PythTB Docs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="about.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="install.html">
+    Install
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="formalism.html">
+    Formalism
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="resources.html">
+    Resources
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="citation.html">
+    Citation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/treycole/pythtb" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pythtb/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-pypi fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="about.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="install.html">
+    Install
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="formalism.html">
+    Formalism
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="resources.html">
+    Resources
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="citation.html">
+    Citation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/treycole/pythtb" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pythtb/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-pypi fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Changelog</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">#</a></h1>
+<p>All notable changes to this project will be documented in this file.</p>
+<p>The format is based on <a class="reference external" href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>,
+and this project adheres to <a class="reference external" href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<hr class="docutils" />
+<section id="unreleased">
+<h2>[2.0.0] - Unreleased<a class="headerlink" href="#unreleased" title="Link to this heading">#</a></h2>
+<section id="added">
+<h3>Added<a class="headerlink" href="#added" title="Link to this heading">#</a></h3>
+<section id="developer-notes">
+<h4>Developer Notes<a class="headerlink" href="#developer-notes" title="Link to this heading">#</a></h4>
+<p>For a detailed explanation of the changes, see the developer documentation <a class="reference external" href="https://github.com/sinisacoh/pythtb/blob/v2/dev/DEVNOTES.md">DEVNOTES.md</a>.</p>
+</section>
+<section id="models">
+<h4>Models<a class="headerlink" href="#models" title="Link to this heading">#</a></h4>
+<ul>
+<li><p>Added a <a class="reference external" href="https://github.com/sinisacoh/pythtb/blob/v2/pythtb/models">folder of example models</a> that is importable using, e.g.,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pythtb.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">haldane</span>
+<span class="n">my_model</span> <span class="o">=</span> <span class="n">haldane</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="examples">
+<h4>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h4>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/sinisacoh/pythtb/blob/v2/examples/visualize/visualize_3d.py">visualize_3d.py</a>: demonstrates the 3D visualization feature for <code class="docutils literal notranslate"><span class="pre">TBModel</span></code></p></li>
+<li><p><a class="reference external" href="https://github.com/sinisacoh/pythtb/blob/v2/examples/ssh/ssh.py">ssh.py</a>: Constructs the ssh model and plots the band structure with a slider to change the intracell hopping.</p></li>
+</ul>
+</section>
+<section id="tbmodel">
+<h4><code class="docutils literal notranslate"><span class="pre">TBModel</span></code><a class="headerlink" href="#tbmodel" title="Link to this heading">#</a></h4>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.__repr__</span></code>: Object representation now displays <code class="docutils literal notranslate"><span class="pre">rdim</span></code>, <code class="docutils literal notranslate"><span class="pre">kdim</span></code>, and <code class="docutils literal notranslate"><span class="pre">nspin</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.__str__</span></code>: Allows printing a <code class="docutils literal notranslate"><span class="pre">TBModel</span></code> instance using</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">TBModel</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This calls <code class="docutils literal notranslate"><span class="pre">TBModel.report()</span></code> (formerly <code class="docutils literal notranslate"><span class="pre">TBModel.display()</span></code>) and prints model information.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.get_orb</span></code> boolean flag <code class="docutils literal notranslate"><span class="pre">cartesian</span></code></p>
+<ul class="simple">
+<li><p>Returns orbital vectors in Cartesian coordinates if <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">False</span></code> by default.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.hamiltonian</span></code></p>
+<ul class="simple">
+<li><p>Generates Hamiltonians for both single and multiple k-points.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.solve_ham</span></code>:</p>
+<ul class="simple">
+<li><p>Unified method subsumes previous methods <code class="docutils literal notranslate"><span class="pre">tb_model.solve_one</span></code> and <code class="docutils literal notranslate"><span class="pre">tb_model.solve_all</span></code></p></li>
+<li><p>Handles single-k-point input automatically and reproduces <code class="docutils literal notranslate"><span class="pre">solve_one</span></code>.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.get_velocity</span></code></p>
+<ul class="simple">
+<li><p>Computes <span class="math notranslate nohighlight">\(dH/dk\)</span> (velocity operator) in the orbital basis.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.berry_curv</span></code></p>
+<ul class="simple">
+<li><p>Computes Berry curvature from <span class="math notranslate nohighlight">\(dH/dk\)</span> elements using the Kubo formula.</p></li>
+<li><p>Accepts occupied band indices.</p></li>
+<li><p>Assumes there is a global gap that defines the occupied and unoccupied bands.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.chern</span></code></p>
+<ul class="simple">
+<li><p>Returns Chern number for a given set of occupied bands using the Berry curvature from above.</p></li>
+<li><p>Assumes there is a global gap that defines the occupied and unoccupied bands.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.visualize3d</span></code></p>
+<ul class="simple">
+<li><p>For 3-dimensional tight-binding models, displays a 3d figure of the tight-binding orbitals using <code class="docutils literal notranslate"><span class="pre">plotly</span></code>.</p></li>
+<li><p>Also prints a legend with the model terms (onsite energies, orbital positions).</p></li>
+<li><p>The figure can be rotated and zoomed in. When highlighting an orbital or bond, the onsite or hopping terms appear.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.get_recip_lat</span></code></p>
+<ul class="simple">
+<li><p>Returns reciprocal lattice vectors.</p></li>
+</ul>
+</li>
+<li><p>Read-only retrieval of core TBModel attributes (e.g., <code class="docutils literal notranslate"><span class="pre">dim_r</span></code>, <code class="docutils literal notranslate"><span class="pre">dim_k</span></code>, <code class="docutils literal notranslate"><span class="pre">nspin</span></code>, <code class="docutils literal notranslate"><span class="pre">per</span></code>, <code class="docutils literal notranslate"><span class="pre">norb</span></code>, <code class="docutils literal notranslate"><span class="pre">nstate</span></code>, <code class="docutils literal notranslate"><span class="pre">lat</span></code>, <code class="docutils literal notranslate"><span class="pre">orb</span></code>, <code class="docutils literal notranslate"><span class="pre">site_energies</span></code>, and <code class="docutils literal notranslate"><span class="pre">hoppings</span></code>) using e.g. <code class="docutils literal notranslate"><span class="pre">my_model.dim_r</span></code> preventing unintended modification of internal model parameters.</p></li>
+</ul>
+</section>
+<section id="wfarray">
+<h4><code class="docutils literal notranslate"><span class="pre">WFArray</span></code><a class="headerlink" href="#wfarray" title="Link to this heading">#</a></h4>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">WFArray.chern_num</span></code></p>
+<ul>
+<li><p>Returns the chern number for a given plane in the parameter mesh</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">WFArray.wilson_loop</span></code></p>
+<ul>
+<li><p>Computes the Wilson loop unitary matrix for a loop of states</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">WFArray.get_links</span></code></p>
+<ul>
+<li><p>Computes the unitary part of the overlap between the mesh of states and their nearest neighbors in each direction</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">WFArray.solve_on_path</span></code></p>
+<ul>
+<li><p>Populates a 1D <code class="docutils literal notranslate"><span class="pre">WFArray</span></code> with states diagonalized on a 1D k-path</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">WFArray.get_projectors</span></code></p>
+<ul>
+<li><p>Returns the band projectors and optionally their compliment</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">WFArray.get_bloch_states</span></code></p>
+<ul>
+<li><p>When the states populated are all Bloch states (defined on k-mesh), this function applies the <span class="math notranslate nohighlight">\(e^{i \mathbf{k} \cdot \mathbf{r}}\)</span> phase factors and returns both the cell-periodic <span class="math notranslate nohighlight">\(u_{n\mathbf{k}}\)</span> and the Bloch states <span class="math notranslate nohighlight">\(\phi_{n\mathbf{k}}\)</span>.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">WFArray.get_states</span></code></p>
+<ul>
+<li><p>Returns the <code class="docutils literal notranslate"><span class="pre">WFArray</span></code> states in NumPy form.</p></li>
+<li><p>Has an optional flag to flatten the spin axis in cases where the states are spinful</p></li>
+</ul>
+</li>
+<li><p>Properties</p>
+<ul>
+<li><p>Added a series of read-only properties for certain attributes</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="changed">
+<h3>Changed<a class="headerlink" href="#changed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Renamed public classes (see <a class="reference external" href="https://github.com/sinisacoh/pythtb/blob/v2/dev/DEVLOG.md">DEVLOG</a> for more details)</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">tb_model</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">TBModel</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wf_array</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">WFArray</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">w90</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">W90</span></code></p></li>
+</ul>
+</li>
+<li><p>Examples are now grouped categorically into folders</p></li>
+</ul>
+<section id="id1">
+<h4><code class="docutils literal notranslate"><span class="pre">TBModel</span></code><a class="headerlink" href="#id1" title="Link to this heading">#</a></h4>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.solve_all()</span></code> and <code class="docutils literal notranslate"><span class="pre">TBModel.solve_one()</span></code> (deprecated, merged into faster <code class="docutils literal notranslate"><span class="pre">TBModel.solve_ham()</span></code>)</p>
+<ul>
+<li><p>These methods have been unified into a faster <code class="docutils literal notranslate"><span class="pre">TBModel.solve_ham()</span></code> that utilizes NumPy vectorization for faster diagonalization.</p></li>
+<li><p>The returned eigenvalues and eigenvectors are indexed differently for vectorized workflows (matrix elements go last for NumPy linear algebra operations)</p>
+<ul>
+<li><p>Eigenvalues now indexed as <code class="docutils literal notranslate"><span class="pre">(Nk,</span> <span class="pre">n_state)</span></code> .</p></li>
+<li><p>Eigenvectors shaped for spinful and spinless cases (see docstring for full details).</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_spin</span></code>= 1: (Nk, n_state, n_state)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_spin</span></code>= 2: (Nk, n_state, n_orb, 2)</p></li>
+<li><p>If finite (no k axis): (n_state, …) and spin axes are as before</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Flag in <code class="docutils literal notranslate"><span class="pre">TBModel.solve_ham()</span></code>: <code class="docutils literal notranslate"><span class="pre">eigvectors</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">return_eigvecs</span></code> for clarity.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.visualize()</span></code></p>
+<ul>
+<li><p>Hopping vectors depicted as curved arrows instead of two straight lines at an angle.</p></li>
+<li><p>Lattice vectors shown as arrows, unit cell delineated with dotted lines.</p></li>
+<li><p>Arrow transparency scales with hopping magnitude (max element in 2x2 matrix if spinful) to give an idea of the strength of the hopping terms in the model.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.display()</span></code> (deprecated, now <code class="docutils literal notranslate"><span class="pre">TBModel.report()</span></code> and <code class="docutils literal notranslate"><span class="pre">print(TBModel)</span></code>):</p>
+<ul>
+<li><p>Prints orbital vectors in both Cartesian and reduced units.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.change_nonperiodic_vector()</span></code> flag <code class="docutils literal notranslate"><span class="pre">to_home_supress_warning</span></code> has been renamed to <code class="docutils literal notranslate"><span class="pre">to_home_warning</span></code> for brevity and clarity.</p>
+<ul>
+<li><p>WARNING: The boolean meaning of the flag also changes, <code class="docutils literal notranslate"><span class="pre">to_home_warning</span> <span class="pre">==</span> <span class="pre">True</span></code> means a warning <em>will</em> be displayed.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TBModel.make_supercell()</span></code> flag <code class="docutils literal notranslate"><span class="pre">to_home_supress_warning</span></code> has been renamed to <code class="docutils literal notranslate"><span class="pre">to_home_warning</span></code> for brevity and clarity.</p>
+<ul>
+<li><p>WARNING: The boolean meaning of the flag also changes, <code class="docutils literal notranslate"><span class="pre">to_home_warning</span> <span class="pre">==</span> <span class="pre">True</span></code> means a warning <em>will</em> be displayed.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="id2">
+<h4><code class="docutils literal notranslate"><span class="pre">WFArray</span></code><a class="headerlink" href="#id2" title="Link to this heading">#</a></h4>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">WFArray.berry_flux</span></code></p>
+<ul>
+<li><p>Flag renamed: <code class="docutils literal notranslate"><span class="pre">occ</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">state_idx</span></code></p></li>
+<li><p>Flag renamed: <code class="docutils literal notranslate"><span class="pre">dirs</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">plane</span></code></p></li>
+<li><p>Flag removed: <code class="docutils literal notranslate"><span class="pre">individual_phases</span></code></p>
+<ul>
+<li><p>This flag previously returned the integrated Berry flux in the plane as a function of the remaining parameters. For clarity, it is now up to the user to sum over the proper axes if they want to integrate the Berry flux. The Berry flux will have axes for all parameter directions.</p></li>
+</ul>
+</li>
+<li><p>Default behavior change: when <code class="docutils literal notranslate"><span class="pre">dirs</span></code> is unspecified (or <code class="docutils literal notranslate"><span class="pre">None</span></code>) the returned Berry flux will have 2 additional axes (first and second) over all combinations of planes (e.g. berry_flux()[0,1] is the Berry flux in the 0,1 plane)</p></li>
+<li><p>Substantial speed improvements using NumPy vectorization</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="w90">
+<h4><code class="docutils literal notranslate"><span class="pre">W90</span></code><a class="headerlink" href="#w90" title="Link to this heading">#</a></h4>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">W90.w90_bands_consistency</span></code></p>
+<ul>
+<li><p>Returned energies now have shape (kpts, band) instead of (band, kpts). This matches the shape of the returned eigenvalues in <code class="docutils literal notranslate"><span class="pre">TBModel.solve_ham</span></code>.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="removed">
+<h3>Removed<a class="headerlink" href="#removed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Support for Python &lt;3.10 (<a class="reference external" href="https://scientific-python.org/specs/spec-0000/">SPEC-0</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">setup.py</span></code>: migration to <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">WFArray.berry_flux</span></code> flag <code class="docutils literal notranslate"><span class="pre">individual_phases</span></code></p></li>
+</ul>
+</section>
+<section id="deprecated">
+<h3>Deprecated<a class="headerlink" href="#deprecated" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tb_model.solve_one</span></code>: Use <code class="docutils literal notranslate"><span class="pre">TBModel.solve_ham</span></code> instead</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tb_model.solve_all</span></code>: Use <code class="docutils literal notranslate"><span class="pre">TBModel.solve_ham</span></code> instead</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tb_model.display</span></code>: Use <code class="docutils literal notranslate"><span class="pre">TBModel.report</span></code> instead</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reset</span></code> flag for <code class="docutils literal notranslate"><span class="pre">TBModel.set_onsite</span></code>: Use <code class="docutils literal notranslate"><span class="pre">set</span></code> instead.</p>
+<ul>
+<li><p>Only <code class="docutils literal notranslate"><span class="pre">set</span></code> and <code class="docutils literal notranslate"><span class="pre">add</span></code> parameters retained; <code class="docutils literal notranslate"><span class="pre">reset</span></code> is now merged into <code class="docutils literal notranslate"><span class="pre">set</span></code>.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id3">
+<h2>[1.8.0] - 2022-09-20<a class="headerlink" href="#id3" title="Link to this heading">#</a></h2>
+<section id="id4">
+<h3>Changed<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Updated class <code class="docutils literal notranslate"><span class="pre">wf_array</span></code> to make it easier to store states
+which are not Bloch-like eigenstates.</p></li>
+<li><p>Fixed various small issues.</p></li>
+</ul>
+</section>
+<section id="id5">
+<h3>Added<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Added new functionality to <code class="docutils literal notranslate"><span class="pre">wf_array</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">solve_on_one_point</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">choose_states</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">empty_like</span></code></p></li>
+</ul>
+</li>
+<li><p>Added function change_nonperiodic_vector and changed the way
+<code class="docutils literal notranslate"><span class="pre">to_home</span></code> parameter works.</p></li>
+</ul>
+</section>
+<section id="id6">
+<h3>Removed<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Removed some functions that were kept for backwards compatibility</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">berry_curv</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">k_path</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tbmodel</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">set_sites</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">add_hop</span></code>.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id7">
+<h2>[1.7.2] - 2017-08-01<a class="headerlink" href="#id7" title="Link to this heading">#</a></h2>
+<section id="id8">
+<h3>Changed<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Display function now prints hopping distances</p></li>
+</ul>
+</section>
+<section id="id9">
+<h3>Added<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Added support for deleting orbitals</p></li>
+</ul>
+</section>
+</section>
+<section id="id10">
+<h2>[1.7.1] - 2016-12-22<a class="headerlink" href="#id10" title="Link to this heading">#</a></h2>
+<section id="id11">
+<h3>Added<a class="headerlink" href="#id11" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Added support for python 3.x in addition to 2.x</p></li>
+</ul>
+</section>
+</section>
+<section id="id12">
+<h2>[1.7.0] - 2916-06-07<a class="headerlink" href="#id12" title="Link to this heading">#</a></h2>
+<section id="id13">
+<h3>Changed<a class="headerlink" href="#id13" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Cleaned up period boundary condition in the <code class="docutils literal notranslate"><span class="pre">wf_array</span></code> class</p></li>
+</ul>
+</section>
+<section id="fixed">
+<h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Fixed bug with reduce_dim.  Some hopping terms were not correctly cast as onsite terms.</p></li>
+<li><p>Fixed bug in <code class="docutils literal notranslate"><span class="pre">impose_pbc</span></code> when <code class="docutils literal notranslate"><span class="pre">dim_k</span></code> is less than <code class="docutils literal notranslate"><span class="pre">dim_r</span></code>.</p></li>
+</ul>
+</section>
+<section id="id14">
+<h3>Added<a class="headerlink" href="#id14" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Added interface with Wannier90 package</p></li>
+<li><p>Added support for making bandstructure plots along multi-segment
+paths in the Brillouin zone</p></li>
+<li><p>Added support for hybrid Wannier functions.</p></li>
+<li><p>Berry curvature in dimensions higher than 2.</p></li>
+</ul>
+</section>
+</section>
+<section id="id15">
+<h2>[1.6.2] - 2013-02-25<a class="headerlink" href="#id15" title="Link to this heading">#</a></h2>
+<section id="id16">
+<h3>Added<a class="headerlink" href="#id16" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Added support for spinors.</p></li>
+<li><p>Added make_supercell method with which one can make arbitrary
+super-cells of the model and also generate slabs with arbitrary
+orientation.</p></li>
+</ul>
+</section>
+</section>
+<section id="id17">
+<h2>[1.6.1] - 2012-11-15<a class="headerlink" href="#id17" title="Link to this heading">#</a></h2>
+<p>For the most part, the code should be backward-compatible with version 1.5.</p>
+<section id="id18">
+<h3>Changed<a class="headerlink" href="#id18" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Renamed the code package (previously PyTB) to avoid confusion with
+other acronyms.</p></li>
+<li><p>Streamlined the code to be more consistent in naming conventions.</p></li>
+<li><p>Made some improvements and extensions to the calculation of Berry
+phases and curvatures.</p></li>
+<li><p>Changed the way in which the <code class="docutils literal notranslate"><span class="pre">impose_pbc</span></code> function is used.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tb_mode</span></code>, <code class="docutils literal notranslate"><span class="pre">set_onsite</span></code>, <code class="docutils literal notranslate"><span class="pre">set_hop</span></code> are named differently but have aliases to names from version 1.5</p></li>
+</ul>
+</section>
+<section id="id19">
+<h3>Added<a class="headerlink" href="#id19" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Built a proper python distribution including documentation and an
+improved website.</p></li>
+<li><p>Added a more powerful method of setting onsite and hopping parameters.</p></li>
+<li><p>Added some additional examples.</p></li>
+</ul>
+</section>
+<section id="id20">
+<h3>Removed<a class="headerlink" href="#id20" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Removed <code class="docutils literal notranslate"><span class="pre">add_wf</span></code> function from <code class="docutils literal notranslate"><span class="pre">wf_array</span></code> object and replaced it
+with <code class="docutils literal notranslate"><span class="pre">[]</span></code> operator, and</p></li>
+</ul>
+</section>
+</section>
+<section id="id21">
+<h2>[1.5] - 2012-06-<a class="headerlink" href="#id21" title="Link to this heading">#</a></h2>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "youruser/yourrepo",
+            ref: "v2",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="examples_ipynb/visualize_3d.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Visualize 3D tight-binding model</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="formalism.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Formalism</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unreleased">[2.0.0] - Unreleased</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#added">Added</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#developer-notes">Developer Notes</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#models">Models</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tbmodel"><code class="docutils literal notranslate"><span class="pre">TBModel</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#wfarray"><code class="docutils literal notranslate"><span class="pre">WFArray</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changed">Changed</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id1"><code class="docutils literal notranslate"><span class="pre">TBModel</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2"><code class="docutils literal notranslate"><span class="pre">WFArray</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#w90"><code class="docutils literal notranslate"><span class="pre">W90</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#removed">Removed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deprecated">Deprecated</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">[1.8.0] - 2022-09-20</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Changed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Removed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">[1.7.2] - 2017-08-01</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Changed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">[1.7.1] - 2016-12-22</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">[1.7.0] - 2916-06-07</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Changed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed">Fixed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">[1.6.2] - 2013-02-25</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">[1.6.1] - 2012-11-15</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">Changed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id20">Removed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id21">[1.5] - 2012-06-</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Trey Cole, Sinisa Coh, and David Vanderbilt.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

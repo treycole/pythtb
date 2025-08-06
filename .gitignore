@@ -166,7 +166,7 @@ prof/
 .ruff_cache/
 
 # docs
-docs/build/
+# docs/build/
 .virtual_documents/
 
 # hatch-vcs

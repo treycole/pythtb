@@ -1,0 +1,930 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>PythTB v2.0 Tutorial &#8212; PythTB Docs</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=7f41d439"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=cbcfbdad"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = "div.nbinput"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples_ipynb/v2_tutorial';</script>
+    <script defer="defer" src="../_static/custom-icons.js?v=7518156e"></script>
+    <script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Slab geometry" href="buckled_layer.html" />
+    <link rel="prev" title="Examples" href="../examples.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">PythTB Docs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../about.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../install.html">
+    Install
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../CHANGELOG.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../formalism.html">
+    Formalism
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../resources.html">
+    Resources
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../citation.html">
+    Citation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/treycole/pythtb" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pythtb/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-pypi fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../about.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../install.html">
+    Install
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../CHANGELOG.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../formalism.html">
+    Formalism
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../resources.html">
+    Resources
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../citation.html">
+    Citation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/treycole/pythtb" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pythtb/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-pypi fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">v2.0.0 Tutorial</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">PythTB v2.0 Tutorial</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Basics</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="buckled_layer.html">Slab geometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trestle.html">Ribbon geometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="checkerboard.html">Checkerboard tight-binding model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphene.html">Graphene band structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="haldane.html">Haldane model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="haldane_fin.html">Finite Haldane model DOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="supercell.html">Supercell construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0dim.html">0D tight-binding model of NH3 molecule</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Berry phases and curvatures</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="boron_nitride.html">Boron-nitride ribbon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graphene_cone.html">Berry phase around graphene’s Dirac cone</a></li>
+<li class="toctree-l1"><a class="reference internal" href="haldane_bp.html">Haldane model Berry phases and curvatures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="3site_cycle_fin.html">1D cycle of 1D finite tight-binding model</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hybrid Wannier functions</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="haldane_hwf.html">Haldane model hybrid Wannier functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slab_hwf.html">Hybrid Wannier functions in slab</a></li>
+<li class="toctree-l1"><a class="reference internal" href="3site_cycle.html">1D cycle of 1D tight-binding model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kane_mele.html">Kane-Mele model HWFs</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">SSH model topology</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="finite_ssh.html">SSH model topological edge states</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Wannier90 integration with `W90`</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="w90_quick.html">Wannier90 quick example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="w90.html">Wannier90 example with silicon</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Visualization</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="visualize.html">Visualization of tight-binding models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot_bands.html">Plotting Bands with <code class="docutils literal notranslate"><span class="pre">TBModel.plot_bands</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="haldane_edge.html">Haldane model edge states</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualize_3d.html">Visualize 3D tight-binding model</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../examples.html" class="nav-link">Examples</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">PythTB v2.0 Tutorial</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="pythtb-v2-0-tutorial">
+<span id="v2-tutorial-nb"></span><h1>PythTB v2.0 Tutorial<a class="headerlink" href="#pythtb-v2-0-tutorial" title="Link to this heading">#</a></h1>
+<p>This notebook will walk you through all of the changes and new-features in v2.0 of <code class="docutils literal notranslate"><span class="pre">pythtb</span></code>.</p>
+<p>The first things to be aware of is that the module names have been changed</p>
+<ul class="simple">
+<li><p>&lt; v1.8: <code class="docutils literal notranslate"><span class="pre">tb_model</span></code>, <code class="docutils literal notranslate"><span class="pre">wf_array</span></code></p></li>
+<li><p>2.0: <code class="docutils literal notranslate"><span class="pre">TBModel</span></code>, <code class="docutils literal notranslate"><span class="pre">WFArray</span></code></p></li>
+</ul>
+<p>This needs to be changed at the import line</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pythtb</span><span class="w"> </span><span class="kn">import</span> <span class="n">TBModel</span><span class="p">,</span> <span class="n">WFArray</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="models-library">
+<h2><code class="docutils literal notranslate"><span class="pre">models</span></code> library<a class="headerlink" href="#models-library" title="Link to this heading">#</a></h2>
+<p>A collection of <code class="docutils literal notranslate"><span class="pre">TBModel</span></code> generators for prototypical tight-binding models has been included in <code class="docutils literal notranslate"><span class="pre">pythtb.models</span></code>. The models are</p>
+<ul class="simple">
+<li><p>checkerboard</p></li>
+<li><p>haldane</p></li>
+<li><p>kane-mele</p></li>
+<li><p>graphene</p></li>
+</ul>
+<p>As an example, we can import the Haldane tight-binding model to demonstrate the new features of PythTB v2.0.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pythtb.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">haldane</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_model</span> <span class="o">=</span> <span class="n">haldane</span><span class="p">(</span><span class="n">delta</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">t1</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">t2</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="reporting-the-model-information">
+<h2>Reporting the model information<a class="headerlink" href="#reporting-the-model-information" title="Link to this heading">#</a></h2>
+<p>To see the model information, previously one would call</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># v1.8</span>
+<span class="n">my_model</span><span class="o">.</span><span class="n">display</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In v2.0, <code class="docutils literal notranslate"><span class="pre">display</span></code> is now called <code class="docutils literal notranslate"><span class="pre">report</span></code>. An alternative way of seeing the same information is to simply print the model</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># v2.0</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">my_model</span><span class="p">)</span>
+<span class="c1"># or</span>
+<span class="n">my_model</span><span class="o">.</span><span class="n">report</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">my_model</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>----------------------------------------
+       Tight-binding model report       
+----------------------------------------
+r-space dimension           = 2
+k-space dimension           = 2
+number of spin components   = 1
+periodic directions         = [0, 1]
+number of orbitals          = 2
+number of electronic states = 2
+
+Lattice vectors (Cartesian):
+  # 0 ===&gt; [ 1.000 ,    0   ]
+  # 1 ===&gt; [ 0.500 ,  0.866 ]
+Orbital vectors (dimensionless):
+  # 0 ===&gt; [ 0.333 ,  0.333 ]
+  # 1 ===&gt; [ 0.667 ,  0.667 ]
+Site energies:
+  # 0 ===&gt; -0.100 
+  # 1 ===&gt;  0.100 
+Hoppings:
+  &lt; 0 | H | 1 + [ 0.0 ,  0.0 ] &gt;  ===&gt; 1.0000 
+  &lt; 0 | H | 1 + [-1.0 ,  0.0 ] &gt;  ===&gt; 1.0000 
+  &lt; 0 | H | 1 + [ 0.0 , -1.0 ] &gt;  ===&gt; 1.0000 
+  &lt; 0 | H | 0 + [ 1.0 ,  0.0 ] &gt;  ===&gt; 0.0000+0.1000j
+  &lt; 1 | H | 1 + [ 1.0 ,  0.0 ] &gt;  ===&gt; 0.0000-0.1000j
+  &lt; 0 | H | 0 + [-1.0 ,  1.0 ] &gt;  ===&gt; 0.0000+0.1000j
+  &lt; 1 | H | 1 + [-1.0 ,  1.0 ] &gt;  ===&gt; 0.0000-0.1000j
+  &lt; 0 | H | 0 + [ 0.0 , -1.0 ] &gt;  ===&gt; 0.0000+0.1000j
+  &lt; 1 | H | 1 + [ 0.0 , -1.0 ] &gt;  ===&gt; 0.0000-0.1000j
+Hopping distances:
+  | pos(0) - pos(1 + [ 0.0 ,  0.0 ]) | =  0.577 
+  | pos(0) - pos(1 + [-1.0 ,  0.0 ]) | =  0.577 
+  | pos(0) - pos(1 + [ 0.0 , -1.0 ]) | =  0.577 
+  | pos(0) - pos(0 + [ 1.0 ,  0.0 ]) | =  1.000 
+  | pos(1) - pos(1 + [ 1.0 ,  0.0 ]) | =  1.000 
+  | pos(0) - pos(0 + [-1.0 ,  1.0 ]) | =  1.000 
+  | pos(1) - pos(1 + [-1.0 ,  1.0 ]) | =  1.000 
+  | pos(0) - pos(0 + [ 0.0 , -1.0 ]) | =  1.000 
+  | pos(1) - pos(1 + [ 0.0 , -1.0 ]) | =  1.000 
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="band-plotting">
+<h2>Band plotting<a class="headerlink" href="#band-plotting" title="Link to this heading">#</a></h2>
+<p>A new feature to <code class="docutils literal notranslate"><span class="pre">TBModel</span></code>’s is a convience function for quickly plotting band structures. Instead of explictly creating the k-path, marking the high-symmetry k-points, and so-on, now we just call <code class="docutils literal notranslate"><span class="pre">plot_bands</span></code> and pass the high-symmetry points in reduced units.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">k_path</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mf">.5</span><span class="p">,</span> <span class="mf">.5</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">.5</span><span class="p">,</span> <span class="mf">.5</span><span class="p">]]</span>
+<span class="n">k_label</span> <span class="o">=</span> <span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\Gamma $&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;$K$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$M$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$K^\prime$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\Gamma $&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$M$&#39;</span><span class="p">)</span>
+
+<span class="n">my_model</span><span class="o">.</span><span class="n">plot_bands</span><span class="p">(</span><span class="n">k_path</span><span class="o">=</span><span class="n">k_path</span><span class="p">,</span> <span class="n">k_label</span><span class="o">=</span><span class="n">k_label</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 640x480 with 1 Axes&gt;, &lt;Axes: ylabel=&#39;Energy $E(\\mathbf{{k}})$&#39;&gt;)
+</pre></div>
+</div>
+<img alt="../_images/ca8e17e3a5b5e96ac9cabc79bafeb6c5df1ade3c57352804b2f91464c2cdc388.png" src="../_images/ca8e17e3a5b5e96ac9cabc79bafeb6c5df1ade3c57352804b2f91464c2cdc388.png" />
+</div>
+</div>
+<p>An optional flag allows one to visualize the orbital character of the bands. To do so, we provide a list to <code class="docutils literal notranslate"><span class="pre">proj_orb_idx</span></code>. The list defines the indices of the orbitals to project the eigenstates onto. This will show a colorbar displaying the weight of the eigenstates onto that sublattice.</p>
+<p>In this example, the Haldane model demonstrates a band inversion at the <span class="math notranslate nohighlight">\(K\)</span> and <span class="math notranslate nohighlight">\(K'\)</span> points, a hallmark of the topological phase transition.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_model</span><span class="o">.</span><span class="n">plot_bands</span><span class="p">(</span><span class="n">nk</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">k_path</span><span class="o">=</span><span class="n">k_path</span><span class="p">,</span> <span class="n">k_label</span><span class="o">=</span><span class="n">k_label</span><span class="p">,</span> <span class="n">proj_orb_idx</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 640x480 with 2 Axes&gt;, &lt;Axes: ylabel=&#39;Energy $E(\\mathbf{{k}})$&#39;&gt;)
+</pre></div>
+</div>
+<img alt="../_images/620069bc0591127ce6e8a2fdc61194d7788b1b5c648c667ab6c15b7efa210556.png" src="../_images/620069bc0591127ce6e8a2fdc61194d7788b1b5c648c667ab6c15b7efa210556.png" />
+</div>
+</div>
+</section>
+<section id="visualizing-the-tight-binding-model">
+<h2>Visualizing the tight-binding model<a class="headerlink" href="#visualizing-the-tight-binding-model" title="Link to this heading">#</a></h2>
+<p>The visualization of the tight-binding model orbital positions and hopping bonds has been updated. As before we call <code class="docutils literal notranslate"><span class="pre">my_model.visualize</span></code> in order see the tight-binding lattice</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_model</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 800x800 with 1 Axes&gt;,
+ &lt;Axes: xlabel=&#39;Cartesian coordinate 0&#39;, ylabel=&#39;Cartesian coordinate 1&#39;&gt;)
+</pre></div>
+</div>
+<img alt="../_images/fe134aad91d0e6b54acc7d383139dfc95b77d040efd35a17c9baee8f6fe1bbf6.png" src="../_images/fe134aad91d0e6b54acc7d383139dfc95b77d040efd35a17c9baee8f6fe1bbf6.png" />
+</div>
+</div>
+</section>
+<section id="berry-curvature">
+<h2>Berry curvature<a class="headerlink" href="#berry-curvature" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">TBModel</span></code> class now has the ability to compute the velocity operator as</p>
+<div class="math notranslate nohighlight">
+\[
+\hbar v_\alpha = \partial_{\alpha} H_{\mathbf{k}} 
+\]</div>
+<p>From this, we can also compute the Berry curvature arising from band mixing,</p>
+<div class="math notranslate nohighlight">
+\[
+\Omega^{(\alpha,\beta)}_n = \frac{1}{\hbar}\sum_{m\neq n} 
+\frac{\langle u_{nk}| v_{k}^{\alpha} | u_{mk} \rangle \langle u_{mk} | v_{k}^{\beta}| u_{nk}\rangle}{(E_{mk} - E_{nk})^2}
+\]</div>
+<p>Which allows us to obtain a Chern number for a gapped manifold of states. In this case, we can compute the Chern numbers for the upper and lower bands.</p>
+<blockquote>
+<div><p>NOTE: The convergence to an integer value is generally slower than the plaquette method based on Wilson loops in <code class="docutils literal notranslate"><span class="pre">WFArray</span></code>.</p>
+</div></blockquote>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Chern number band 0:&quot;</span><span class="p">,</span> <span class="n">my_model</span><span class="o">.</span><span class="n">chern</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="n">nk</span><span class="o">=</span><span class="mi">200</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Chern number band 1:&quot;</span><span class="p">,</span> <span class="n">my_model</span><span class="o">.</span><span class="n">chern</span><span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="n">nk</span><span class="o">=</span><span class="mi">200</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Chern number band 0: -1.0000000000000002
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Chern number band 1: 1.0000000000000002
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can visualize the Berry curvature distribution for the occupied band in the two-dimensional Brillouin zone.</p>
+<p>We first begin my setting the k-mesh for our model. We do so by calling <code class="docutils literal notranslate"><span class="pre">set_k_mesh</span></code> passing the number of discretized k-points along each reciprocal lattice vector direction. We then retrieve a flattened array of k-points with <code class="docutils literal notranslate"><span class="pre">get_k_mesh(flat=True)</span></code></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nkx</span> <span class="o">=</span> <span class="n">nky</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">my_model</span><span class="o">.</span><span class="n">set_k_mesh</span><span class="p">([</span><span class="n">nkx</span><span class="p">,</span> <span class="n">nky</span><span class="p">])</span>
+<span class="n">flat_mesh</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">get_k_mesh</span><span class="p">(</span><span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We now call <code class="docutils literal notranslate"><span class="pre">berry_curvature</span></code> passing our flattened array of k-points, the occupied band indices, and an optional flag <code class="docutils literal notranslate"><span class="pre">cartesian=True</span></code>. The <code class="docutils literal notranslate"><span class="pre">cartesian</span></code> flag only affects the magnitude of the Berry curvature, since the Berry curvature is dimensionful.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">berry_curv</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">berry_curvature</span><span class="p">(</span><span class="n">k_pts</span><span class="o">=</span><span class="n">flat_mesh</span><span class="p">,</span> <span class="n">occ_idxs</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cartesian</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">berry_curv</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(2, 2, 2500)
+</pre></div>
+</div>
+</div>
+</div>
+<p>The returned Berry curvature array has two initial axes that are size <span class="math notranslate nohighlight">\(2\)</span> defining the two Cartesian directions (e.g., <span class="math notranslate nohighlight">\(\Omega_{xy}\)</span>). By definition <span class="math notranslate nohighlight">\(\Omega_{xy} = -\Omega_{yx}\)</span> and <span class="math notranslate nohighlight">\(\Omega_{xx} = \Omega_{yy} = 0\)</span>, so we can consider only the top right block. Furthermore, the Berry curvature is real, so we will take the real part.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">berry_curv</span> <span class="o">=</span> <span class="n">berry_curv</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">real</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>To plot the Berry curvature on the reciprocal lattice, we must convert our dimensionless k-mesh to a dimensionful one. We will also reshape the berry curvature to have axes along each reciprocal lattice direction instead of being flattened</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sq_mesh</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">get_k_mesh</span><span class="p">(</span><span class="n">flat</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">recip_lat_vecs</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">get_recip_lat</span><span class="p">()</span>
+<span class="n">mesh_Cart</span> <span class="o">=</span> <span class="n">sq_mesh</span> <span class="o">@</span> <span class="n">recip_lat_vecs</span>
+
+<span class="n">KX</span> <span class="o">=</span> <span class="n">mesh_Cart</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">KY</span> <span class="o">=</span> <span class="n">mesh_Cart</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="n">berry_curv</span> <span class="o">=</span> <span class="n">berry_curv</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">nkx</span><span class="p">,</span> <span class="n">nky</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">berry_curv</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(50, 50)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">im</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">KX</span><span class="p">,</span> <span class="n">KY</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">berry_curv</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;plasma&#39;</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="s1">&#39;gouraud&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$k_x$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$k_y$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\Omega(\mathbf</span><span class="si">{k}</span><span class="s1">)$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Berry curvature from TBModel&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, &#39;Berry curvature from TBModel&#39;)
+</pre></div>
+</div>
+<img alt="../_images/fd75475c050570ec14925a30def871d73123503aae0beee313c58f51bbc29b93.png" src="../_images/fd75475c050570ec14925a30def871d73123503aae0beee313c58f51bbc29b93.png" />
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "youruser/yourrepo",
+            ref: "v2",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./examples_ipynb"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../examples.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Examples</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="buckled_layer.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Slab geometry</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#models-library"><code class="docutils literal notranslate"><span class="pre">models</span></code> library</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reporting-the-model-information">Reporting the model information</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#band-plotting">Band plotting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizing-the-tight-binding-model">Visualizing the tight-binding model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#berry-curvature">Berry curvature</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Trey Cole, Sinisa Coh, and David Vanderbilt.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

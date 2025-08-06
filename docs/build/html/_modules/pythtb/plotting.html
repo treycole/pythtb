@@ -1,0 +1,1561 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pythtb.plotting &#8212; PythTB Docs</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=7f41d439"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=cbcfbdad"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = "div.nbinput"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pythtb/plotting';</script>
+    <script defer="defer" src="../../_static/custom-icons.js?v=7518156e"></script>
+    <script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">PythTB Docs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../about.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../install.html">
+    Install
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../CHANGELOG.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../formalism.html">
+    Formalism
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../resources.html">
+    Resources
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../citation.html">
+    Citation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/treycole/pythtb" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pythtb/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-pypi fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../about.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../install.html">
+    Install
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../CHANGELOG.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../formalism.html">
+    Formalism
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../resources.html">
+    Resources
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../citation.html">
+    Citation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/treycole/pythtb" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pythtb/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-pypi fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">pythtb.plotting</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for pythtb.plotting</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">FancyArrowPatch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mcolors</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">pauli_decompose</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fmt_num</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="c1"># If the imaginary part is negligible, print as a real number.</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">real</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">elif</span> <span class="n">x</span><span class="o">.</span><span class="n">real</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;-&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">real</span><span class="si">:</span><span class="s2">.</span><span class="si">{</span><span class="n">precision</span><span class="si">}</span><span class="s2">g</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">elif</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">real</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">imag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;i&quot;</span>
+        <span class="k">elif</span> <span class="n">x</span><span class="o">.</span><span class="n">imag</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;-i&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">imag</span><span class="si">:</span><span class="s2">.</span><span class="si">{</span><span class="n">precision</span><span class="si">}</span><span class="s2">g</span><span class="si">}</span><span class="s2">i&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">.</span><span class="si">{</span><span class="n">precision</span><span class="si">}</span><span class="s2">g</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pauli_decompose_str</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+
+    <span class="n">a0</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">a3</span> <span class="o">=</span> <span class="n">pauli_decompose</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+
+    <span class="c1"># Build a list of terms, including only those with non-negligible coefficients.</span>
+    <span class="n">terms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_fmt_num</span><span class="p">(</span><span class="n">a0</span><span class="p">,</span><span class="w"> </span><span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span><span class="si">}</span><span class="s2"> \sigma_0&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_fmt_num</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span><span class="w"> </span><span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span><span class="si">}</span><span class="s2"> \sigma_x&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_fmt_num</span><span class="p">(</span><span class="n">a2</span><span class="p">,</span><span class="w"> </span><span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span><span class="si">}</span><span class="s2"> \sigma_y&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a3</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_fmt_num</span><span class="p">(</span><span class="n">a3</span><span class="p">,</span><span class="w"> </span><span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span><span class="si">}</span><span class="s2"> \sigma_z&quot;</span><span class="p">)</span>
+
+    <span class="c1"># If all coefficients are zero, return &quot;0&quot;.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">terms</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;0&quot;</span>
+
+    <span class="k">return</span> <span class="s2">&quot; + &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">terms</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;+ -&quot;</span><span class="p">,</span> <span class="s2">&quot;- &quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pauli_decompose_unicode</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decompose a 2x2 matrix M in terms of the Pauli matrices and return</span>
+<span class="sd">    a Unicode string representation.</span>
+
+<span class="sd">    That is, find coefficients a0, a1, a2, a3 such that:</span>
+
+<span class="sd">        M = a0 * I + a1 * σₓ + a2 * σᵧ + a3 * σᶻ</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        M (array-like): A 2x2 matrix.</span>
+<span class="sd">        precision (int): Number of significant digits for the coefficients.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: A Unicode string representing the decomposition.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Use your existing function to get the coefficients</span>
+    <span class="n">a0</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">a3</span> <span class="o">=</span> <span class="n">pauli_decompose</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">fmt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="c1"># If the imaginary part is negligible, print as a real number.</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">real</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">elif</span> <span class="n">x</span><span class="o">.</span><span class="n">real</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;-&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">real</span><span class="si">:</span><span class="s2">.</span><span class="si">{</span><span class="n">precision</span><span class="si">}</span><span class="s2">g</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">real</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">imag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;i&quot;</span>
+            <span class="k">elif</span> <span class="n">x</span><span class="o">.</span><span class="n">imag</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;-i&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">imag</span><span class="si">:</span><span class="s2">.</span><span class="si">{</span><span class="n">precision</span><span class="si">}</span><span class="s2">g</span><span class="si">}</span><span class="s2">i&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">.</span><span class="si">{</span><span class="n">precision</span><span class="si">}</span><span class="s2">g</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="c1"># Build a list of terms, using Unicode symbols.</span>
+    <span class="n">terms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">fmt</span><span class="p">(</span><span class="n">a0</span><span class="p">)</span><span class="si">}</span><span class="s2"> 𝟙&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="c1"># Using Unicode subscript x (ₓ, U+2093)</span>
+        <span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">fmt</span><span class="p">(</span><span class="n">a1</span><span class="p">)</span><span class="si">}</span><span class="s2"> σ_x&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="c1"># For y, using a common Unicode modifier letter for small y: ᵧ (U+1D67)</span>
+        <span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">fmt</span><span class="p">(</span><span class="n">a2</span><span class="p">)</span><span class="si">}</span><span class="s2"> σ_y&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a3</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="c1"># For z, using a Unicode modifier letter small z: ᶻ (U+1D5B)</span>
+        <span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">fmt</span><span class="p">(</span><span class="n">a3</span><span class="p">)</span><span class="si">}</span><span class="s2"> σ_z&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">terms</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;0&quot;</span>
+
+    <span class="k">return</span> <span class="s2">&quot; + &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">terms</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;+ -&quot;</span><span class="p">,</span> <span class="s2">&quot;- &quot;</span><span class="p">)</span>
+
+
+<span class="c1"># TODO: Add hoverable hopping and onsite terms</span>
+<div class="viewcode-block" id="plot_tb_model">
+<a class="viewcode-back" href="../../generated/pythtb.plotting.plot_tb_model.html#pythtb.plotting.plot_tb_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_tb_model</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">proj_plane</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">eig_dr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">draw_hoppings</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">annotate_onsite_en</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ph_color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+    <span class="n">orb_color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Plot the tight-binding model.</span>
+
+<span class="sd">    Function for visualizing tight-binding model geometry,</span>
+<span class="sd">    hopping between tight-binding orbitals, and electron eigenstates.</span>
+
+<span class="sd">    If eigenvector is not drawn, then orbitals in home cell are drawn</span>
+<span class="sd">    as red circles, and those in neighboring cells are drawn with</span>
+<span class="sd">    different shade of red. Hopping term directions are drawn with</span>
+<span class="sd">    green lines connecting two orbitals. Origin of unit cell is</span>
+<span class="sd">    indicated with blue dot, while real space unit vectors are drawn</span>
+<span class="sd">    with blue lines.</span>
+
+<span class="sd">    If eigenvector is drawn, then electron eigenstate on each orbital</span>
+<span class="sd">    is drawn with a circle whose size is proportional to wavefunction</span>
+<span class="sd">    amplitude while its color depends on the phase. There are various</span>
+<span class="sd">    coloring schemes for the phase factor; see more details under</span>
+<span class="sd">    ``ph_color`` parameter. If eigenvector is drawn and coloring scheme</span>
+<span class="sd">    is &quot;red-blue&quot; or &quot;wheel&quot;, all other elements of the picture are</span>
+<span class="sd">    drawn in gray or black.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    proj_plane : array-like shape (2,)</span>
+<span class="sd">        The projection plane onto which the 3D model is projected.</span>
+<span class="sd">        This should be a 2-element array specifying the indices of the</span>
+<span class="sd">        Cartesian coordinates to use for the x and y axes of the</span>
+<span class="sd">        plot.</span>
+
+<span class="sd">    eig_dr : np.ndarray, optional</span>
+<span class="sd">        Eigenstate (1D array of complex numbers) to display.</span>
+<span class="sd">        the tight-binding basis. If not specified, eigenstate is not</span>
+<span class="sd">        drawn.</span>
+
+<span class="sd">    draw_hoppings : bool, optional</span>
+<span class="sd">        Whether to draw hopping terms between orbitals. Default is</span>
+<span class="sd">        ``True``.</span>
+
+<span class="sd">    ph_color : str, optional</span>
+<span class="sd">        Optional parameter determining the way eigenvector phase</span>
+<span class="sd">        factors are translated into color. Default value is &quot;black&quot;.</span>
+<span class="sd">        Convention of the wavefunction phase is as</span>
+<span class="sd">        in convention 1 in section 3.1 of :download:`notes on</span>
+<span class="sd">        tight-binding formalism &lt;/misc/pythtb-formalism.pdf&gt;`.  In</span>
+<span class="sd">        other words, these wavefunction phases are in correspondence</span>
+<span class="sd">        with cell-periodic functions :math:`u_{n {\bf k}} ({\bf r})`</span>
+<span class="sd">        not :math:`\psi_{n {\bf k}} ({\bf r})`.</span>
+
+<span class="sd">        * &quot;black&quot; : </span>
+<span class="sd">            phase of eigenvectors are ignored and wavefunction</span>
+<span class="sd">            is always colored in black.</span>
+
+<span class="sd">        * &quot;red-blue&quot; : </span>
+<span class="sd">            zero phase is drawn red, while phases or :math:`\pi` or</span>
+<span class="sd">            :math:`-\pi` are drawn blue. Phases in between are interpolated between</span>
+<span class="sd">            red and blue. Some phase information is lost in this coloring</span>
+<span class="sd">            because phase of :math:`+\phi` and :math:`-\phi` have same color.</span>
+
+<span class="sd">        * &quot;wheel&quot; : </span>
+<span class="sd">            each phase is given unique color. In steps of :math:`\pi/3`</span>
+<span class="sd">            starting from 0, colors are assigned (in increasing hue) as:</span>
+<span class="sd">            red, yellow, green, cyan, blue, magenta, red.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig, ax : matplotlib.figure.Figure, matplotlib.axes.Axes</span>
+<span class="sd">        Figure and axes objects for the plot.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    :ref:`visualize-nb`</span>
+<span class="sd">    :ref:`haldane-edge-nb`</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Draws x-y projection of tight-binding model</span>
+<span class="sd">    tweaks figure and saves it as a PDF.</span>
+
+<span class="sd">    &gt;&gt;&gt; from pythtb import TBModel</span>
+<span class="sd">    &gt;&gt;&gt; tb = TBModel(</span>
+<span class="sd">    ...        dim_k=1, dim_r=2,</span>
+<span class="sd">    ...        lat=[[1, 1/2], [0, 2]],</span>
+<span class="sd">    ...        orb=[[0.2, 0.3], [0.1, 0.1], [0.2, 0.2]],</span>
+<span class="sd">    ...        per=[1]</span>
+<span class="sd">    ...    )</span>
+<span class="sd">    &gt;&gt;&gt; (fig, ax) = tb.visualize(0, 1)</span>
+<span class="sd">    &gt;&gt;&gt; ax.set_title(&quot;Title goes here&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; fig.savefig(&quot;model.pdf&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;hsv&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">_norb</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+
+    <span class="c1"># Projection function: projects a vector onto the 2D plane</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">proj</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">proj_plane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">coord_x</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">proj_plane</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="n">coord_y</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">proj_plane</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">coord_x</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">coord_y</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">coord_x</span><span class="p">,</span> <span class="n">coord_y</span><span class="p">]</span>
+
+    <span class="c1"># Convert reduced coordinates to Cartesian coordinates</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_cart</span><span class="p">(</span><span class="n">red</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">red</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">_lat</span><span class="p">)</span>
+
+    <span class="c1"># to ensure proper padding, track all plotted coordinates</span>
+    <span class="n">all_coords</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Draw the origin</span>
+    <span class="n">origin</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">origin</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+    <span class="n">all_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span>
+
+    <span class="c1"># Draw lattice (unit cell) vectors as arrows and label them</span>
+    <span class="c1"># TODO: Fix lattice vectors to appear in hybrid finite/periodic models</span>
+    <span class="n">ends</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">_per</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">origin</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">proj</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_lat</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">ends</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+
+        <span class="c1"># lattice vector arrow</span>
+        <span class="n">arrow</span> <span class="o">=</span> <span class="n">FancyArrowPatch</span><span class="p">(</span>
+            <span class="n">start</span><span class="p">,</span>
+            <span class="n">end</span><span class="p">,</span>
+            <span class="n">arrowstyle</span><span class="o">=</span><span class="s2">&quot;-&gt;&quot;</span><span class="p">,</span>
+            <span class="n">mutation_scale</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+            <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">arrow</span><span class="p">)</span>
+
+        <span class="c1"># annotation of lattice</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;$</span><span class="se">\\</span><span class="s2">vec</span><span class="se">{{</span><span class="s2">a</span><span class="se">}}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">$&quot;</span><span class="p">,</span>
+            <span class="n">xy</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>  <span class="c1"># (end[0], end[1])</span>
+            <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>  <span class="c1"># offset in points</span>
+            <span class="n">textcoords</span><span class="o">=</span><span class="s2">&quot;offset points&quot;</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+            <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+            <span class="n">va</span><span class="o">=</span><span class="s2">&quot;bottom&quot;</span><span class="p">,</span>
+            <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">all_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+
+    <span class="c1"># plot dotted bounding lines to unit cell</span>
+    <span class="n">ends</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ends</span><span class="p">)</span>
+
+    <span class="c1"># if 2d cell</span>
+    <span class="k">if</span> <span class="n">ends</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># top shifted line</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">ends</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">ends</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">ends</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+            <span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+            <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span>
+            <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span>
+            <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># right shifted line</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">ends</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+            <span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+            <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span>
+            <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span>
+            <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Draw orbitals: home-cell orbitals in red</span>
+    <span class="n">orb_coords</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_norb</span><span class="p">):</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">to_cart</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_orb</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">proj</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="n">cmap</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">orb_color</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Orbital </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">orb_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+        <span class="c1"># For spinful case, annotate orbital with onsite decomposition.</span>
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">_nspin</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">annotate_onsite_en</span><span class="p">:</span>
+            <span class="n">onsite_str</span> <span class="o">=</span> <span class="n">_pauli_decompose_str</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_site_energies</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;$\Delta_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="se">}}</span><span class="s2"> = </span><span class="si">{</span><span class="n">onsite_str</span><span class="si">}</span><span class="s2">$&quot;</span><span class="p">,</span>
+                <span class="n">xy</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
+                <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+                <span class="n">textcoords</span><span class="o">=</span><span class="s2">&quot;offset points&quot;</span><span class="p">,</span>
+                <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">boxstyle</span><span class="o">=</span><span class="s2">&quot;round,pad=0.2&quot;</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="s2">&quot;lightcoral&quot;</span><span class="p">,</span> <span class="n">ec</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span>
+                <span class="p">),</span>
+                <span class="n">zorder</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">model</span><span class="o">.</span><span class="n">_nspin</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">annotate_onsite_en</span><span class="p">:</span>
+            <span class="n">onsite_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;$\Delta_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="se">}}</span><span class="s2"> = </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">_site_energies</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">$&quot;</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+                <span class="n">onsite_str</span><span class="p">,</span>
+                <span class="n">xy</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
+                <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+                <span class="n">textcoords</span><span class="o">=</span><span class="s2">&quot;offset points&quot;</span><span class="p">,</span>
+                <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">boxstyle</span><span class="o">=</span><span class="s2">&quot;round,pad=0.2&quot;</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="s2">&quot;lightcoral&quot;</span><span class="p">,</span> <span class="n">ec</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span>
+                <span class="p">),</span>
+                <span class="n">zorder</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="c1"># Draw hopping terms with curved arrows</span>
+    <span class="n">hopping_coords</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># maximum magnitudes of hopping strengths</span>
+    <span class="n">mags</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">hop</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="k">for</span> <span class="n">hop</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">_hoppings</span><span class="p">]</span>
+    <span class="n">biggest_hop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">mags</span><span class="p">)</span>
+    <span class="c1"># transparency propto hopping strength</span>
+    <span class="n">arrow_alphas</span> <span class="o">=</span> <span class="n">mags</span> <span class="o">/</span> <span class="n">biggest_hop</span> <span class="k">if</span> <span class="n">biggest_hop</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mags</span><span class="p">))</span>
+    <span class="n">arrow_alphas</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="mf">0.3</span> <span class="o">+</span> <span class="mf">0.7</span> <span class="o">*</span> <span class="n">arrow_alphas</span><span class="o">**</span><span class="mi">2</span>
+    <span class="p">)</span>  <span class="c1"># nonlinear mapping for greater visual difference</span>
+
+    <span class="k">if</span> <span class="n">draw_hoppings</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">h_idx</span><span class="p">,</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_hoppings</span><span class="p">):</span>
+            <span class="n">amp</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">i_orb</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">j_orb</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+            <span class="n">r_vec</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">intracell</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">_dim_k</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">r_vec</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="n">intracell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">r_vec</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">shift</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>  <span class="c1"># draw both i-&gt;j+R and i-R-&gt;j hop</span>
+                <span class="n">pos_i</span> <span class="o">=</span> <span class="n">to_cart</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_orb</span><span class="p">[</span><span class="n">i_orb</span><span class="p">])</span>
+                <span class="n">pos_j</span> <span class="o">=</span> <span class="n">to_cart</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_orb</span><span class="p">[</span><span class="n">j_orb</span><span class="p">])</span>
+
+                <span class="c1"># Determine starting and ending orbital positions</span>
+                <span class="k">if</span> <span class="n">r_vec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># Adjust pos_j with lattice translation if provided</span>
+                    <span class="k">if</span> <span class="n">shift</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="c1"># i-&gt;j+R</span>
+                        <span class="n">pos_j</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r_vec</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">_lat</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">shift</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="c1"># i-R-&gt;j</span>
+                        <span class="n">pos_i</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r_vec</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">_lat</span><span class="p">)</span>
+
+                <span class="n">p_i</span> <span class="o">=</span> <span class="n">proj</span><span class="p">(</span><span class="n">pos_i</span><span class="p">)</span>
+                <span class="n">p_j</span> <span class="o">=</span> <span class="n">proj</span><span class="p">(</span><span class="n">pos_j</span><span class="p">)</span>
+
+                <span class="c1"># plot neighboring cell orbital</span>
+                <span class="c1"># ensure we don&#39;t plot orbital in unit cell again (if no translation)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">intracell</span><span class="p">:</span>
+                    <span class="c1"># ensure we only scatter orbitals once</span>
+                    <span class="k">if</span> <span class="n">p_j</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hopping_coords</span> <span class="ow">and</span> <span class="n">shift</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                            <span class="n">p_j</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="n">p_j</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                            <span class="n">color</span><span class="o">=</span><span class="n">orb_color</span><span class="p">,</span>
+                            <span class="n">s</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                            <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                            <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">p_i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hopping_coords</span> <span class="ow">and</span> <span class="n">shift</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                            <span class="n">p_i</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="n">p_i</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                            <span class="n">color</span><span class="o">=</span><span class="n">orb_color</span><span class="p">,</span>
+                            <span class="n">s</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                            <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                            <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                        <span class="p">)</span>
+
+                <span class="c1"># Don&#39;t want to plot connecting arrows within unit cell twice</span>
+                <span class="k">if</span> <span class="n">intracell</span> <span class="ow">and</span> <span class="n">shift</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="c1"># Arrow connects orbitals within cell, so shift = 1 is same</span>
+                    <span class="c1"># conditions as shift = 2 (same arrows)</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># First arrow: p_i -&gt; p_j</span>
+                <span class="n">arrow1</span> <span class="o">=</span> <span class="n">FancyArrowPatch</span><span class="p">(</span>
+                    <span class="n">p_i</span><span class="p">,</span>
+                    <span class="n">p_j</span><span class="p">,</span>
+                    <span class="n">connectionstyle</span><span class="o">=</span><span class="s2">&quot;arc3,rad=0.08&quot;</span><span class="p">,</span>
+                    <span class="n">arrowstyle</span><span class="o">=</span><span class="s2">&quot;-&gt;&quot;</span><span class="p">,</span>
+                    <span class="n">mutation_scale</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+                    <span class="n">lw</span><span class="o">=</span><span class="mf">1.3</span><span class="p">,</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="n">arrow_alphas</span><span class="p">[</span><span class="n">h_idx</span><span class="p">],</span>
+                    <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">arrow1</span><span class="p">)</span>
+
+                <span class="c1"># Second arrow: p_j -&gt; p_i</span>
+                <span class="n">arrow2</span> <span class="o">=</span> <span class="n">FancyArrowPatch</span><span class="p">(</span>
+                    <span class="n">p_j</span><span class="p">,</span>
+                    <span class="n">p_i</span><span class="p">,</span>
+                    <span class="n">connectionstyle</span><span class="o">=</span><span class="s2">&quot;arc3,rad=0.08&quot;</span><span class="p">,</span>
+                    <span class="n">arrowstyle</span><span class="o">=</span><span class="s2">&quot;-&gt;&quot;</span><span class="p">,</span>
+                    <span class="n">mutation_scale</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+                    <span class="n">lw</span><span class="o">=</span><span class="mf">1.3</span><span class="p">,</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="n">arrow_alphas</span><span class="p">[</span><span class="n">h_idx</span><span class="p">],</span>
+                    <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">arrow2</span><span class="p">)</span>
+
+                <span class="n">hopping_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p_i</span><span class="p">)</span>
+                <span class="n">hopping_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p_j</span><span class="p">)</span>
+
+    <span class="c1"># If eigenstate is provided, overlay eigenstate information on the orbitals</span>
+    <span class="k">if</span> <span class="n">eig_dr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># For each orbital, size the marker by amplitude and color by phase</span>
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">hsv</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_norb</span><span class="p">):</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">to_cart</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_orb</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">proj</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+            <span class="n">amp</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eig_dr</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="p">)</span>  <span class="c1"># intensity proportional to probability density</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">eig_dr</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="c1"># Map phase from [-pi, pi] to [0,1]</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">cmap</span><span class="p">((</span><span class="n">phase</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">ph_color</span> <span class="o">==</span> <span class="s2">&quot;black&quot;</span><span class="p">:</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;k&quot;</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">s</span><span class="o">=</span><span class="mi">30</span> <span class="o">*</span> <span class="n">amp</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">_norb</span><span class="p">,</span>  <span class="c1"># size proportional to amplitude</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span>
+                <span class="n">zorder</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Eigenstate&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="c1"># Adjust the axis so everything fits</span>
+    <span class="n">all_coords</span> <span class="o">+=</span> <span class="n">hopping_coords</span>
+    <span class="n">all_coords</span> <span class="o">+=</span> <span class="n">orb_coords</span>
+
+    <span class="n">xs</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">all_coords</span><span class="p">]</span>
+    <span class="n">ys</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">all_coords</span><span class="p">]</span>
+    <span class="n">min_x</span><span class="p">,</span> <span class="n">max_x</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">xs</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span>
+    <span class="n">min_y</span><span class="p">,</span> <span class="n">max_y</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ys</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span>
+    <span class="c1"># Add some padding</span>
+    <span class="n">pad_x</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_x</span> <span class="o">-</span> <span class="n">min_x</span> <span class="k">if</span> <span class="n">max_x</span> <span class="o">!=</span> <span class="n">min_x</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">pad_y</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_y</span> <span class="o">-</span> <span class="n">min_y</span> <span class="k">if</span> <span class="n">max_y</span> <span class="o">!=</span> <span class="n">min_y</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">min_x</span> <span class="o">-</span> <span class="n">pad_x</span><span class="p">,</span> <span class="n">max_x</span> <span class="o">+</span> <span class="n">pad_x</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">min_y</span> <span class="o">-</span> <span class="n">pad_y</span><span class="p">,</span> <span class="n">max_y</span> <span class="o">+</span> <span class="n">pad_y</span><span class="p">)</span>
+
+    <span class="c1"># Final plot adjustments</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">proj_plane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cartesian coordinate </span><span class="si">{</span><span class="n">proj_plane</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cartesian coordinate </span><span class="si">{</span><span class="n">proj_plane</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cartesian coordinate </span><span class="si">{</span><span class="mi">0</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cartesian coordinate </span><span class="si">{</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># ax.legend(loc=&quot;upper right&quot;, fontsize=10)</span>
+    <span class="c1"># plt.tight_layout()</span>
+
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="plot_tb_model_3d">
+<a class="viewcode-back" href="../../generated/pythtb.plotting.plot_tb_model_3d.html#pythtb.plotting.plot_tb_model_3d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_tb_model_3d</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">eig_dr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">draw_hoppings</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">show_model_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">site_colors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">site_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ph_color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Visualize a 3D tight-binding model using Plotly.</span>
+
+<span class="sd">    This function creates an interactive 3D plot of your tight-binding model,</span>
+<span class="sd">    showing the unit-cell origin, lattice vectors (with arrowheads), orbitals,</span>
+<span class="sd">    hopping lines, and (optionally) an eigenstate overlay with marker sizes</span>
+<span class="sd">    proportional to amplitude and colors reflecting the phase.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : TBModel</span>
+<span class="sd">        The tight-binding model to use for the calculation.</span>
+<span class="sd">    eig_dr : np.ndarray, optional</span>
+<span class="sd">        Eigenstate (1D array of complex numbers) to display.</span>
+<span class="sd">    draw_hoppings : bool, optional</span>
+<span class="sd">        Whether to draw hopping lines between orbitals.</span>
+<span class="sd">    annotate_onsite_en : bool, optional</span>
+<span class="sd">        Whether to annotate orbitals with onsite energies.</span>
+<span class="sd">    ph_color : str, optional</span>
+<span class="sd">        Coloring scheme for eigenstate phases (e.g. &quot;black&quot;, &quot;red-blue&quot;, &quot;wheel&quot;).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : go.Figure</span>
+<span class="sd">        A Plotly Figure object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">plotly.graph_objects</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">go</span>
+
+    <span class="c1"># Helper: Convert reduced coordinates to Cartesian coordinates.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_cart</span><span class="p">(</span><span class="n">red</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">red</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">_lat</span><span class="p">)</span>
+
+    <span class="c1"># Container for all Plotly traces.</span>
+    <span class="n">traces</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">all_coords</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># --- Draw Origin ---</span>
+    <span class="n">origin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+
+    <span class="n">all_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span>
+
+    <span class="c1"># --- Draw Lattice Vectors ---</span>
+    <span class="c1"># We assume model._per is an iterable of indices for lattice vectors.</span>
+    <span class="n">lattice_traces</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">_per</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">origin</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_lat</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="c1"># Line for the lattice vector.</span>
+        <span class="n">lattice_traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+                <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+                <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="n">start</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">end</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;lines&quot;</span><span class="p">,</span>
+                <span class="n">line</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+                <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">hoverinfo</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Add a cone to simulate an arrowhead.</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">norm</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">direction_unit</span> <span class="o">=</span> <span class="n">direction</span> <span class="o">/</span> <span class="n">norm</span>
+            <span class="n">lattice_traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">go</span><span class="o">.</span><span class="n">Cone</span><span class="p">(</span>
+                    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+                    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+                    <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="n">end</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                    <span class="n">u</span><span class="o">=</span><span class="p">[</span><span class="n">direction_unit</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+                    <span class="n">v</span><span class="o">=</span><span class="p">[</span><span class="n">direction_unit</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+                    <span class="n">w</span><span class="o">=</span><span class="p">[</span><span class="n">direction_unit</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                    <span class="n">anchor</span><span class="o">=</span><span class="s2">&quot;tip&quot;</span><span class="p">,</span>
+                    <span class="n">sizemode</span><span class="o">=</span><span class="s2">&quot;absolute&quot;</span><span class="p">,</span>
+                    <span class="n">sizeref</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+                    <span class="n">showscale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">colorscale</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">]],</span>
+                    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;a</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="c1"># Add a text annotation (using a text scatter) at the end.</span>
+        <span class="n">lattice_traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+                <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+                <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="n">end</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                <span class="c1"># text=[fr&quot;$\vec{{a}}_{i}$&quot;],</span>
+                <span class="n">text</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;a</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span>
+                <span class="n">textposition</span><span class="o">=</span><span class="s2">&quot;top center&quot;</span><span class="p">,</span>
+                <span class="n">textfont</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
+                <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">hoverinfo</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">all_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+    <span class="n">traces</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">lattice_traces</span><span class="p">)</span>
+
+    <span class="c1"># --- Draw Orbitals ---</span>
+    <span class="n">orb_x</span><span class="p">,</span> <span class="n">orb_y</span><span class="p">,</span> <span class="n">orb_z</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="n">orb_text</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">orb_marker_colors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">onsite_labels</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">cmap_orb</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">_norb</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_norb</span><span class="p">):</span>
+        <span class="n">orb_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Orbital </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">_nspin</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">onsite_str</span> <span class="o">=</span> <span class="n">_pauli_decompose_unicode</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_site_energies</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">onsite_label</span> <span class="o">=</span> <span class="sa">rf</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">onsite_str</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">onsite_label</span> <span class="o">=</span> <span class="sa">rf</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">_site_energies</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">onsite_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">onsite_label</span><span class="p">)</span>
+
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">to_cart</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_orb</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">orb_x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">orb_y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">orb_z</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">all_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">site_colors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Use provided color for orbitals.</span>
+            <span class="n">orb_marker_colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">site_colors</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Convert RGBA to hex.</span>
+            <span class="n">orb_marker_colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mcolors</span><span class="o">.</span><span class="n">to_hex</span><span class="p">(</span><span class="n">cmap_orb</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="n">site_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">site_names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Orbital </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+                <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+                <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span>
+                <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">orb_marker_colors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+                <span class="n">text</span><span class="o">=</span><span class="p">[</span><span class="sa">rf</span><span class="s2">&quot;Orbital </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, Onsite Energy = </span><span class="si">{</span><span class="n">onsite_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span>
+                <span class="n">hoverinfo</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Draw hopping terms ---</span>
+    <span class="k">if</span> <span class="n">draw_hoppings</span><span class="p">:</span>
+        <span class="n">hopping_traces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Compute hopping strengths for opacity.</span>
+        <span class="n">mags</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">hop</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="k">for</span> <span class="n">hop</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">_hoppings</span><span class="p">]</span>
+        <span class="n">biggest_hop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">mags</span><span class="p">)</span> <span class="k">if</span> <span class="n">mags</span> <span class="k">else</span> <span class="mf">1.0</span>
+        <span class="n">arrow_alphas</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mags</span><span class="p">)</span> <span class="o">/</span> <span class="n">biggest_hop</span> <span class="k">if</span> <span class="n">biggest_hop</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mags</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="n">arrow_alphas</span> <span class="o">=</span> <span class="mf">0.3</span> <span class="o">+</span> <span class="mf">0.7</span> <span class="o">*</span> <span class="n">arrow_alphas</span><span class="o">**</span><span class="mi">2</span>  <span class="c1"># Non-linear mapping.</span>
+        <span class="k">for</span> <span class="n">h_idx</span><span class="p">,</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_hoppings</span><span class="p">):</span>
+            <span class="n">amp</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">i_orb</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">j_orb</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">r_vec</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">intracell</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">_dim_k</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">r_vec</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="n">intracell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">r_vec</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># Draw hopping for both directions.</span>
+            <span class="k">for</span> <span class="n">shift</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+                <span class="n">pos_i</span> <span class="o">=</span> <span class="n">to_cart</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_orb</span><span class="p">[</span><span class="n">i_orb</span><span class="p">])</span>
+                <span class="n">pos_j</span> <span class="o">=</span> <span class="n">to_cart</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_orb</span><span class="p">[</span><span class="n">j_orb</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">r_vec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">shift</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">pos_j</span> <span class="o">=</span> <span class="n">pos_j</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r_vec</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">_lat</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">shift</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">pos_i</span> <span class="o">=</span> <span class="n">pos_i</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r_vec</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">_lat</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">intracell</span><span class="p">:</span>
+                    <span class="c1"># ensure we only scatter orbitals once</span>
+                    <span class="n">traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+                            <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">pos_i</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+                            <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">pos_i</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+                            <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="n">pos_i</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span>
+                            <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">orb_marker_colors</span><span class="p">[</span><span class="n">i_orb</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">8</span><span class="p">),</span>
+                            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                            <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">text</span><span class="o">=</span><span class="p">[</span>
+                                <span class="sa">f</span><span class="s2">&quot;Orbital </span><span class="si">{</span><span class="n">i_orb</span><span class="si">}</span><span class="s2">, </span><span class="se">\n</span><span class="s2"> Onsite Energy: </span><span class="si">{</span><span class="n">onsite_labels</span><span class="p">[</span><span class="n">i_orb</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="p">],</span>
+                            <span class="n">hoverinfo</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+
+                    <span class="n">traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+                            <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">pos_j</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+                            <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">pos_j</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+                            <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="n">pos_j</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span>
+                            <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">orb_marker_colors</span><span class="p">[</span><span class="n">j_orb</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">8</span><span class="p">),</span>
+                            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                            <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">text</span><span class="o">=</span><span class="p">[</span>
+                                <span class="sa">rf</span><span class="s2">&quot;Orbital </span><span class="si">{</span><span class="n">j_orb</span><span class="si">}</span><span class="s2">, onsite energy: </span><span class="si">{</span><span class="n">onsite_labels</span><span class="p">[</span><span class="n">j_orb</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="p">],</span>
+                            <span class="n">hoverinfo</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+
+                <span class="c1"># Don&#39;t want to plot connecting arrows within unit cell twice</span>
+                <span class="k">if</span> <span class="n">intracell</span> <span class="ow">and</span> <span class="n">shift</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="c1"># Arrow connects orbitals to home cell, so shift = 1 is same</span>
+                    <span class="c1"># conditions as shift = 2 (same arrows)</span>
+                    <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">_nspin</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">amp_str</span> <span class="o">=</span> <span class="n">_pauli_decompose_unicode</span><span class="p">(</span><span class="n">amp</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">amp_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">amp</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+
+                <span class="k">if</span> <span class="n">r_vec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">r_vec_str</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array2string</span><span class="p">(</span><span class="n">r_vec</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">separator</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="p">)</span>
+                    <span class="n">r_vec_str</span> <span class="o">=</span> <span class="n">r_vec_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="n">r_vec_str</span> <span class="o">=</span> <span class="n">r_vec_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="n">hop_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Hopping </span><span class="si">{</span><span class="n">i_orb</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">j_orb</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">r_vec</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">amp_str</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">hop_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Hopping </span><span class="si">{</span><span class="n">i_orb</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="n">j_orb</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">amp_str</span><span class="si">}</span><span class="s2">&quot;</span>
+
+                <span class="n">hopping_traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+                        <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">pos_i</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pos_j</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+                        <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">pos_i</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">pos_j</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+                        <span class="n">z</span><span class="o">=</span><span class="p">[</span><span class="n">pos_i</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">pos_j</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;lines&quot;</span><span class="p">,</span>
+                        <span class="n">line</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+                            <span class="n">width</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                        <span class="p">),</span>
+                        <span class="n">opacity</span><span class="o">=</span><span class="n">arrow_alphas</span><span class="p">[</span><span class="n">h_idx</span><span class="p">],</span>
+                        <span class="n">text</span><span class="o">=</span><span class="n">hop_str</span><span class="p">,</span>
+                        <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">hoverinfo</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">all_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos_i</span><span class="p">)</span>
+                <span class="n">all_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos_j</span><span class="p">)</span>
+        <span class="n">traces</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">hopping_traces</span><span class="p">)</span>
+
+    <span class="c1"># Overlay eigenstate if provided</span>
+    <span class="k">if</span> <span class="n">eig_dr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">eigen_x</span><span class="p">,</span> <span class="n">eigen_y</span><span class="p">,</span> <span class="n">eigen_z</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">eigen_marker_sizes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">eigen_marker_colors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cmap_phase</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;hsv&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_norb</span><span class="p">):</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">to_cart</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_orb</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">eigen_x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">eigen_y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">eigen_z</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">amp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eig_dr</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>  <span class="c1"># amplitude propto probability density.</span>
+            <span class="n">eigen_marker_sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">amp</span><span class="p">)</span>  <span class="c1"># Scale factor for magnitude.</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">eig_dr</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">eigen_marker_colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">mcolors</span><span class="o">.</span><span class="n">to_hex</span><span class="p">(</span><span class="n">cmap_phase</span><span class="p">((</span><span class="n">phase</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)))</span>
+            <span class="p">)</span>
+        <span class="n">traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">eigen_x</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">eigen_y</span><span class="p">,</span>
+                <span class="n">z</span><span class="o">=</span><span class="n">eigen_z</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;markers&quot;</span><span class="p">,</span>
+                <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">eigen_marker_colors</span><span class="p">,</span>
+                    <span class="n">size</span><span class="o">=</span><span class="n">eigen_marker_sizes</span><span class="p">,</span>
+                    <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;circle&quot;</span><span class="p">,</span>
+                    <span class="n">line</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Eigenstate&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># --- Determine Axis Limits ---</span>
+    <span class="n">all_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">all_coords</span><span class="p">)</span>
+    <span class="n">min_x</span><span class="p">,</span> <span class="n">max_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">all_coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">all_coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">min_y</span><span class="p">,</span> <span class="n">max_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">all_coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">all_coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">min_z</span><span class="p">,</span> <span class="n">max_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">all_coords</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">all_coords</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="n">pad_x</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_x</span> <span class="o">-</span> <span class="n">min_x</span> <span class="k">if</span> <span class="n">max_x</span> <span class="o">!=</span> <span class="n">min_x</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">pad_y</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_y</span> <span class="o">-</span> <span class="n">min_y</span> <span class="k">if</span> <span class="n">max_y</span> <span class="o">!=</span> <span class="n">min_y</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">pad_z</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_z</span> <span class="o">-</span> <span class="n">min_z</span> <span class="k">if</span> <span class="n">max_z</span> <span class="o">!=</span> <span class="n">min_z</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span>
+        <span class="n">scene</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="n">xaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="p">[</span><span class="n">min_x</span> <span class="o">-</span> <span class="n">pad_x</span><span class="p">,</span> <span class="n">max_x</span> <span class="o">+</span> <span class="n">pad_x</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">),</span>
+            <span class="n">yaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="p">[</span><span class="n">min_y</span> <span class="o">-</span> <span class="n">pad_y</span><span class="p">,</span> <span class="n">max_y</span> <span class="o">+</span> <span class="n">pad_y</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">),</span>
+            <span class="n">zaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="p">[</span><span class="n">min_z</span> <span class="o">-</span> <span class="n">pad_z</span><span class="p">,</span> <span class="n">max_z</span> <span class="o">+</span> <span class="n">pad_z</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Z&quot;</span><span class="p">),</span>
+            <span class="n">aspectmode</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">traces</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pretty_model_info_str</span><span class="p">():</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;b&gt;Tight-Binding Model Information&lt;/b&gt;&lt;br&gt;&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;br&gt;&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;b&gt;Lattice Vectors:&lt;/b&gt;&lt;br&gt;&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_lat</span><span class="p">):</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;a_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">array2string</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span><span class="w"> </span><span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">separator</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;br&gt;&quot;</span>
+            <span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;br&gt;&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;b&gt;Orbital Vectors:&lt;/b&gt;&lt;br&gt;&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">orb</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_orb</span><span class="p">):</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Orbital </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">array2string</span><span class="p">(</span><span class="n">orb</span><span class="p">,</span><span class="w"> </span><span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">separator</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;br&gt;&quot;</span>
+            <span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;br&gt;&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;b&gt;Number of Spins:&lt;/b&gt; </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">_nspin</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+
+    <span class="n">report_text</span> <span class="o">=</span> <span class="n">get_pretty_model_info_str</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">show_model_info</span><span class="p">:</span>
+        <span class="c1"># 3) Add an annotation. We’ll place it in the upper-left corner (x=0.01, y=0.99).</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">add_annotation</span><span class="p">(</span>
+            <span class="n">text</span><span class="o">=</span><span class="n">report_text</span><span class="p">,</span>
+            <span class="n">xref</span><span class="o">=</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span>
+            <span class="n">yref</span><span class="o">=</span><span class="s2">&quot;paper&quot;</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span>
+            <span class="n">showarrow</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">align</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+            <span class="n">font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s2">&quot;Courier New, monospace&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">),</span>
+            <span class="n">bordercolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+            <span class="n">borderwidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">borderpad</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">bgcolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+
+<div class="viewcode-block" id="plot_bands">
+<a class="viewcode-back" href="../../generated/pythtb.plotting.plot_bands.html#pythtb.plotting.plot_bands">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_bands</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">k_path</span><span class="p">,</span>
+    <span class="n">nk</span><span class="o">=</span><span class="mi">101</span><span class="p">,</span>
+    <span class="n">evals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">evecs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">k_label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">proj_orb_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">proj_spin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">scat_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">lc</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span>
+    <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;solid&quot;</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;plasma&quot;</span><span class="p">,</span>
+    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">cbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : TBModel</span>
+<span class="sd">        The tight-binding model to use for the calculation.</span>
+<span class="sd">    k_path : list</span>
+<span class="sd">        List of high symmetry points to plot bands through</span>
+<span class="sd">    nk : int, optional</span>
+<span class="sd">        Number of k-points to sample between high symmetry points. Defaults to 101.</span>
+<span class="sd">    evals : np.ndarray, optional</span>
+<span class="sd">        Eigenvalues to plot. If None, they will be computed.</span>
+<span class="sd">    evecs : np.ndarray, optional</span>
+<span class="sd">        Eigenvectors to use for projections. If None, they will be computed.</span>
+<span class="sd">    k_label : list[str], optional</span>
+<span class="sd">        Labels of high symmetry points. Defaults to None.</span>
+<span class="sd">    proj_orb_idx : list[int], optional</span>
+<span class="sd">        List of orbital indices to project onto. Defaults to None.</span>
+<span class="sd">    proj_spin : bool, optional</span>
+<span class="sd">        Whether to project onto spin states. Defaults to False.</span>
+<span class="sd">    title : str, optional</span>
+<span class="sd">        Title of the plot. Defaults to None.</span>
+<span class="sd">    scat_size : int, optional</span>
+<span class="sd">        Size of the scatter points. Defaults to 3.</span>
+<span class="sd">    lw : int, optional</span>
+<span class="sd">        Line width for the band lines. Defaults to 2.</span>
+<span class="sd">    lc : str, optional</span>
+<span class="sd">        Line color for the band lines. Defaults to &quot;b&quot;.</span>
+<span class="sd">    ls : str, optional</span>
+<span class="sd">        Line style for the band lines. Defaults to &quot;solid&quot;.</span>
+<span class="sd">    cmap : str, optional</span>
+<span class="sd">        Colormap for the scatter points. Defaults to &quot;plasma&quot;.</span>
+<span class="sd">    show : bool, optional</span>
+<span class="sd">        Whether to show the plot. Defaults to False.</span>
+<span class="sd">    cbar : bool, optional</span>
+<span class="sd">        Whether to show the colorbar. Defaults to True.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        fig, ax: matplotlib fig and ax</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">fig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+    <span class="c1"># generate k-path and labels</span>
+    <span class="p">(</span><span class="n">k_vec</span><span class="p">,</span> <span class="n">k_dist</span><span class="p">,</span> <span class="n">k_nodes</span><span class="p">)</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">k_path</span><span class="p">(</span><span class="n">k_path</span><span class="p">,</span> <span class="n">nk</span><span class="p">,</span> <span class="n">report</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># scattered bands with sublattice color</span>
+    <span class="k">if</span> <span class="n">proj_orb_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">evals</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">evecs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># diagonalize model on path</span>
+            <span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">solve_ham</span><span class="p">(</span><span class="n">k_vec</span><span class="p">,</span> <span class="n">return_eigvecs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">n_eigs</span> <span class="o">=</span> <span class="n">evals</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">wt</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">evecs</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">_nspin</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">wt</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">proj_orb_idx</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">model</span><span class="o">.</span><span class="n">_nspin</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">wt</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">proj_orb_idx</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_eigs</span><span class="p">):</span>
+            <span class="n">scat</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                <span class="n">k_dist</span><span class="p">,</span>
+                <span class="n">evals</span><span class="p">[:,</span> <span class="n">n</span><span class="p">],</span>
+                <span class="n">c</span><span class="o">=</span><span class="n">col</span><span class="p">[:,</span> <span class="n">n</span><span class="p">],</span>
+                <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+                <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+                <span class="n">s</span><span class="o">=</span><span class="n">scat_size</span><span class="p">,</span>
+                <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cbar</span><span class="p">:</span>
+            <span class="n">cbar</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">scat</span><span class="p">,</span> <span class="n">ticks</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+            <span class="c1"># cbar.set_ticks([])</span>
+            <span class="c1"># cbar.ax.set_yticklabels([r&#39;$B$&#39;, r&#39;$A$&#39;], size=12)</span>
+            <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="sa">r</span><span class="s2">&quot;$ |\langle \psi_</span><span class="si">{nk}</span><span class="s2"> | \phi_B \rangle |^2$&quot;</span><span class="p">,</span>
+                    <span class="sa">r</span><span class="s2">&quot;$|\langle \psi_</span><span class="si">{nk}</span><span class="s2"> | \phi_A \rangle |^2$&quot;</span><span class="p">,</span>
+                <span class="p">],</span>
+                <span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">proj_spin</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">evals</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">evecs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># diagonalize model on path</span>
+            <span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">solve_ham</span><span class="p">(</span><span class="n">k_vec</span><span class="p">,</span> <span class="n">return_eigvecs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">n_eigs</span> <span class="o">=</span> <span class="n">evals</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">_nspin</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Spin needs to be greater than 1 for projecting spin.&quot;</span><span class="p">)</span>
+
+        <span class="n">wt</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">evecs</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">wt</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_eigs</span><span class="p">):</span>
+            <span class="n">scat</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                <span class="n">k_dist</span><span class="p">,</span>
+                <span class="n">evals</span><span class="p">[:,</span> <span class="n">n</span><span class="p">],</span>
+                <span class="n">c</span><span class="o">=</span><span class="n">col</span><span class="p">[:,</span> <span class="n">n</span><span class="p">],</span>
+                <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+                <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+                <span class="n">s</span><span class="o">=</span><span class="n">scat_size</span><span class="p">,</span>
+                <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">cbar</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">scat</span><span class="p">,</span> <span class="n">ticks</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="sa">r</span><span class="s2">&quot;$ |\langle \psi_</span><span class="si">{nk}</span><span class="s2"> | \chi_{\uparrow} \rangle |^2$&quot;</span><span class="p">,</span>
+                <span class="sa">r</span><span class="s2">&quot;$|\langle \psi_</span><span class="si">{nk}</span><span class="s2"> | \chi_{\downarrow} \rangle |^2$&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">evals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">evals</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">solve_ham</span><span class="p">(</span><span class="n">k_vec</span><span class="p">,</span> <span class="n">return_eigvecs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">n_eigs</span> <span class="o">=</span> <span class="n">evals</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># continuous bands</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">k_dist</span><span class="p">,</span> <span class="n">evals</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">lc</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="n">lw</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="n">ls</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">k_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">k_nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">k_nodes</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">k_nodes</span><span class="p">)):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">k_nodes</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">k_label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">k_label</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Energy $E(\mathbf{{k}})$&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">labelpad</span> <span class="o">=</span> <span class="mi">10</span>
+
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Trey Cole, Sinisa Coh, and David Vanderbilt.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

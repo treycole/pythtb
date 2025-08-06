@@ -1,6 +1,6 @@
 from .utils import _is_int, _offdiag_approximation_warning_and_stop
 from .tb_model import TBModel
-from .mesh2 import Mesh
+from .mesh import Mesh
 import numpy as np
 import copy  # for deepcopying
 from itertools import product
@@ -65,15 +65,14 @@ class WFArray:
 
     See Also
     --------
-    :ref:`haldane-bp-nb` : For an example of using WFArray on
-    a regular grid of points in k-space. 
+    :ref:`haldane-bp-nb` : For an example of using WFArray on a regular grid of points in k-space.
 
     :ref:`cone-nb` : For an example of using WFArray on a non-regular grid of points in k-space.
 
     :ref:`3site-cycle-nb` : For an example of using `WFArray` on a non-regular grid of points in parameter space.
-    This example shows how one of the directions of *WFArray* object need not be a k-vector direction, 
-    but can instead be a Hamiltonian parameter :math:`\lambda`. See also discussion after equation 4.1 in
-    :ref:`formalism`.
+        This example shows how one of the directions of *WFArray* object need not be a k-vector direction, 
+        but can instead be a Hamiltonian parameter :math:`\lambda`. See also discussion after equation 4.1 in
+        :ref:`formalism`.
 
     :ref:`cubic-slab-hwf-nb` : For an example of using `WFArray` to store hybrid Wannier functions.
 
@@ -1275,7 +1274,7 @@ class WFArray:
 
         .. math::
 
-            `M_{nm}^{\mu}(\mathbf{k}) = \langle u_{nk} | u_{m, k + \delta k_{\mu}} \rangle`
+            M_{nm}^{\mu}(\mathbf{k}) = \langle u_{nk} | u_{m, k + \delta k_{\mu}} \rangle
 
         where :math:`\mu` is the direction along which the link is computed, and
         :math:`\delta k_{\mu}` is the shift in the wavevector along that direction. The
@@ -1286,7 +1285,7 @@ class WFArray:
 
         .. math::
 
-            `U^{\mu}(\mathbf{k}) = V^{\mu} (W^{\mu})^\dagger`
+            U^{\mu}(\mathbf{k}) = V^{\mu} (W^{\mu})^\dagger
 
         .. warning:: 
             The neighbor at the boundary is defined with periodic boundary conditions by default.

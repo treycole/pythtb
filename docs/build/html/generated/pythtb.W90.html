@@ -1,0 +1,1072 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>pythtb.W90 &#8212; PythTB Docs</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=7f41d439"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=cbcfbdad"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = "div.nbinput"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/pythtb.W90';</script>
+    <script defer="defer" src="../_static/custom-icons.js?v=7518156e"></script>
+    <script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pythtb.Wannier" href="pythtb.Wannier.html" />
+    <link rel="prev" title="pythtb.WFArray" href="pythtb.WFArray.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">PythTB Docs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../about.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../install.html">
+    Install
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../CHANGELOG.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../formalism.html">
+    Formalism
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../resources.html">
+    Resources
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../citation.html">
+    Citation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/treycole/pythtb" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pythtb/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-pypi fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../about.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../install.html">
+    Install
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../CHANGELOG.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../formalism.html">
+    Formalism
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../resources.html">
+    Resources
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../citation.html">
+    Citation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/treycole/pythtb" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pythtb/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-pypi fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">PythTB Classes</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="pythtb.TBModel.html">pythtb.TBModel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythtb.WFArray.html">pythtb.WFArray</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">pythtb.W90</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythtb.Wannier.html">pythtb.Wannier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythtb.Bloch.html">pythtb.Bloch</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">PythTB Plotting</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="pythtb.plotting.plot_bands.html">pythtb.plotting.plot_bands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythtb.plotting.plot_tb_model.html">pythtb.plotting.plot_tb_model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythtb.plotting.plot_tb_model_3d.html">pythtb.plotting.plot_tb_model_3d</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">PythTB Models</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="pythtb.models.ssh.html">pythtb.models.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythtb.models.checkerboard.html">pythtb.models.checkerboard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythtb.models.graphene.html">pythtb.models.graphene</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythtb.models.haldane.html">pythtb.models.haldane</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythtb.models.kane_mele.html">pythtb.models.kane_mele</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythtb.models.fu_kane_mele.html">pythtb.models.fu_kane_mele</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../usage.html" class="nav-link">Usage</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">pythtb.W90</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="pythtb-w90">
+<h1>pythtb.W90<a class="headerlink" href="#pythtb-w90" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pythtb.W90">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pythtb.</span></span><span class="sig-name descname"><span class="pre">W90</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pythtb/w90.html#W90"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pythtb.W90" title="Link to this definition">#</a></dt>
+<dd><p>Interface to Wannier90</p>
+<p>This class of the PythTB package imports tight-binding model
+parameters from an output of a <a class="reference external" href="http://www.wannier.org">Wannier90</a> code.
+Upon instantiation, this class will read in the entire Wannier90 output.
+To create <a class="reference internal" href="pythtb.TBModel.html#pythtb.TBModel" title="pythtb.TBModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">pythtb.TBModel</span></code></a> object user needs to call
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pythtb.w90.model()</span></code>.</p>
+<p>The <a class="reference external" href="http://www.wannier.org">Wannier90</a> code is a
+post-processing tool that takes as an input electron wavefunctions
+and energies computed from first-principles using any of the
+following codes: Quantum-Espresso (PWscf), AbInit, SIESTA, FLEUR,
+Wien2k, VASP. As an output Wannier90 will create files that
+contain parameters for a tight-binding model that exactly
+reproduces the first-principles calculated electron band
+structure.</p>
+<p>The interface from Wannier90 to PythTB will use only the following
+files created by Wannier90:</p>
+<ul class="simple">
+<li><p><em>prefix</em>.win</p></li>
+<li><p><em>prefix</em>_hr.dat</p></li>
+<li><p><em>prefix</em>_centres.xyz</p></li>
+<li><p><em>prefix</em>_band.kpt (optional)</p></li>
+<li><p><em>prefix</em>_band.dat (optional)</p></li>
+</ul>
+<p>The first file (<em>prefix</em>.win) is an input file to Wannier90 itself. This
+file is needed so that PythTB can read in the unit cell vectors.</p>
+<p>To correctly create the second and the third file (<em>prefix</em>_hr.dat and
+<em>prefix</em>_centres.dat) one needs to include the following flags in the win
+file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">write_hr</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">write_xyz</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">translate_home_cell</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<p>These lines ensure that <em>prefix</em>_hr.dat and <em>prefix</em>_centres.dat
+are written and that the centers of the Wannier functions written
+in the <em>prefix</em>_centres.dat file are not translated to the home
+cell. The <em>prefix</em>_hr.dat file contains the onsite and hopping
+terms.</p>
+<p>The final two files (<em>prefix</em>_band.kpt and <em>prefix</em>_band.dat)
+are optional. Please see documentation of function
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pythtb.w90.w90_bands_consistency()</span></code> for more detail.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Relative path to the folder that contains Wannier90
+files. These are <em>prefix</em>.win, <em>prefix</em>_hr.dat,
+<em>prefix</em>_centres.dat and optionally <em>prefix</em>_band.kpt and
+<em>prefix</em>_band.dat.</p></li>
+<li><p><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – This is the prefix used by <cite>Wannier90</cite> code.
+Typically the input to the <cite>Wannier90</cite> code is name <em>prefix</em>.win.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../examples_ipynb/w90_quick.html#w90-quick-nb"><span class="std std-ref">Wannier90 quick example</span></a>, <a class="reference internal" href="../examples_ipynb/w90.html#w90-nb"><span class="std std-ref">Wannier90 example with silicon</span></a></p>
+</div>
+<p class="rubric">Notes</p>
+<p>Units used throught this interface with Wannier90 are
+electron-volts (eV) and Angstroms.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>So far we have only tested Wannier90 version 2.0.1.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The user needs to make sure that the Wannier functions
+computed using Wannier90 code are well localized. Otherwise the
+tight-binding model may not accurately interpolate the band
+structure. To ensure that the Wannier functions are well
+localized it is often enough to check that the total spread at
+the beginning of the minimization procedure (first total spread
+printed in .wout file) is not more than 20% larger than the
+total spread at the end of the minimization procedure. If those
+spreads differ by much more than 20% user needs to specify
+better initial projection functions.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The interpolation is only exact within the frozen energy window
+of the disentanglement procedure.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>So far PythTB assumes that the position operator is
+diagonal in the tight-binding basis. This is discussed in the
+<a class="reference download internal" download="" href="../_downloads/e39c23ce476d399b268efa520e7a9091/pythtb-formalism.pdf"><code class="xref download docutils literal notranslate"><span class="pre">notes</span> <span class="pre">on</span> <span class="pre">tight-binding</span> <span class="pre">formalism</span></code></a> in Eq. 2.7.,
+<span class="math notranslate nohighlight">\(\langle\phi_{{\bf R} i} \vert {\bf r} \vert \phi_{{\bf
+R}' j} \rangle = ({\bf R} + {\bf t}_j) \delta_{{\bf R} {\bf R}'}
+\delta_{ij}\)</span>. However, this relation does not hold for Wannier
+functions! Therefore, if you use tight-binding model derived
+from this class in computing Berry-like objects that involve
+position operator such as Berry phase or Berry flux, you would
+not get the same result as if you computed those objects
+directly from the first-principles code! Nevertheless, this
+approximation does not affect other properties such as band
+structure dispersion.</p>
+</div>
+<p class="rubric">Examples</p>
+<p>Read Wannier90 from folder called <em>example_a</em>
+This assumes that that folder contains files “silicon.win” (and so on)</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">silicon</span> <span class="o">=</span> <span class="n">w90</span><span class="p">(</span><span class="s2">&quot;example_a&quot;</span><span class="p">,</span> <span class="s2">&quot;silicon&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="pythtb.W90.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pythtb/w90.html#W90.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pythtb.W90.__init__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__delattr__</span></code>(name, /)</p></td>
+<td><p>Implement delattr(self, name).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__dir__</span></code>()</p></td>
+<td><p>Default dir() implementation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__eq__</span></code>(value, /)</p></td>
+<td><p>Return self==value.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__format__</span></code>(format_spec, /)</p></td>
+<td><p>Default object formatter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__ge__</span></code>(value, /)</p></td>
+<td><p>Return self&gt;=value.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__getattribute__</span></code>(name, /)</p></td>
+<td><p>Return getattr(self, name).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__getstate__</span></code>()</p></td>
+<td><p>Helper for pickle.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__gt__</span></code>(value, /)</p></td>
+<td><p>Return self&gt;value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__hash__</span></code>()</p></td>
+<td><p>Return hash(self).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pythtb.W90.__init__" title="pythtb.W90.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(path, prefix)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init_subclass__</span></code></p></td>
+<td><p>This method is called when a class is subclassed.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__le__</span></code>(value, /)</p></td>
+<td><p>Return self&lt;=value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__lt__</span></code>(value, /)</p></td>
+<td><p>Return self&lt;value.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__ne__</span></code>(value, /)</p></td>
+<td><p>Return self!=value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__new__</span></code>(*args, **kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__reduce__</span></code>()</p></td>
+<td><p>Helper for pickle.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__reduce_ex__</span></code>(protocol, /)</p></td>
+<td><p>Helper for pickle.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__repr__</span></code>()</p></td>
+<td><p>Return repr(self).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__setattr__</span></code>(name, value, /)</p></td>
+<td><p>Implement setattr(self, name, value).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__sizeof__</span></code>()</p></td>
+<td><p>Size of object in memory, in bytes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__str__</span></code>()</p></td>
+<td><p>Return str(self).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__subclasshook__</span></code></p></td>
+<td><p>Abstract classes can override this to customize issubclass().</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pythtb.W90.dist_hop" title="pythtb.W90.dist_hop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dist_hop</span></code></a>()</p></td>
+<td><p>Get distances and hopping terms of Hamiltonian in Wannier basis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pythtb.W90.model" title="pythtb.W90.model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">model</span></code></a>([zero_energy, min_hopping_norm, ...])</p></td>
+<td><p>Get TBModel associated with this Wannier90 calculation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pythtb.W90.shells" title="pythtb.W90.shells"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shells</span></code></a>([num_digits])</p></td>
+<td><p>Get all shells of distances between Wannier function centers.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pythtb.W90.w90_bands_consistency" title="pythtb.W90.w90_bands_consistency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">w90_bands_consistency</span></code></a>()</p></td>
+<td><p>Read interpolated band structure from Wannier90 output files.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Attributes</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__annotations__</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__dict__</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__doc__</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__module__</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__weakref__</span></code></p></td>
+<td><p>list of weak references to the object</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="pythtb.W90.model">
+<span class="sig-name descname"><span class="pre">model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zero_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_hopping_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignorable_imaginary_part</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pythtb/w90.html#W90.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pythtb.W90.model" title="Link to this definition">#</a></dt>
+<dd><p>Get TBModel associated with this Wannier90 calculation.</p>
+<p>This function returns <a class="reference internal" href="pythtb.TBModel.html#pythtb.TBModel" title="pythtb.TBModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">pythtb.TBModel</span></code></a> object that can
+be used to interpolate the band structure at arbitrary
+k-point, analyze the wavefunction character, etc.</p>
+<p>The tight-binding basis orbitals in the returned object are
+maximally localized Wannier functions as computed by
+Wannier90. Locations of the orbitals in the returned
+<a class="reference internal" href="pythtb.TBModel.html#pythtb.TBModel" title="pythtb.TBModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">pythtb.TBModel</span></code></a> object are the centers of
+the Wannier functions computed by Wannier90.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zero_energy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Sets the zero of the energy in the band structure.
+This value is typically set to the Fermi level
+computed by the density-functional code (or to the top of the valence band).
+Units are electron-volts.</p></li>
+<li><p><strong>min_hopping_norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Hopping terms read from Wannier90 with complex norm less than
+<em>min_hopping_norm</em> will not be included in the returned
+tight-binding model. This parameters is specified in
+electron-volts. By default all terms regardless of their
+norm are included.</p></li>
+<li><p><strong>max_distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Hopping terms from site <em>i</em> to site <em>j+R</em> will be ignored if
+the distance from orbital <em>i</em> to <em>j+R</em> is larger than
+<em>max_distance</em>. This parameter is given in Angstroms.
+By default all terms regardless of the distance are included.</p></li>
+<li><p><strong>ignorable_imaginary_part</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The hopping term will be assumed to be exactly real if the
+absolute value of the imaginary part as computed by Wannier90
+is less than <em>ignorable_imaginary_part</em>. By default imaginary
+terms are not ignored. Units are again eV.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>tb</strong> – The <a class="reference internal" href="pythtb.TBModel.html#pythtb.TBModel" title="pythtb.TBModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">pythtb.TBModel</span></code></a> that can be used to
+interpolate Wannier90 band structure to an arbitrary k-point as well
+as to analyze the character of the wavefunctions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pythtb.TBModel.html#pythtb.TBModel" title="pythtb.TBModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">pythtb.TBModel</span></code></a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The character of the maximally localized Wannier functions is
+not exactly the same as that specified by the initial
+projections. The orbital character of the Wannier functions can be
+inferred either from the <em>projections</em> block in the <em>prefix</em>.win or
+from the <em>prefix</em>.nnkp file.</p>
+<p>One way to ensure that the Wannier functions are as close to
+the initial projections as possible is to first choose a good set
+of initial projections (for these initial and final spread should
+not differ more than 20%) and then perform another Wannier90 run
+setting <em>num_iter=0</em> in the <em>prefix</em>.win file.</p>
+<p>The tight-binding model returned by this function is only as good as
+the input from Wannier90. In particular, the choice of initial
+projections can have a significant impact on the quality of the
+resulting Wannier functions. It is recommended to experiment with
+different sets of initial projections and to carefully analyze the
+resulting Wannier functions to ensure that they are physically
+meaningful.</p>
+<p>The number of spin components is always set to 1, even if the
+underlying DFT calculation includes spin.  Please refer to the
+<em>projections</em> block or the <em>prefix</em>.nnkp file to see which
+orbitals correspond to which spin.</p>
+<p class="rubric">Examples</p>
+<p>Get <cite>TBModel</cite> with all hopping parameters</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_model</span> <span class="o">=</span> <span class="n">silicon</span><span class="o">.</span><span class="n">model</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Simplified model that contains only hopping terms above 0.01 eV</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_model_simple</span> <span class="o">=</span> <span class="n">silicon</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">min_hopping_norm</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_model_simple</span><span class="o">.</span><span class="n">display</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pythtb.W90.dist_hop">
+<span class="sig-name descname"><span class="pre">dist_hop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pythtb/w90.html#W90.dist_hop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pythtb.W90.dist_hop" title="Link to this definition">#</a></dt>
+<dd><p>Get distances and hopping terms of Hamiltonian in Wannier basis.</p>
+<p>This function returns all hopping terms (from orbital <em>i</em> to
+<em>j+R</em>) as well as the distances between the <em>i</em> and <em>j+R</em>
+orbitals. For well localized Wannier functions hopping term
+should decay exponentially with distance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>dist</strong> (<em>np.ndarray</em>) – Distances between Wannier function centers (<em>i</em> and <em>j+R</em>) in Angstroms.</p></li>
+<li><p><strong>ham</strong> (<em>np.ndarray</em>) – Corresponding hopping terms in eV.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function can be used to help determine the <em>min_hopping_norm</em>
+and <em>max_distance</em> parameters in the <code class="xref py py-func docutils literal notranslate"><span class="pre">pythtb.w90.model()</span></code> function
+call.</p>
+<p class="rubric">Examples</p>
+<p>Get distances and hopping terms</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">ham</span><span class="p">)</span> <span class="o">=</span> <span class="n">silicon</span><span class="o">.</span><span class="n">dist_hop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Plot logarithm of the hopping term as a function of distance</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ham</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;localization.pdf&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pythtb.W90.shells">
+<span class="sig-name descname"><span class="pre">shells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pythtb/w90.html#W90.shells"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pythtb.W90.shells" title="Link to this definition">#</a></dt>
+<dd><p>Get all shells of distances between Wannier function centers.</p>
+<p>This is one of the diagnostic tools that can be used to help
+in determining <em>max_distance</em> parameter in
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pythtb.w90.model()</span></code> function call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>num_digits</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Distances will be rounded up to these many digits. Default value is 2.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>shells</strong> – All distances between all Wannier function centers (<em>i</em> and <em>j+R</em>) in Angstroms.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Print all shells</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">silicon</span><span class="o">.</span><span class="n">shells</span><span class="p">())</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pythtb.W90.w90_bands_consistency">
+<span class="sig-name descname"><span class="pre">w90_bands_consistency</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pythtb/w90.html#W90.w90_bands_consistency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pythtb.W90.w90_bands_consistency" title="Link to this definition">#</a></dt>
+<dd><p>Read interpolated band structure from Wannier90 output files.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 2.0.0: </span>Returned energies now have axes <cite>(kpts, band)</cite> instead of <cite>(band, kpts)</cite>.</p>
+</div>
+<p>This function reads in band structure as interpolated by
+Wannier90. Please note that this is not the same as the band
+structure calculated by the underlying DFT code. The two will
+agree only on the coarse set of k-points that were used in
+Wannier90 generation.</p>
+<p>The code assumes that the following files were generated by
+Wannier90,</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><em>prefix</em>_band.kpt</p></li>
+<li><p><em>prefix</em>_band.dat</p></li>
+</ul>
+</div></blockquote>
+<p>These files will be generated only if the <em>prefix</em>.win file
+contains the <em>kpoint_path</em> block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>kpts</strong> (<em>array</em>) – k-points in reduced coordinates used in the
+interpolation in Wannier90 code. The format of <em>kpts</em> is
+the same as the one used by the input to
+<a class="reference internal" href="pythtb.TBModel.html#pythtb.TBModel.solve_all" title="pythtb.TBModel.solve_all"><code class="xref py py-func docutils literal notranslate"><span class="pre">pythtb.TBModel.solve_all()</span></code></a>.</p></li>
+<li><p><strong>ene</strong> (<em>array</em>) – Energies interpolated by Wannier90 in eV. Format is <code class="docutils literal notranslate"><span class="pre">ene[kpt,band]</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The purpose of this function is to compare the interpolation
+in Wannier90 with that in PythTB. If no terms were ignored in
+the call to <code class="xref py py-func docutils literal notranslate"><span class="pre">pythtb.w90.model()</span></code> then the two should
+be exactly the same (up to numerical precision). Otherwise
+one should expect deviations. However, if one carefully
+chooses the cutoff parameters in <code class="xref py py-func docutils literal notranslate"><span class="pre">pythtb.w90.model()</span></code>
+it is likely that one could reproduce the full band-structure
+with only few dominant hopping terms. Please note that this
+tests only the eigenenergies, not eigenvalues (wavefunctions).</p>
+<p class="rubric">Examples</p>
+<p>Get band structure from <cite>Wannier90</cite></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">w90_kpt</span><span class="p">,</span> <span class="n">w90_evals</span><span class="p">)</span> <span class="o">=</span> <span class="n">silicon</span><span class="o">.</span><span class="n">w90_bands_consistency</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Get simplified model</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_model_simple</span> <span class="o">=</span> <span class="n">silicon</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">min_hopping_norm</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Solve simplified model on the same k-path as in <cite>Wannier90</cite></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">evals</span> <span class="o">=</span> <span class="n">my_model</span><span class="o">.</span><span class="n">solve_ham</span><span class="p">(</span><span class="n">w90_kpt</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now plot the comparison of the two</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">evals</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">evals</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">evals</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;r-&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=-</span><span class="mi">50</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">w90_evals</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">w90_evals</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">w90_evals</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;k-&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=-</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;comparison.pdf&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "youruser/yourrepo",
+            ref: "v2",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./generated"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="pythtb.WFArray.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">pythtb.WFArray</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="pythtb.Wannier.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">pythtb.Wannier</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pythtb.W90"><code class="docutils literal notranslate"><span class="pre">W90</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pythtb.W90.__init__"><code class="docutils literal notranslate"><span class="pre">W90.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pythtb.W90.model"><code class="docutils literal notranslate"><span class="pre">W90.model()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pythtb.W90.dist_hop"><code class="docutils literal notranslate"><span class="pre">W90.dist_hop()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pythtb.W90.shells"><code class="docutils literal notranslate"><span class="pre">W90.shells()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pythtb.W90.w90_bands_consistency"><code class="docutils literal notranslate"><span class="pre">W90.w90_bands_consistency()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Trey Cole, Sinisa Coh, and David Vanderbilt.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

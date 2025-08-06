@@ -4,7 +4,7 @@ from itertools import product
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .k_mesh import KMesh
+    from .mesh2 import KMesh
     from .tb_model import TBModel
 
 __all__ = ["Wannier"]

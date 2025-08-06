@@ -1,0 +1,830 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Install &#8212; PythTB Docs</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=7f41d439"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=cbcfbdad"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = "div.nbinput"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'install';</script>
+    <script defer="defer" src="_static/custom-icons.js?v=7518156e"></script>
+    <script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Usage" href="usage.html" />
+    <link rel="prev" title="About" href="about.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">PythTB Docs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="about.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Install
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="CHANGELOG.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="formalism.html">
+    Formalism
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="resources.html">
+    Resources
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="citation.html">
+    Citation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/treycole/pythtb" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pythtb/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-pypi fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="about.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Install
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="CHANGELOG.html">
+    Changelog
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="formalism.html">
+    Formalism
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="resources.html">
+    Resources
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="citation.html">
+    Citation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/treycole/pythtb" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pythtb/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-pypi fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Install</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="install">
+<span id="installation"></span><h1>Install<a class="headerlink" href="#install" title="Link to this heading">#</a></h1>
+<p>PythTB &gt;= v2.0.0 is supported for Python &gt;= 3.10. Versions up to 1.7.0 are
+only supported on Python &lt; 3.0, while version 1.8.0 is compatible with
+Python 2.7 - 3.10 (Python 2.6 and below are not recommended).
+While other versions of Python may work, they are not guaranteed to be compatible.</p>
+<p>To check which version of Python is
+currently installed on your system, just type</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-V
+</pre></div>
+</div>
+<p>If you don’t have Python 3.10 or higher, you can follow the instructions in
+<a class="reference internal" href="#install-python"><span class="std std-ref">Installing or upgrading Python</span></a> to install or upgrade.</p>
+<section id="installing-with-pip">
+<h2>Installing with <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#installing-with-pip" title="Link to this heading">#</a></h2>
+<p>These instructions also assume that
+<a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a>, the standard package
+manager for Python, is installed on your system.  If not, we recommend
+that you <a class="reference external" href="https://pip.pypa.io/en/stable/installing/">install it</a>.
+Otherwise, see instructions for
+<a class="reference internal" href="#install-alternative"><span class="std std-ref">Installing without pip</span></a>.</p>
+<p>To install the latest version of PythTB with pip simply type in terminal</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>pythtb<span class="w"> </span>--upgrade
+</pre></div>
+</div>
+<p>If you don’t have root access try installing PythTB into your home
+folder by executing</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>pythtb<span class="w"> </span>--upgrade<span class="w"> </span>--user
+</pre></div>
+</div>
+<p>After the installation is complete, you can check that PythTB
+is installed correctly by typing in terminal</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import pythtb; print(pythtb.__version__)&quot;</span>
+</pre></div>
+</div>
+<p>If you need more assistance with the installation process, please
+continue reading.</p>
+</section>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">#</a></h2>
+<p>PythTB requires the following Python packages to be installed:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://numpy.org/">numpy</a></p></li>
+<li><p><a class="reference external" href="https://matplotlib.org/stable/">matplotlib</a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> command should automatically install/upgrade the
+following python packages if they were not previously installed
+and upgraded to the latest version.</p>
+</div>
+<p>To bypass the upgrade of these packages</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>--upgrade-strategy<span class="w"> </span>only-if-needed<span class="w"> </span>pythtb
+</pre></div>
+</div>
+<p>Optionally, you may also want to install the following packages
+to enhance your experience with PythTB:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="http://www.ipython.org">ipython</a> - a powerful interactive shell.</p></li>
+<li><p><a class="reference external" href="https://jupyter.org/">jupyter</a> - for running Jupyter notebooks.</p></li>
+<li><p><a class="reference external" href="https://plotly.com/python/">plotly</a> - for interactive plotting capabilities with 3D models.</p></li>
+</ul>
+<p>You should now be ready to run any of the  <a class="reference internal" href="examples.html"><span class="doc">examples</span></a>.</p>
+</section>
+<section id="installing-from-source">
+<span id="install-alternative"></span><h2>Installing from source<a class="headerlink" href="#installing-from-source" title="Link to this heading">#</a></h2>
+<p>If you’d like to install PythTB from source, you can do so by cloning the
+repository from GitHub. This is useful if you want to contribute to the project
+or if you want to use the latest development version.</p>
+<p>First, make sure you have Python 3.10 or higher installed on your system.
+You can check your Python version by typing in terminal</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-V
+</pre></div>
+</div>
+<p>If you don’t have Python 3.10 or higher, you can follow the instructions in
+<a class="reference internal" href="#install-python"><span class="std std-ref">Installing or upgrading Python</span></a> to install or upgrade.</p>
+<p>Next, clone the PythTB repository from GitHub by typing in terminal</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/treycole/pythtb.git
+</pre></div>
+</div>
+<p>This will create a directory called <cite>pythtb</cite> in your current working directory.
+Next, navigate to the <cite>pythtb</cite> directory by typing</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>pythtb
+</pre></div>
+</div>
+<p>Now, you can install PythTB by running the following command in terminal</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+<p>This will install PythTB and its dependencies. If you want to install PythTB in
+editable mode (so that changes you make to the source code are immediately
+reflected in your installation), you can run</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+<p>If you want to install PythTB with optional dependencies, you can run</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>.<span class="o">[</span>optional<span class="o">]</span>
+</pre></div>
+</div>
+<p>This will install PythTB with optional dependencies such as <cite>ipython</cite> and <cite>plotly</cite>.</p>
+</section>
+<section id="older-versions-of-pythtb">
+<h2>Older versions of PythTB<a class="headerlink" href="#older-versions-of-pythtb" title="Link to this heading">#</a></h2>
+<p>If for some reason you wish to install an older version of PythTB you
+can type the following into terminal (replace X.Y.Z with version number you
+wish to install)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="nv">pythtb</span><span class="o">==</span>X.Y.Z
+</pre></div>
+</div>
+<p>To check which version of PythTB you have installed, type</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>show<span class="w"> </span>pythtb
+</pre></div>
+</div>
+<p>or print the value of the version number from within a Python environment</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pythtb</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pythtb</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="installing-or-upgrading-python">
+<span id="install-python"></span><h2>Installing or upgrading Python<a class="headerlink" href="#installing-or-upgrading-python" title="Link to this heading">#</a></h2>
+<p>To use PythTB, you need Python 3.10 or higher.
+If you don’t have it installed, or your version is outdated, follow the steps below</p>
+<section id="macos-and-linux">
+<h3>macOS and Linux<a class="headerlink" href="#macos-and-linux" title="Link to this heading">#</a></h3>
+<p>The recommended way to install or upgrade Python is via your system’s package manager.
+For example, on Ubuntu or Debian-based systems, you can run</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>python3
+</pre></div>
+</div>
+<p>For macOS, you can use Homebrew</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>brew<span class="w"> </span>install<span class="w"> </span>python
+</pre></div>
+</div>
+<p>Alternatively, for any Unix-like system, you can download the latest Python installer
+from the official <a class="reference external" href="http://www.python.org/download/">Python Download Page</a>.</p>
+</section>
+<section id="windows">
+<h3>Windows<a class="headerlink" href="#windows" title="Link to this heading">#</a></h3>
+<p>On Windows, the recommended way to install or upgrade Python is to download the
+official installer from the <a class="reference external" href="http://www.python.org/download/">Python Download Page</a>.
+Be sure to select the option to add Python to your PATH during the installation process.</p>
+</section>
+</section>
+<section id="anaconda-and-miniconda">
+<h2>Anaconda and Miniconda<a class="headerlink" href="#anaconda-and-miniconda" title="Link to this heading">#</a></h2>
+<p>PythTB is currently not available on the Anaconda Cloud, but you can still install it using pip
+within an Anaconda environment.</p>
+<p>Anaconda is a popular distribution of Python that includes many scientific computing packages.
+It is recommended to use Anaconda if you are working with scientific computing or data science,
+as it simplifies package management and deployment. You can install Anaconda from the
+<a class="reference external" href="https://www.anaconda.com/products/distribution">Anaconda Download Page</a>.</p>
+<p>A minimal installation of Anaconda can be done using the
+<a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a> installer.
+This will allow you to create isolated environments and manage packages easily without
+installing the full Anaconda distribution.</p>
+<p>To do this, first create a new environment with Python 3.10 or higher</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>pythtb_env<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
+</pre></div>
+</div>
+<p>Then activate the environment</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>pythtb_env
+</pre></div>
+</div>
+<p>After activating the environment, you can install PythTB using pip as you would normally</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>pythtb<span class="w"> </span>--upgrade
+</pre></div>
+</div>
+<p>The previous steps in section <a class="reference external" href="install-pip">Installing with ‘pip’</a> will work
+as expected within the activated conda environment.</p>
+</section>
+<section id="version-list">
+<h2>Version list<a class="headerlink" href="#version-list" title="Link to this heading">#</a></h2>
+<p>If you would like to install a specific version of PythTB directly from the
+list of available versions, you can do so below.</p>
+<p>See <a class="reference internal" href="CHANGELOG.html"><span class="doc">changelog</span></a> for a complete list of changes.</p>
+<section id="version-2-0-0-current">
+<h3>Version 2.0.0 (current)<a class="headerlink" href="#version-2-0-0-current" title="Link to this heading">#</a></h3>
+<p>xxx 2024 <code class="xref download docutils literal notranslate"><span class="pre">pythtb-2.0.0.tar.gz</span></code></p>
+</section>
+<section id="version-1-8-0">
+<h3>Version 1.8.0<a class="headerlink" href="#version-1-8-0" title="Link to this heading">#</a></h3>
+<p>20 September 2022: <a class="reference download internal" download="" href="_downloads/56e7d78222a7302764c67513524d5025/pythtb-1.8.0.tar.gz"><code class="xref download docutils literal notranslate"><span class="pre">pythtb-1.8.0.tar.gz</span></code></a></p>
+</section>
+<section id="version-1-7-2">
+<h3>Version 1.7.2<a class="headerlink" href="#version-1-7-2" title="Link to this heading">#</a></h3>
+<p>1 August 2017: <a class="reference download internal" download="" href="_downloads/fa2dd333825db24f61c58c400a9cbba2/pythtb-1.7.2.tar.gz"><code class="xref download docutils literal notranslate"><span class="pre">pythtb-1.7.2.tar.gz</span></code></a></p>
+</section>
+<section id="version-1-7-1">
+<h3>Version 1.7.1<a class="headerlink" href="#version-1-7-1" title="Link to this heading">#</a></h3>
+<p>22 December 2016: <a class="reference download internal" download="" href="_downloads/3f856cf802e2b5234cd04d55a8644f6f/pythtb-1.7.1.tar.gz"><code class="xref download docutils literal notranslate"><span class="pre">pythtb-1.7.1.tar.gz</span></code></a></p>
+</section>
+<section id="version-1-7-0">
+<h3>Version 1.7.0<a class="headerlink" href="#version-1-7-0" title="Link to this heading">#</a></h3>
+<p>7 June 2016: <a class="reference download internal" download="" href="_downloads/85a12fe428d89be1f54c85e94833406b/pythtb-1.7.0.tar.gz"><code class="xref download docutils literal notranslate"><span class="pre">pythtb-1.7.0.tar.gz</span></code></a></p>
+</section>
+<section id="version-1-6-2">
+<h3>Version 1.6.2<a class="headerlink" href="#version-1-6-2" title="Link to this heading">#</a></h3>
+<p>25 February 2013: <a class="reference download internal" download="" href="_downloads/1037c2b6fee9240216f99fab39fac5ad/pythtb-1.6.2.tar.gz"><code class="xref download docutils literal notranslate"><span class="pre">pythtb-1.6.2.tar.gz</span></code></a></p>
+</section>
+<section id="version-1-6-1">
+<h3>Version 1.6.1<a class="headerlink" href="#version-1-6-1" title="Link to this heading">#</a></h3>
+<p>15 November 2012: <a class="reference download internal" download="" href="_downloads/41b65d9c2eacdab3dfbbf195fdfa8646/pythtb-1.6.1.tar.gz"><code class="xref download docutils literal notranslate"><span class="pre">pythtb-1.6.1.tar.gz</span></code></a></p>
+</section>
+<section id="version-1-5">
+<h3>Version 1.5<a class="headerlink" href="#version-1-5" title="Link to this heading">#</a></h3>
+<p>4 June 2012: <a class="reference download internal" download="" href="_downloads/e5ed1c0cceeb4e0639e81b6d2a7a3f2f/pytb-1.5.tar.gz"><code class="xref download docutils literal notranslate"><span class="pre">pytb-1.5.tar.gz</span></code></a></p>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "youruser/yourrepo",
+            ref: "v2",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="about.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">About</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="usage.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Usage</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-with-pip">Installing with <code class="docutils literal notranslate"><span class="pre">pip</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dependencies">Dependencies</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-from-source">Installing from source</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#older-versions-of-pythtb">Older versions of PythTB</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-or-upgrading-python">Installing or upgrading Python</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#macos-and-linux">macOS and Linux</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#windows">Windows</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#anaconda-and-miniconda">Anaconda and Miniconda</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-list">Version list</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#version-2-0-0-current">Version 2.0.0 (current)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-8-0">Version 1.8.0</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-7-2">Version 1.7.2</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-7-1">Version 1.7.1</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-7-0">Version 1.7.0</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-6-2">Version 1.6.2</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-6-1">Version 1.6.1</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-5">Version 1.5</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Trey Cole, Sinisa Coh, and David Vanderbilt.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

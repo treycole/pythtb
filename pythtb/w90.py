@@ -66,8 +66,8 @@ class W90:
 
     See Also
     --------
-    :ref:`w90_quick`
-    :ref:`w90_long`
+    :ref:`w90-quick-nb`
+    :ref:`w90-nb`
 
     Notes
     -----

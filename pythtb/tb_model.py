@@ -5,7 +5,7 @@ from itertools import product
 import warnings
 import functools
 from .plotting import plot_bands, plot_tb_model, plot_tb_model_3d
-from .mesh2 import k_path, k_uniform_mesh
+from .mesh import k_path, k_uniform_mesh
 from .utils import _is_int, _offdiag_approximation_warning_and_stop, is_Hermitian
 
 # set up logging

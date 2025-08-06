@@ -40,7 +40,7 @@ from .wf_array import *
 from .w90 import *
 from .wannier import *
 from .bloch import *
-from .mesh2 import *
+from .mesh import *
 from .utils import *
 
 from . import mesh, tb_model, wf_array, w90, bloch, wannier, utils
