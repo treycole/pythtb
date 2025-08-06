@@ -294,6 +294,8 @@ class WFArray:
     def get_states(self, flatten_spin=False):
         """Returns states stored in the WFArray.
 
+        .. versionadded:: 2.0.0
+
         Parameters
         ----------
         flatten_spin : bool, optional
@@ -317,6 +319,8 @@ class WFArray:
 
     def get_bloch_states(self, flatten_spin=False):
         """Returns Bloch and cell-periodic states from the WFArray.
+
+        .. versionadded:: 2.0.0
 
         Parameters
         ----------
@@ -372,6 +376,8 @@ class WFArray:
     def get_projectors(self, return_Q=False):
         r"""Returns the band projectors associated with the states in the WFArray.
 
+        .. versionadded:: 2.0.0
+
         The band projectors are defined as the outer product of the wavefunctions:
 
         .. math::
@@ -402,8 +408,23 @@ class WFArray:
             return P, Q
         return P
 
+    # TODO: Figure out how to solve over lambda as well
+    # May want to pass model constructor to generate Hamiltonians along lambda 
+    # dimension
     def solve_k_mesh(self, lambda_idx=None, auto_detect_pbc=True):
-        """Solve the Hamiltonian on the k-mesh for a given parameter slice."""
+        """Solve the Hamiltonian on the k-mesh for a given parameter slice.
+
+        .. versionadded:: 2.0.0
+
+        Parameters
+        ----------
+        lambda_idx : int, optional
+            The index of the parameter slice to solve for. If None, solves for all slices.
+
+        auto_detect_pbc : bool, optional
+            If True, automatically detects and imposes periodic boundary conditions (PBC) for the k-mesh.
+
+        """
         dim_k = self._mesh.dim_k
         shape_k = self._mesh.shape_k or ()
         shape_param = self._mesh.shape_param or ()
@@ -1199,12 +1220,16 @@ class WFArray:
     def get_links(self, state_idx=None, dirs=None):
         r"""Compute the overlap links (unitary matrices) for the wavefunctions.
 
+        .. versionadded:: 2.0.0
+
         The overlap links for the wavefunctions in the `WFArray` object
         along a given direction are defined as the unitary part of the overlap
         between the wavefunctions and their neighbors in the forward direction along each
         mesh directions. Specifcally, the overlap matrices are computed as
 
-        :math:`M_{nm}^{\mu}(\mathbf{k}) = \langle u_{nk} | u_{m, k + \delta k_{\mu}} \rangle`
+        .. math::
+
+            `M_{nm}^{\mu}(\mathbf{k}) = \langle u_{nk} | u_{m, k + \delta k_{\mu}} \rangle`
 
         where :math:`\mu` is the direction along which the link is computed, and
         :math:`\delta k_{\mu}` is the shift in the wavevector along that direction. The
@@ -1213,7 +1238,9 @@ class WFArray:
         (SVD) of the overlap matrix :math:`M^{\mu}(\mathbf{k}) = V^{\mu} \Sigma^{\mu} (W^{\mu})^\dagger`
         as,
 
-        :math:`U^{\mu}(\mathbf{k}) = V^{\mu} (W^{\mu})^\dagger`
+        .. math::
+
+            `U^{\mu}(\mathbf{k}) = V^{\mu} (W^{\mu})^\dagger`
 
         .. warning:: 
             The neighbor at the boundary is defined with periodic boundary conditions by default.
@@ -1290,6 +1317,8 @@ class WFArray:
     @staticmethod
     def wilson_loop(wfs_loop, evals=False):
         r"""Wilson loop unitary matrix
+
+        .. versionadded:: 2.0.0
         
         Compute Wilson loop unitary matrix and its eigenvalues for multiband Berry phases.
         The Wilson loop is a geometric quantity that characterizes the topology of the
@@ -1421,6 +1450,8 @@ class WFArray:
 
     def berry_phase(self, occ="All", dir=None, contin=True, berry_evals=False):
         r"""Berry phase along a given array direction.
+
+        .. versionadded:: 2.0.0
 
         Computes the Berry phase along a given array direction
         and for a given set of states. These are typically the
@@ -1781,8 +1812,10 @@ class WFArray:
         return berry_flux
 
     def chern_num(self, plane=(0, 1), state_idx=None):
-        r"""
-        Computes the Chern number for a *WFArray* in the specified plane.
+        r"""Computes the Chern number in the specified plane.
+
+        .. versionadded:: 2.0.0
+
         The Chern number is computed as the integral of the Berry flux
         over the specified plane, divided by :math:`2 \pi`.
 
