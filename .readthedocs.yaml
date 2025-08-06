@@ -23,5 +23,5 @@ python:
    install:
     - method: pip
       path: .
-      extras: ["docs", "plotting"]        
+      extra_requirements: ["docs", "plotting"]        
 
