@@ -15,14 +15,14 @@ authors = [
 ]
 license = { file = "LICENSE" } 
 keywords = ["tight binding", "solid state physics", "condensed matter physics", "materials science"]
-dependencies = [
-  "numpy",
-  "matplotlib"
-]
 classifiers = [
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
   "Programming Language :: Python :: 3",
   "Operating System :: OS Independent"
+]
+dependencies = [
+  "numpy",
+  "matplotlib"
 ]
 
 [project.optional-dependencies]
