@@ -1,0 +1,2 @@
+/* hide the mobile sponsor bar */
+#rtd-sponsor, .wy-nav-footer { display: none !important; }
