@@ -1,0 +1,186 @@
+## This is a template gitignore file to use in your research
+## project repositories. Documentation about this file format
+## can be found here: https://git-scm.com/docs/gitignore#_pattern_format
+
+# Ignore example outputs
+examples/**/*.pdf
+
+# Ignore docs for now
+# docs
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.pyc
+*.pyo
+*.aux
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+
+# illustrator file:
+*.ai
+
+# IPython notebook / Python
+.ipynb_checkpoints
+Untitled.ipynb
+*slides.html
+*.pyc
+__pycache__/
+.ipynb_checkpoints
+# *.ipynb
+
+# DATA files #
+*.dat
+*.h5
+*.hdf
+*.h
+
+## Core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+_minted*
+
+## Intermediate documents:
+*.dvi
+# these rules might exclude image files for figures etc.
+# *.ps
+# *.eps
+# *.pdf
+
+## Bibliography auxiliary files (bibtex/biblatex/biber):
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+*.run.xml
+
+## Build tool auxiliary files:
+*.fdb_latexmk
+*.synctex.gz
+*.pdfsync
+*Notes.bib
+auto
+
+## Auxiliary and intermediate files from other packages:
+
+# algorithms
+*.alg
+*.loa
+
+# amsthm
+*.thm
+
+# beamer
+*.nav
+*.snm
+*.vrb
+
+# glossaries
+*.acn
+*.acr
+*.glg
+*.glo
+*.gls
+
+# hyperref
+*.brf
+
+# listings
+*.lol
+
+# makeidx
+*.idx
+*.ilg
+*.ind
+*.ist
+
+# minitoc
+*.maf
+*.mtc
+*.mtc0
+
+# minted
+*.pyg
+
+# nomencl
+*.nlo
+
+# todonotes
+*.tdo
+
+# xindy
+*.xdy
+
+# Temporary files
+.DS_Store
+*~
+\#*#
+
+# pytest and other python tools
+.pytest_cache/
+*.xml
+htmlcov/
+coverage/
+.coverage
+prof/
+.mypy_cache/
+.ruff_cache/
+
+# docs
+# docs/build/
+.virtual_documents/
+
+# hatch-vcs
+dist/
+
+# VS Code
+.vscode/
+
+# myst
+exports/
+_build/
+
+*.egg-info
+.DS_Store
+
+*.egg-info/
+scrap
