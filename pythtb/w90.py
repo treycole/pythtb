@@ -4,9 +4,9 @@ from .tb_model import TBModel
 
 __all__ = ["W90"]
 
-
 class W90:
-    r"""
+    r"""Interface to Wannier90
+    
     This class of the PythTB package imports tight-binding model
     parameters from an output of a `Wannier90 <http://www.wannier.org>`_ code.
     Upon instantiation, this class will read in the entire Wannier90 output.

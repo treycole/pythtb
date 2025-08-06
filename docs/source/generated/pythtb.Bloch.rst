@@ -71,6 +71,7 @@
       ~Bloch.set_Bloch_ham
       ~Bloch.set_pbc_lam
       ~Bloch.set_wfs
+      ~Bloch.solve_k_mesh
       ~Bloch.solve_model
       ~Bloch.solve_on_grid
       ~Bloch.solve_on_one_point

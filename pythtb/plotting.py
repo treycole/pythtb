@@ -186,8 +186,8 @@ def plot_tb_model(
 
     See Also
     --------
-    :ref:`visualize-example`
-    :ref:`edge-example`
+    :ref:`visualize-nb`
+    :ref:`haldane-edge-nb`
 
     Examples
     --------
@@ -908,7 +908,7 @@ def plot_bands(
         fig, ax = plt.subplots()
 
     # generate k-path and labels
-    (k_vec, k_dist, k_node) = model.k_path(k_path, nk, report=False)
+    (k_vec, k_dist, k_nodes) = model.k_path(k_path, nk, report=False)
 
     # scattered bands with sublattice color
     if proj_orb_idx is not None:
@@ -988,13 +988,12 @@ def plot_bands(
         n_eigs = evals.shape[-1]
 
         # continuous bands
-        for n in range(n_eigs):
-            ax.plot(k_dist, evals[:, n], c=lc, lw=lw, ls=ls)
+        ax.plot(k_dist, evals, c=lc, lw=lw, ls=ls)
 
-    ax.set_xlim(0, k_node[-1])
-    ax.set_xticks(k_node)
-    for n in range(len(k_node)):
-        ax.axvline(x=k_node[n], linewidth=0.5, color="k", zorder=1)
+    ax.set_xlim(k_nodes[0], k_nodes[-1])
+    ax.set_xticks(k_nodes)
+    for n in range(len(k_nodes)):
+        ax.axvline(x=k_nodes[n], linewidth=0.5, color="k", zorder=1)
     if k_label is not None:
         ax.set_xticklabels(k_label, size=12)
 

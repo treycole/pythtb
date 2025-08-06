@@ -1,5 +1,5 @@
 from .tb_model import TBModel
-from .mesh import Mesh
+from .mesh2 import Mesh
 from .wf_array import WFArray
 import numpy as np
 from itertools import product

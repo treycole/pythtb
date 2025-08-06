@@ -180,6 +180,21 @@ def _parse_kpts(kpts, dim):
     return arr
 
 
+def _interpolate_path(nodes: np.ndarray, n_interp: int) -> np.ndarray:
+    """
+    Given `nodes` shape (R, D), returns a linear interpolation
+    along each consecutive pair, totalling R*n_interp points.
+    """
+    segments = []
+    for i in range(len(nodes)-1):
+        start, end = nodes[i], nodes[i+1]
+        t = np.linspace(0,1,n_interp,endpoint=False)
+        segments.append(start[None,:] + (end-start)[None,:]*t[:,None])
+    # add the final node
+    segments.append(nodes[-1:,:])
+    return np.vstack(segments)
+
+
 def _report(k_list, lat_per, k_metric, k_node, node_index):
     """
     Print a concise report of the k-path construction, including
@@ -207,32 +222,228 @@ def _report(k_list, lat_per, k_metric, k_node, node_index):
     print("Node indices in path:", node_index)
     print("-------------------------")
 
-
 class Mesh:
-    def __init__(self, model: "TBModel", *nks):
-        """Class for storing and manipulating a regular mesh of k-points."""
+    def __init__(self,  model: "TBModel"):
+        """Initialize a Mesh object for a given TBModel.
+
+        This class is responsible for constructing the mesh in k-space and parameter space.
+        It provides methods to build both grid and path representations of the mesh.
+
+        Parameters
+        ----------
+        model : TBModel
+            The tight-binding model to use.
+        """
+
         self.model = model
-        self.nks = nks
-        self.Nk = np.prod(nks)
-        self.dim: int = len(nks)
-        self.recip_lat_vecs = model.get_recip_lat()
-        idx_grid = np.indices(nks, dtype=int)
-        idx_arr = idx_grid.reshape(len(nks), -1).T
-        self.idx_arr: list = idx_arr  # 1D list of all k_indices (integers)
-        self.square_mesh: np.ndarray = self.gen_k_mesh(
-            flat=False, endpoint=False
-        )  # each index is a direction in k-space
-        self.flat_mesh: np.ndarray = self.gen_k_mesh(
-            flat=True, endpoint=False
-        )  # 1D list of k-vectors
+        self.dim_k = model.dim_k
 
-        # nearest neighbor k-shell
-        self.nnbr_w_b, _, self.nnbr_idx_shell = self.get_weights(N_sh=1)
-        self.num_nnbrs = len(self.nnbr_idx_shell[0])
+    def build_path(self,
+        path_k: np.ndarray = None,
+        path_param: np.ndarray = None, # (N_p_nodes, dim_param)
+        dim_param = None,
+        n_interp: int = 1
+    ):
+        """
+        Build a k-path in the Brillouin zone.
 
-        # matrix of e^{-i G . r} phases
-        self.bc_phase = self.get_boundary_phase()
-        self.orb_phases = self.get_orb_phases()
+        The `path_k` array must have the following shape:
+            - shape ``(N_k_nodes, dim_k)`` for any k-path.
+
+        The `path_param` array must have the following shape:
+            - shape ``(N_p_nodes, dim_param)`` for any parameter path.
+
+        Generally, the path may be mixed, and the resulting mesh will have a combined shape
+            - shape ``(N_k_nodes*n_interp, dim_k+dim_param)`` for any path.
+
+        Parameters
+        ----------
+        path_k : np.ndarray
+            The k-path points in reduced coordinates.
+        path_param : np.ndarray
+            The parameter path points in reduced coordinates.
+        dim_param : int
+            The dimension of the parameter space.
+        n_interp : int
+            The number of interpolation points between each pair of nodes.
+        """
+        dims = []
+        self.is_grid = False
+        
+        if path_k is not None:
+            if np.asarray(path_k).shape[1] != self.dim_k:
+                raise ValueError(f"Expected k-space dimension {self.dim_k}, got {np.asarray(path_k).shape[1]}")
+            
+            k_flat = _interpolate_path(np.asarray(path_k), n_interp)
+            dims.append(k_flat.shape[0])
+        else:
+            k_flat = np.zeros((1, 0))
+
+        if path_param is not None:
+            if dim_param is None:
+                raise ValueError("dim_param must be specified if path_param is given")
+            if np.asarray(path_param).shape[1] != dim_param:
+                raise ValueError(f"Expected parameter-space dimension {dim_param}, got {np.asarray(path_param).shape[1]}")
+            
+            self.dim_param = dim_param
+            p_flat = _interpolate_path(np.asarray(path_param), n_interp)
+            dims.append(p_flat.shape[0])
+        else:
+            self.dim_param = 0
+            p_flat = np.zeros((1, 0))
+
+        Nk, dim_k = k_flat.shape
+        Np, dim_p = p_flat.shape
+
+        # flattened mesh points (N_points, dim_total)
+        k_rep = np.repeat(k_flat, Np, axis=0)
+        p_rep = np.tile(p_flat, (Nk, 1))
+        flat_mesh = np.hstack([k_rep, p_rep])
+        self.path = self.grid = self.flat = flat_mesh
+
+        n_k_axes = (1 if path_k is not None else 0)
+        n_p_axes = (1 if path_param is not None else 0)
+        self.axis_types = ['k'] * n_k_axes + ['param'] * n_p_axes
+
+        self.shape_k = self.grid.shape[:n_k_axes] if n_k_axes > 0 else None
+        self.shape_param = self.grid.shape[n_k_axes:n_k_axes + n_p_axes] if n_p_axes > 0 else None
+
+        self.k_axes     = list(range(n_k_axes))
+        self.param_axes = list(range(n_k_axes, n_k_axes + n_p_axes))
+
+    def build_grid(self,
+        points: np.ndarray = None,
+        shape_k: tuple = None,
+        shape_param: tuple = None,
+        full_grid: bool = False,
+        gamma_centered: bool = False,
+        exclude_k_endpoints: bool = False,
+        exclude_param_endpoints: bool = False
+    ):
+        """ Build a regular k-space and parameter space grid.
+
+        The grid is a set of points in reduced units that form a cubic/square
+        lattice in k-space and parameter space. The exact nature of the grid
+        (e.g., the number of points, the spacing) is determined by the input
+        parameters.
+
+        .. warning::
+            You must pass *either* ``full_grid=True``, or the ``points`` array.
+
+        After calling this function, the ``.grid`` attribute will be:
+            - shape ``(*shape_k, *shape_param, dim_k+dim_param)`` for full-grid,
+        while the ``.flat`` attribute will be the flattened version:
+            - shape ``(N_k*N_p, dim_k+dim_param)``.
+
+        Parameters
+        ----------
+        points : np.ndarray
+            The points in k-space and parameter space. The shape should be 
+            ``(*shape_k, *shape_param, dim_k + dim_param)``
+        shape_k : list or tuple of int with length dim_k
+            The shape of the k-space grid.
+        shape_param : list or tuple of int with length dim_param, optional
+            The shape of the parameter space grid.
+        full_grid : bool, optional
+            If True, build a full grid in k-space and parameter space.
+        gamma_centered : bool, optional
+            If True, center the k-space grid at the Gamma point. This
+            makes the grid axes go from -0.5 to 0.5.
+        exclude_k_endpoints : bool, optional
+            If True, exclude the endpoints of the k-space grid.
+        exclude_param_endpoints : bool, optional
+            If True, exclude the endpoints of the parameter space grid.
+        """
+        model = self.model
+        self.is_grid = True
+
+        if full_grid:
+            if points is not None:
+                raise ValueError("Cannot specify both 'full_grid' and 'points'.")
+        elif points is None: 
+            raise ValueError("Must either specify 'points' or 'full_grid'.")
+
+        if shape_k is not None:
+            if len(shape_k) != model.dim_k:
+                raise ValueError(f"Expected k-space dimension {model.dim_k}, got {len(shape_k)}")
+
+            if full_grid:
+                if gamma_centered:
+                    k_axes = [np.linspace(-0.5, 0.5, n, endpoint=not exclude_k_endpoints) for n in shape_k]
+                else:
+                    k_axes = [np.linspace(0, 1, n, endpoint=not exclude_k_endpoints) for n in shape_k]
+
+                k_grid = np.stack(np.meshgrid(*k_axes, indexing="ij"), axis=-1)
+                k_flat = k_grid.reshape(-1, k_grid.shape[-1])
+            else:
+                if points.shape[-1] != model.dim_k:
+                    raise ValueError(f"Expected k-space dimension {model.dim_k}, got {points.shape[-1]}")
+                if points.shape[:-1] != shape_k:
+                    raise ValueError(f"Expected k-space shape {shape_k}, got {points.shape[:-1]}")
+                k_flat = points.reshape(-1, model.dim_k)
+        else:
+            k_flat = np.zeros((1, 0))
+
+        if shape_param is not None:
+            dim_param = len(shape_param)
+            self.dim_param = dim_param
+
+            if full_grid:
+                p_axes = [np.linspace(0, 1, m, endpoint=not exclude_param_endpoints) for m in shape_param]
+                p_grid = np.stack(np.meshgrid(*p_axes, indexing="ij"), axis=-1)
+                p_flat = p_grid.reshape(-1, p_grid.shape[-1])
+            else:
+                if points.shape[-1] != self.dim_param:
+                    raise ValueError(f"Expected parameter-space dimension {self.dim_param}, got {points.shape[-1]}")
+                if points.shape[:-1] != shape_param:
+                    raise ValueError(f"Expected parameter-space shape {shape_param}, got {points.shape[:-1]}")
+                p_flat = points.reshape(-1, self.dim_param)
+        else:
+            self.dim_param = 0
+            p_flat = np.zeros((1, 0))
+
+        # cross product of k_flat and p_flat 
+        Nk, dim_k = k_flat.shape
+        Np, dim_p = p_flat.shape
+
+        if dim_k != self.dim_k:
+            raise ValueError(f"Expected k-space dimension {self.dim_k}, got {dim_k}")
+        if dim_p != self.dim_param:
+            raise ValueError(f"Expected parameter-space dimension {self.dim_param}, got {dim_p}")
+
+        # flattened mesh points (N_points, dim_total)
+        k_rep = np.repeat(k_flat, Np, axis=0)
+        p_rep = np.tile(p_flat, (Nk, 1))
+        flat_mesh = np.hstack([k_rep, p_rep])
+        self.flat = flat_mesh
+
+        dims = []
+        if shape_k is not None:
+                dims.extend(shape_k)
+        # parameter‐space dimension(s):
+        if shape_param is not None:
+            dims.extend(shape_param)
+    
+        # now reshape into (*dims, total_dim)
+        self.grid = flat_mesh.reshape(*dims, flat_mesh.shape[-1])
+
+        # label each structured axis as k-space or parameter-space
+        n_k_axes = len(shape_k) if shape_k is not None else 0
+        n_p_axes = len(shape_param) if shape_param is not None else 0
+        self.axis_types = ['k'] * n_k_axes + ['param'] * n_p_axes
+        # indices of axes
+        self.k_axes     = list(range(n_k_axes))
+        self.param_axes = list(range(n_k_axes, n_k_axes + n_p_axes))
+
+        self.shape_k = self.grid.shape[:n_k_axes] if n_k_axes > 0 else None
+        self.shape_param = self.grid.shape[n_k_axes:n_k_axes + n_p_axes] if n_p_axes > 0 else None
+
+        # --- precompute k-space phases if present ---
+        if self.dim_k > 0:
+            pass
+            # self.recip_lat_vecs = model.get_recip_lat()
+            # self.orb_phases = self.get_orb_phases()
+            # self.bc_phase = self.get_boundary_phase()
 
     def gen_k_mesh(
         self, centered: bool = False, flat: bool = True, endpoint: bool = False

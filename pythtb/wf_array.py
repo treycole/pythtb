@@ -1,6 +1,6 @@
 from .utils import _is_int, _offdiag_approximation_warning_and_stop
 from .tb_model import TBModel
-from .mesh2 import Mesh
+from .mesh import Mesh
 import numpy as np
 import copy  # for deepcopying
 from itertools import product
@@ -65,17 +65,17 @@ class WFArray:
 
     See Also
     --------
-    :ref:`haldane_bp-example` : For an example of using WFArray on
+    :ref:`haldane-bp-nb` : For an example of using WFArray on
     a regular grid of points in k-space. 
 
-    :ref:`cone-example` : For an example of using WFArray on a non-regular grid of points in k-space.
+    :ref:`cone-nb` : For an example of using WFArray on a non-regular grid of points in k-space.
 
-    :ref:`3site_cycle-example` : For an example of using `WFArray` on a non-regular grid of points in parameter space.
+    :ref:`3site-cycle-nb` : For an example of using `WFArray` on a non-regular grid of points in parameter space.
     This example shows how one of the directions of *WFArray* object need not be a k-vector direction, 
     but can instead be a Hamiltonian parameter :math:`\lambda`. See also discussion after equation 4.1 in
     :ref:`formalism`.
 
-    :ref:`cubic_slab_hwf` : For an example of using `WFArray` to store hybrid Wannier functions.
+    :ref:`cubic-slab-hwf-nb` : For an example of using `WFArray` to store hybrid Wannier functions.
 
     :func:`pythtb.TBModel.solve_ham`
 
@@ -401,8 +401,8 @@ class WFArray:
         if return_Q:
             return P, Q
         return P
-    
-    def solve_k_mesh(self, lambda_idx=None):
+
+    def solve_k_mesh(self, lambda_idx=None, auto_detect_pbc=True):
         """Solve the Hamiltonian on the k-mesh for a given parameter slice."""
         dim_k = self._mesh.dim_k
         shape_k = self._mesh.shape_k or ()
@@ -446,6 +446,22 @@ class WFArray:
 
         self._wfs[slice_wfs] = evecs
         self._energies[slice_wfs] = evals
+
+        # auto-detect and impose PBC for each k-component axis
+        if auto_detect_pbc:
+            dim_k = self._mesh.dim_k
+            # full-grid detection
+            has_grid = self._mesh.is_grid
+            for comp in range(dim_k):
+                vals = self._mesh.flat[:, comp]  # all values of k-component 'comp'
+                # if the difference between last and first value is one (wraps BZ)
+                if np.isclose(vals[-1] - vals[0], 1.0):
+                    if has_grid:
+                        mesh_dir = comp
+                    else:
+                        mesh_dir = self._mesh.k_axes[0]
+                    print(f"Imposing PBC in direction {mesh_dir} along mesh and {comp}-th k-component")
+                    self.impose_pbc(mesh_dir, self.model.per[comp])
 
 
     def solve_on_path(self, k_arr):
@@ -531,6 +547,7 @@ class WFArray:
         """
         if start_k is None:
             start_k = [0] * self.dim_mesh
+            start_k = np.asarray(start_k, dtype=float)
         else:
             start_k = np.asarray(start_k, dtype=float)
             # check dimensionality
@@ -816,7 +833,7 @@ class WFArray:
 
         See Also
         --------
-        :ref:`3site_cycle-example` : For an example where the periodic boundary 
+        :ref:`3site-cycle-nb` : For an example where the periodic boundary 
         condition is applied only along one direction of *WFArray*.
 
         :ref:`formalism` : Section 4.4 and equation 4.18
@@ -1061,7 +1078,7 @@ class WFArray:
         See Also
         --------
         :func:`pythtb.TBModel.position_expectation`
-        :ref:`haldane_hwf-example` : For an example.
+        :ref:`haldane-hwf-nb` : For an example.
         position_matrix : For definition of matrix :math:`X`.
 
         Notes
@@ -1141,7 +1158,7 @@ class WFArray:
 
         See Also
         --------
-        :ref:`haldane_hwf-example` : For an example.
+        :ref:`haldane-hwf-nb` : For an example.
         position_matrix : For the definition of the matrix :math:`X`.
         position_expectation : For the position expectation value.
         :func:`pythtb.TBModel.position_hwf`
@@ -1476,9 +1493,9 @@ class WFArray:
 
         See Also
         ---------
-        :ref:`haldane_bp-example` : For an example
-        :ref:`cone-example` : For an example
-        :ref:`3site_cycle-example` : For an example
+        :ref:`haldane-bp-nb` : For an example
+        :ref:`cone-nb` : For an example
+        :ref:`3site-cycle-nb` : For an example
         :func:`berry_loop` : For a function that computes Berry phase in a 1d loop.
         :ref:`formalism` : Sec. 4.5 for the discretized formula used to compute Berry phase.
 

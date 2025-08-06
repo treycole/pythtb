@@ -5,7 +5,7 @@ from itertools import product
 import warnings
 import functools
 from .plotting import plot_bands, plot_tb_model, plot_tb_model_3d
-from .mesh import k_path, k_uniform_mesh
+from .mesh2 import k_path, k_uniform_mesh
 from .utils import _is_int, _offdiag_approximation_warning_and_stop, is_Hermitian
 
 # set up logging
@@ -91,7 +91,8 @@ class TBModel:
     a polymer is a three-dimensional molecule (one needs three
     coordinates to specify orbital positions), but it is periodic
     along only one direction. For a polymer, therefore, we should
-    have ``dim_k`` equal to 1 and ``dim_r`` equal to 3. See :ref:`trestle-example`.
+    have ``dim_k=1`` and ``dim_r=3``. See the :ref:`trestle-nb`
+    or :ref:`buckled-layer-nb` examples.
 
     Examples
     --------
@@ -427,72 +428,6 @@ class TBModel:
         else:
             return "\n".join(output)
 
-    def set_k_mesh(self, nks):
-        """Set up a uniform k-space mesh for the model.
-
-        .. versionadded:: 2.0.0
-
-        Parameters
-        ----------
-        nks : array_like
-            Number of k-points along each periodic direction (length must be equal to dim_k).
-
-        Raises
-        ------
-        ValueError
-            If the number of mesh points does not match the number of periodic directions.
-
-        Examples
-        --------
-        >>> tb.set_k_mesh([10, 10])
-        """
-        from .mesh import Mesh
-
-        dim_k = len(nks)
-        if dim_k != self.dim_k:
-            raise ValueError(
-                "K-space dimensions do not match specified mesh numbers. Must be a number"
-                "for each dimension."
-            )
-        if hasattr(self, "k_mesh") and self.k_mesh.nks == nks:
-            logger.warning(
-                "Mesh already set and 'nks' are the same as specified. Doing nothing."
-            )
-            return
-        self.k_mesh = Mesh(self, *nks)
-        self.nks = nks
-
-    def get_k_mesh(self, flat: bool = False):
-        """Return the k-space mesh.
-
-        .. versionadded:: 2.0.0
-
-        Parameters
-        ----------
-        flat : bool, optional
-            If True, returns the flat mesh (1D array of k-points of shape (Nk, dim_k)).
-            If False, returns the square mesh (multi-dimensional array of k-points).
-
-        Returns
-        -------
-        np.ndarray 
-            Array of k-points in the mesh.
-            If flat, shape is (Nk, dim_k). Otherwise, shape is (nk1, nk2, ..., dim_k).
-
-        Raises
-        ------
-        NameError
-            If the k-mesh has not been initialized.
-        """
-        if not hasattr(self, "k_mesh"):
-            raise NameError(
-                "No k_mesh attribute. Must use 'set_k_mesh' first to generate uniform mesh."
-            )
-        if flat:
-            return self.k_mesh.flat_mesh
-        else:
-            return self.k_mesh.square_mesh
-
     def _get_periodic_H(self, H_flat, k_vals):
         """
         Transform Hamiltonian to periodic gauge so that :math:`H(\mathbf{k}+\mathbf{G}) = H(\mathbf{k})`.
@@ -802,6 +737,72 @@ class TBModel:
         # Calculate the volume of the reciprocal lattice
         # The volume is the absolute value of the determinant of the reciprocal lattice vectors
         return abs(np.linalg.det(recip_lat_vecs))
+    
+    def set_k_mesh(self, nks):
+        """Set up a uniform k-space mesh for the model.
+
+        .. versionadded:: 2.0.0
+
+        Parameters
+        ----------
+        nks : array_like
+            Number of k-points along each periodic direction (length must be equal to dim_k).
+
+        Raises
+        ------
+        ValueError
+            If the number of mesh points does not match the number of periodic directions.
+
+        Examples
+        --------
+        >>> tb.set_k_mesh([10, 10])
+        """
+        from .mesh2 import Mesh
+
+        dim_k = len(nks)
+        if dim_k != self.dim_k:
+            raise ValueError(
+                "K-space dimensions do not match specified mesh numbers. Must be a number"
+                "for each dimension."
+            )
+        if hasattr(self, "k_mesh") and self.k_mesh.nks == nks:
+            logger.warning(
+                "Mesh already set and 'nks' are the same as specified. Doing nothing."
+            )
+            return
+        self.k_mesh = Mesh(self, *nks)
+        self.nks = nks
+
+    def get_k_mesh(self, flat: bool = False):
+        """Return the k-space mesh.
+
+        .. versionadded:: 2.0.0
+
+        Parameters
+        ----------
+        flat : bool, optional
+            If True, returns the flat mesh (1D array of k-points of shape (Nk, dim_k)).
+            If False, returns the square mesh (multi-dimensional array of k-points).
+
+        Returns
+        -------
+        np.ndarray 
+            Array of k-points in the mesh.
+            If flat, shape is (Nk, dim_k). Otherwise, shape is (nk1, nk2, ..., dim_k).
+
+        Raises
+        ------
+        NameError
+            If the k-mesh has not been initialized.
+        """
+        if not hasattr(self, "k_mesh"):
+            raise NameError(
+                "No k_mesh attribute. Must use 'set_k_mesh' first to generate uniform mesh."
+            )
+        if flat:
+            return self.k_mesh.flat_mesh
+        else:
+            return self.k_mesh.square_mesh
 
     def set_onsite(self, onsite_en, ind_i=None, mode="set"):
         """Define on-site energies for tight-binding orbitals.
@@ -1625,8 +1626,8 @@ class TBModel:
 
         See Also
         ---------
-        :ref:`haldane_fin-example` : For an example
-        :ref:`edge-example` : For an example
+        :ref:`haldane-fin-nb` : For an example
+        :ref:`haldane-edge-nb` : For an example
 
         Notes
         -----
@@ -1844,7 +1845,8 @@ class TBModel:
         return red_tb
 
     def change_nonperiodic_vector(
-        self, np_dir: int, 
+        self, 
+        np_dir: int, 
         new_latt_vec=None, 
         to_home=True, 
         to_home_warning:bool=True
@@ -1899,7 +1901,7 @@ class TBModel:
         See Also
         --------
         per
-        :ref:`bn_ribbon_berry` : For an example.
+        :ref:`boron-nitride-nb` : For an example.
 
         Notes
         -----
@@ -1923,9 +1925,8 @@ class TBModel:
         """
 
         # Check that selected direction is nonperiodic
-        if self._per.count(np_dir) == 1:
-            print("\n np_dir =", np_dir)
-            raise Exception("Selected direction is not nonperiodic")
+        if self.per.count(np_dir) == 1:
+            raise ValueError(f"Selected direction {np_dir} is not nonperiodic")
 
         if new_latt_vec is None:
             # construct new nonperiodic lattice vector
@@ -1942,7 +1943,7 @@ class TBModel:
             # check shape and convert to numpy array
             np_lattice_vec = np.array(new_latt_vec)
             if np_lattice_vec.shape != (self._dim_r,):
-                raise ValueError("\n\nNonperiodic vector has wrong length")
+                raise ValueError("Nonperiodic vector has wrong length")
 
         # define new set of lattice vectors
         np_lat = copy.deepcopy(self._lat)
@@ -1961,6 +1962,7 @@ class TBModel:
         # update lattice vectors and orbitals
         nnp_tb._lat = np.array(np_lat, dtype=float)
         nnp_tb._orb = np.array(np_orb, dtype=float)
+        print(np_orb, self.orb_vecs)
 
         # double check that everything went as planned
 
@@ -1968,7 +1970,7 @@ class TBModel:
         if new_latt_vec is None:
             for i in nnp_tb._per:
                 if np.abs(np.dot(nnp_tb._lat[i], nnp_tb._lat[np_dir])) > 1.0e-6:
-                    raise Exception(
+                    raise ValueError(
                         """\n\nThis shouldn't happen.  New nonperiodic vector 
                         is not perpendicular to periodic vectors!?"""
                     )
@@ -2604,7 +2606,7 @@ class TBModel:
 
         See Also
         --------
-        :ref:`haldane_hwf-example` : For an example.
+        :ref:`haldane-hwf-nb` : For an example.
 
         Examples
         --------
@@ -2701,7 +2703,7 @@ class TBModel:
         
         See Also
         --------
-        :ref:`haldane_hwf-example` : For an example.
+        :ref:`haldane-hwf-nb` : For an example.
         position_matrix : For definition of matrix :math:`X`.
 
         Notes
@@ -2795,7 +2797,7 @@ class TBModel:
 
         See Also
         --------
-        :ref:`haldane_hwf-example` : For an example.
+        :ref:`haldane-hwf-nb` : For an example.
         position_matrix : For the definition of the matrix :math:`X`.
         position_expectation : For the position expectation value.
 
@@ -3027,7 +3029,7 @@ class TBModel:
         float
             Chern number for the occupied manifold.
         """
-        from .mesh import Mesh
+        from .mesh2 import Mesh
 
         nks = (nk,) * self._dim_k
         k_mesh = Mesh(self, *nks)
@@ -3133,8 +3135,8 @@ class TBModel:
 
         See Also
         --------
-        - :ref:`edge-example`,
-        - :ref:`visualize-example`.
+        - :ref:`haldane-edge-nb`,
+        - :ref:`visualize-nb`.
 
         """
         return plot_tb_model(

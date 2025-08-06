@@ -54,6 +54,7 @@
       ~WFArray.position_expectation
       ~WFArray.position_hwf
       ~WFArray.position_matrix
+      ~WFArray.solve_k_mesh
       ~WFArray.solve_on_grid
       ~WFArray.solve_on_one_point
       ~WFArray.solve_on_path
