@@ -26,7 +26,13 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-docs = ["sphinx", "pydata-sphinx-theme", "sphinx-copybutton", "myst-nb"]
+docs = [
+  "sphinx",
+  "pydata-sphinx-theme",
+  "sphinx-copybutton",
+  "myst-nb",
+  "sphinxcontrib-programoutput"
+]
 tests = ["pytest"]
 dev = [
   "pytest",
