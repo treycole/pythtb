@@ -28,11 +28,10 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=1a152b8d" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -44,8 +43,6 @@
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=cbcfbdad"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = "div.nbinput"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pythtb/wf_array';</script>
     <script defer="defer" src="../../_static/custom-icons.js?v=7518156e"></script>
     <script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
@@ -1003,19 +1000,26 @@ document.write(`
 
         <span class="c1"># auto-detect and impose PBC for each k-component axis</span>
         <span class="k">if</span> <span class="n">auto_detect_pbc</span><span class="p">:</span>
+            <span class="n">grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mesh</span><span class="o">.</span><span class="n">grid</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># mesh shape</span>
             <span class="n">dim_k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mesh</span><span class="o">.</span><span class="n">dim_k</span>
-            <span class="c1"># full-grid detection</span>
-            <span class="n">has_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mesh</span><span class="o">.</span><span class="n">is_grid</span>
-            <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dim_k</span><span class="p">):</span>
-                <span class="n">vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mesh</span><span class="o">.</span><span class="n">flat</span><span class="p">[:,</span> <span class="n">comp</span><span class="p">]</span>  <span class="c1"># all values of k-component &#39;comp&#39;</span>
-                <span class="c1"># if the difference between last and first value is one (wraps BZ)</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mf">1.0</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">has_grid</span><span class="p">:</span>
-                        <span class="n">mesh_dir</span> <span class="o">=</span> <span class="n">comp</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">mesh_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mesh</span><span class="o">.</span><span class="n">k_axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imposing PBC in direction </span><span class="si">{</span><span class="n">mesh_dir</span><span class="si">}</span><span class="s2"> along mesh and </span><span class="si">{</span><span class="n">comp</span><span class="si">}</span><span class="s2">-th k-component&quot;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">impose_pbc</span><span class="p">(</span><span class="n">mesh_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">per</span><span class="p">[</span><span class="n">comp</span><span class="p">])</span></div>
+            <span class="k">for</span> <span class="n">mesh_dir</span><span class="p">,</span> <span class="n">k_comp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mesh</span><span class="o">.</span><span class="n">k_axes</span><span class="p">):</span>
+                <span class="c1"># Take slices along mesh_dir at beginning and end</span>
+                <span class="n">slc_first</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+                <span class="n">slc_last</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+                <span class="n">slc_first</span><span class="p">[</span><span class="n">mesh_dir</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">slc_last</span><span class="p">[</span><span class="n">mesh_dir</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="n">slc_first</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">slc_first</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">k_comp</span><span class="p">,)</span>
+                <span class="n">slc_last</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">slc_last</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">k_comp</span><span class="p">,)</span>
+                <span class="n">vals_first</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="n">slc_first</span><span class="p">]</span>
+                <span class="n">vals_last</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="n">slc_last</span><span class="p">]</span>
+
+                <span class="c1"># Compare the arrays to detect PBC</span>
+                <span class="c1"># Check if the difference is close to 1.0 (wraps BZ)</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="n">vals_last</span> <span class="o">-</span> <span class="n">vals_first</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Auto-imposing PBC in mesh direction </span><span class="si">{</span><span class="n">mesh_dir</span><span class="si">}</span><span class="s2"> for k-component </span><span class="si">{</span><span class="n">k_comp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">impose_pbc</span><span class="p">(</span><span class="n">mesh_dir</span><span class="p">,</span> <span class="n">k_comp</span><span class="p">)</span></div>
 
 
 
