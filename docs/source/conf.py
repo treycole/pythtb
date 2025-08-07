@@ -71,8 +71,9 @@ myst_enable_extensions = [
     "attrs_inline"
 ]
 
-nb_execution_mode = "auto"     # run notebooks when building
+nb_execution_mode = "cache"        # instead of "auto"
 nb_execution_timeout = 600     # seconds per notebook
+nb_execution_cache_path = ".jupyter_cache"  # keep cache OUTSIDE _build so 'clean' doesn't erase it
 
 thebe_config = {
     "repository_url": "https://github.com/youruser/yourrepo",
@@ -107,7 +108,6 @@ sys.path.append("../src")
 
 html_theme = 'pydata_sphinx_theme' #'sphinx_book_theme' #'classic' pydata_sphinx_theme
 html_title = f"{project} Docs"
-
 templates_path = ['_templates']
 html_static_path = ['_static']
 html_js_files = [
@@ -115,8 +115,11 @@ html_js_files = [
     "https://unpkg.com/thebe@latest/lib/index.js",
     "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
 ]
-html_extra_path = ['misc', 'simple_fig']
+html_extra_path = ['misc', 'simple_fig', 'examples_py']
 html_css_files = ["custom.css"]
+html_copy_source = True
+html_show_sourcelink = False
+html_sourcelink_suffix = ""
 exclude_patterns = ['generated/*.md', 'examples_rst/*', 'examples_py/*']
 
 # -- Options for HTML output -------------------------------------------------
@@ -129,6 +132,14 @@ html_context = {
     "doc_path": "docs",
 }
 
+html_sidebars = {
+    "index": [],
+    "install": [],
+    "about": [],
+    "CHANGELOG": [],
+    "formalism": [],
+}
+
 html_theme_options = {
 #     "navigation_depth": 4,
 #     "collapse_navigation": False,
@@ -139,6 +150,7 @@ html_theme_options = {
     # },
     # "github_url": "https://github.com/treycole/pythtb",
     "collapse_navigation": False,
+    "article_header_end": ["nb-download"],
     # "external_links": [
     #     {"Changelog": "", "url": ""},
     # ],
@@ -174,14 +186,6 @@ html_theme_options = {
     # "use_thebe": True
 }
 
-html_sidebars = {
-    "index": [],
-    "install": [],
-    "about": [],
-    "CHANGELOG": [],
-    "formalism": [],
-}
-
 # html_theme_options["use_thebe"] = True  # e/nables Thebe for notebook
 # html_js_files = [
     # "https://unpkg.com/thebe@latest/lib/index.js"
@@ -204,8 +208,6 @@ html_sidebars = {
 #           'index': ['globaltoc.html', 'searchbox.html'],
 #        }
 # remove "show source" from website
-html_copy_source=False
-html_show_sourcelink=False
 
 # The master toctree document.
 master_doc = 'index'
@@ -260,11 +262,35 @@ autodoc_member_order = 'bysource'
 
 
 # In order to skip some functions in documentation
-def maybe_skip_member(app, what, name, obj, skip, options):
+def setup(app):
+    app.connect('autodoc-skip-member', _maybe_skip_member)
+    app.connect("builder-inited", _export_ipynb_to_py)
+
+def _export_ipynb_to_py(app):
+    import os, nbformat
+    from nbconvert import ScriptExporter
+
+    srcdir = app.srcdir
+    nb_root = os.path.join(srcdir, "examples_ipynb")   # adjust if yours differs
+    out_root = os.path.join(srcdir, "_static", "nb-scripts")
+    exporter = ScriptExporter()
+
+    for root, _, files in os.walk(nb_root):
+        for name in files:
+            if not name.endswith(".ipynb"):
+                continue
+            in_path = os.path.join(root, name)
+            rel = os.path.relpath(root, nb_root)
+            os.makedirs(os.path.join(out_root, rel), exist_ok=True)
+
+            nb = nbformat.read(in_path, as_version=4)
+            body, _ = exporter.from_notebook_node(nb)
+            out_path = os.path.join(out_root, rel, name[:-6] + ".py")
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(body)
+
+def _maybe_skip_member(app, what, name, obj, skip, options):
     if name in ["tbmodel","add_hop","set_sites","no_2pi"]:
         return True
     else:
         return skip
-def setup(app):
-    app.connect('autodoc-skip-member', maybe_skip_member)
-

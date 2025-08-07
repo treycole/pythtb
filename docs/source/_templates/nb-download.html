@@ -1,0 +1,12 @@
+{% if sourcename and sourcename.endswith('.ipynb') %}
+{% set base = sourcename.split('/')[-1] %}        {# e.g. foo.ipynb #}
+{% set stem = base[:-6] %}                          {# -> foo #}
+<div class="nb-download-top" style="display:flex; gap:.5rem; align-items:center;">
+  <a class="btn btn-sm" href="{{ pathto('_sources/' ~ sourcename, 1) }}" download="{{ base }}">
+    <i class="fa-solid fa-download"></i> Download .ipynb
+  </a>
+  <a class="btn btn-sm" href="{{ pathto('_static/nb-scripts/' ~ stem ~ '.py', 1) }}" download="{{ stem }}.py">
+    <i class="fa-solid fa-code"></i> Download .py
+  </a>
+</div>
+{% endif %}
