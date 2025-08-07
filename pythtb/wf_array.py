@@ -515,19 +515,26 @@ class WFArray:
 
         # auto-detect and impose PBC for each k-component axis
         if auto_detect_pbc:
+            grid = self._mesh.grid
+            shape = grid.shape[:-1]  # mesh shape
             dim_k = self._mesh.dim_k
-            # full-grid detection
-            has_grid = self._mesh.is_grid
-            for comp in range(dim_k):
-                vals = self._mesh.flat[:, comp]  # all values of k-component 'comp'
-                # if the difference between last and first value is one (wraps BZ)
-                if np.isclose(vals[-1] - vals[0], 1.0):
-                    if has_grid:
-                        mesh_dir = comp
-                    else:
-                        mesh_dir = self._mesh.k_axes[0]
-                    print(f"Imposing PBC in direction {mesh_dir} along mesh and {comp}-th k-component")
-                    self.impose_pbc(mesh_dir, self.model.per[comp])
+            for mesh_dir, k_comp in enumerate(self._mesh.k_axes):
+                # Take slices along mesh_dir at beginning and end
+                slc_first = [slice(None)] * len(shape)
+                slc_last = [slice(None)] * len(shape)
+                slc_first[mesh_dir] = 0
+                slc_last[mesh_dir] = -1
+                slc_first = tuple(slc_first) + (k_comp,)
+                slc_last = tuple(slc_last) + (k_comp,)
+                vals_first = grid[slc_first]
+                vals_last = grid[slc_last]
+
+                # Compare the arrays to detect PBC
+                # Check if the difference is close to 1.0 (wraps BZ)
+                delta = vals_last - vals_first
+                if np.allclose(delta, 1.0, atol=1e-8):
+                    print(f"Auto-imposing PBC in mesh direction {mesh_dir} for k-component {k_comp}")
+                    self.impose_pbc(mesh_dir, k_comp)
 
 
     def solve_on_path(self, k_arr):
