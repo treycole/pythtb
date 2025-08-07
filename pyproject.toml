@@ -31,7 +31,8 @@ docs = [
   "pydata-sphinx-theme",
   "sphinx-copybutton",
   "myst-nb",
-  "sphinxcontrib-programoutput"
+  "sphinxcontrib-programoutput",
+  "nbconvert"
 ]
 tests = ["pytest"]
 dev = [
