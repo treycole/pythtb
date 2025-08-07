@@ -736,7 +736,7 @@ class Mesh:
         return bc.reshape(*nks, N_nbr, n_orb * nspin)
 
     def get_orb_phases(self, inverse=False):
-        """Returns exp(\pm i k.tau) factors
+        r"""Returns exp(\pm i k.tau) factors
 
         Args:
             Inverse (bool):

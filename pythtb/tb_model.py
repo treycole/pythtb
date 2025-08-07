@@ -41,7 +41,7 @@ def deprecated(message: str, category=FutureWarning):
 
 
 class TBModel:
-    """Tight-binding model constructor.
+    r"""Tight-binding model constructor.
 
     This class contains the tight-binding model information. 
     It is designed to handle various aspects of tight-binding models, including the lattice structure, 
@@ -231,7 +231,7 @@ class TBModel:
         self._hoppings = []
 
     def __repr__(self):
-        """Return a string representation of the ``TBModel`` object.
+        r"""Return a string representation of the ``TBModel`` object.
 
         Returns
         -------
@@ -244,7 +244,7 @@ class TBModel:
         )
 
     def __str__(self):
-        """Return a string representation of the ``TBModel`` object.
+        r"""Return a string representation of the ``TBModel`` object.
 
         Returns
         -------
@@ -254,7 +254,7 @@ class TBModel:
         return self.report(show=False)
 
     def __eq__(self, other):
-        """Compare two TBModel objects for equality.
+        r"""Compare two TBModel objects for equality.
 
         Compares structural parameters, arrays, and hoppings.
 
@@ -307,14 +307,14 @@ class TBModel:
         "The 'display' method is deprecated and will be removed in a future release. Use 'print(model)' or 'model.report(show=True)' instead."
     )
     def display(self):
-        """
+        r"""
         .. deprecated:: 2.0.0
             `display` has been deprecated, it is recommended to use `print(model)` or `model.report(show=True)` instead.
         """
         return self.report(show=True)
 
     def report(self, show: bool = True, short: bool = False):
-        """Print or return a report about the tight-binding model.
+        r"""Print or return a report about the tight-binding model.
 
         .. versionadded:: 2.0.0
             The `short` parameter was added to control the verbosity of the report.
@@ -429,7 +429,7 @@ class TBModel:
             return "\n".join(output)
 
     def _get_periodic_H(self, H_flat, k_vals):
-        """
+        r"""
         Transform Hamiltonian to periodic gauge so that :math:`H(\mathbf{k}+\mathbf{G}) = H(\mathbf{k})`.
 
         If `nspin`= 2, `H_flat` should only be flat along k and NOT spin.
@@ -657,7 +657,7 @@ class TBModel:
         Returns
         -------
         np.ndarray
-            Lattice vectors, shape (dim_r, dim_r).
+            Lattice vectors, shape ``(dim_r, dim_r)``.
         """
         return self.lat_vecs
 
@@ -670,11 +670,11 @@ class TBModel:
         Returns
         -------
         np.ndarray
-            Reciprocal lattice vectors, shape (dim_k, dim_r). If not defined, returns zeros.
+            Reciprocal lattice vectors, shape ``(dim_k, dim_r)``. If not defined, returns zeros.
 
         Notes
         -----
-        Only defined when dim_k == dim_r.
+        Only defined when ``dim_k == dim_r``.
         """
         if self.dim_k == 0:
             logger.warning(
@@ -689,7 +689,7 @@ class TBModel:
             return np.zeros((self.dim_k, self.dim_r))
 
         # Calculate the reciprocal lattice vectors
-        A = self.lat_vecs  # shape (dim_r, dim_r)
+        A = self.lat_vecs[self.per]  # shape (dim_r, dim_r)
         if np.linalg.det(A) == 0:
             raise ValueError("Lattice vectors are not linearly independent.")
         # Calculate the inverse of the lattice matrix
@@ -712,7 +712,7 @@ class TBModel:
 
         Notes
         -----
-        Only defined when `dim_k` = `dim_r`.
+        Only defined when ``dim_k == dim_r``.
         """
         recip_lat_vecs = self.get_recip_lat()
         if self._dim_k == 0:
@@ -738,74 +738,9 @@ class TBModel:
         # The volume is the absolute value of the determinant of the reciprocal lattice vectors
         return abs(np.linalg.det(recip_lat_vecs))
     
-    def set_k_mesh(self, nks):
-        """Set up a uniform k-space mesh for the model.
-
-        .. versionadded:: 2.0.0
-
-        Parameters
-        ----------
-        nks : array_like
-            Number of k-points along each periodic direction (length must be equal to dim_k).
-
-        Raises
-        ------
-        ValueError
-            If the number of mesh points does not match the number of periodic directions.
-
-        Examples
-        --------
-        >>> tb.set_k_mesh([10, 10])
-        """
-        from .mesh2 import Mesh
-
-        dim_k = len(nks)
-        if dim_k != self.dim_k:
-            raise ValueError(
-                "K-space dimensions do not match specified mesh numbers. Must be a number"
-                "for each dimension."
-            )
-        if hasattr(self, "k_mesh") and self.k_mesh.nks == nks:
-            logger.warning(
-                "Mesh already set and 'nks' are the same as specified. Doing nothing."
-            )
-            return
-        self.k_mesh = Mesh(self, *nks)
-        self.nks = nks
-
-    def get_k_mesh(self, flat: bool = False):
-        """Return the k-space mesh.
-
-        .. versionadded:: 2.0.0
-
-        Parameters
-        ----------
-        flat : bool, optional
-            If True, returns the flat mesh (1D array of k-points of shape (Nk, dim_k)).
-            If False, returns the square mesh (multi-dimensional array of k-points).
-
-        Returns
-        -------
-        np.ndarray 
-            Array of k-points in the mesh.
-            If flat, shape is (Nk, dim_k). Otherwise, shape is (nk1, nk2, ..., dim_k).
-
-        Raises
-        ------
-        NameError
-            If the k-mesh has not been initialized.
-        """
-        if not hasattr(self, "k_mesh"):
-            raise NameError(
-                "No k_mesh attribute. Must use 'set_k_mesh' first to generate uniform mesh."
-            )
-        if flat:
-            return self.k_mesh.flat_mesh
-        else:
-            return self.k_mesh.square_mesh
 
     def set_onsite(self, onsite_en, ind_i=None, mode="set"):
-        """Define on-site energies for tight-binding orbitals.
+        r"""Define on-site energies for tight-binding orbitals.
 
         You can set the energy for a single orbital (by specifying `ind_i`), or for all
         orbitals at once (by passing a list/array to `onsite_en`).
@@ -823,13 +758,13 @@ class TBModel:
                 - Real scalar or list/array of real scalars (one per orbital).
             For spinful models (``nspin=2``):
                 - Scalar: interpreted as :math:`a I` for both spin components.
-                - 4-vector ``[a, b, c, d]``: interpreted as :math:`a I + b \\sigma_x + c \\sigma_y + d \\sigma_z`: 
+                - 4-vector ``[a, b, c, d]``: interpreted as :math:`a I + b \sigma_x + c \sigma_y + d \sigma_z`: 
                     
                     .. math::
-                        \\begin{bmatrix}
-                            a + d & b - i c \\\\
+                        \begin{bmatrix}
+                            a + d & b - i c \\
                             b + i c & a - d
-                        \\end{bmatrix}
+                        \end{bmatrix}
 
                 - Full 2x2 Hermitian matrix.
 
@@ -917,15 +852,15 @@ class TBModel:
         mode="set",
         allow_conjugate_pair=False,
     ):
-        """Define hopping parameters between tight-binding orbitals.
+        r"""Define hopping parameters between tight-binding orbitals.
 
         In the notation of tight-binding formalism, this function specifies:
 
         .. math::
-            H_{ij}(\\mathbf{R}) = \\langle \\phi_{\\mathbf{0},i} | H | \\phi_{\\mathbf{R},j} \\rangle
+            H_{ij}(\mathbf{R}) = \langle \phi_{\\mathbf{0},i} | H | \phi_{\mathbf{R},j} \rangle
 
-        where :math:`\\langle \\phi_{\\mathbf{0},i} |` is the i-th orbital in the home unit cell,
-        and :math:`| \\phi_{\\mathbf{R},j} \\rangle` is the j-th orbital in a cell shifted by lattice vector :math:`\\mathbf{R}`.
+        where :math:`\langle \phi_{\mathbf{0},i} |` is the i-th orbital in the home unit cell,
+        and :math:`| \phi_{\mathbf{R},j} \rangle` is the j-th orbital in a cell shifted by lattice vector :math:`\mathbf{R}`.
 
         .. deprecated:: 2.0.0
             Using 'reset' for `mode` is deprecated, use 'set' instead.
@@ -940,10 +875,10 @@ class TBModel:
                 - 4-vector ``[a, b, c, d]``: interpreted as :math:`a I + b \sigma_x + c \sigma_y + d \sigma_z`:
 
                     .. math::
-                        \\begin{bmatrix}
-                            a + d & b - i c \\\\
+                        \begin{bmatrix}
+                            a + d & b - i c \\
                             b + i c & a - d
-                        \\end{bmatrix}
+                        \end{bmatrix}
 
                 - Full 2x2 Hermitian matrix.
         ind_i : int
@@ -965,12 +900,12 @@ class TBModel:
         Notes
         -----
         Strictly speaking, this term specifies hopping amplitude for hopping from site j+R to site i, not vice-versa.
-        There is no need to specify hoppings in both :math:`i \\rightarrow j+\\mathbf{R}` and
-        :math:`j \\rightarrow i-\\mathbf{R}` directions, since the latter is included automatically as
+        There is no need to specify hoppings in both :math:`i \rightarrow j+\mathbf{R}` and
+        :math:`j \rightarrow i-\mathbf{R}` directions, since the latter is included automatically as
 
         .. math::
-            H_{ji}(-\\mathbf{R}) = \\left[ H_{ij}(\\mathbf{R}) \\right]^*
-        
+            H_{ji}(-\mathbf{R}) = \left[ H_{ij}(\mathbf{R}) \right]^*
+
         Examples
         --------
         >>> tb.set_hop(0.3+0.4j, 0, 2, [0, 1])
@@ -1098,7 +1033,7 @@ class TBModel:
             )
 
     def _val_to_block(self, val):
-        """
+        r"""
         Convert input value to appropriate matrix block for onsite or hopping.
 
         For nspin=1, returns the value (should be real or complex scalar).
@@ -1148,9 +1083,9 @@ class TBModel:
         return block
 
     def get_velocity(self, k_pts, cartesian=False):
-        """Generate the velocity operator
+        r"""Generate the velocity operator
 
-        The velocity operator is defined via the commutator :math:`v_k = \\partial_k H_k` for an array of k-points.
+        The velocity operator is defined via the commutator :math:`v_k = \partial_k H_k` for an array of k-points.
 
         .. versionadded:: 2.0.0
 
@@ -1173,7 +1108,7 @@ class TBModel:
         with respect to k, i.e.,
 
         .. math::
-            v_k = \\frac{\\partial H(k)}{\\partial k}
+            v_k = \frac{\partial H(k)}{\partial k}
 
         The imaginary number is omitted.
         """
@@ -1265,17 +1200,17 @@ class TBModel:
         return vel
 
     def hamiltonian(self, k_pts=None):
-        """Generate the Bloch Hamiltonian for an array of k-points in reduced coordinates.
+        r"""Generate the Bloch Hamiltonian for an array of k-points in reduced coordinates.
 
         The Hamiltonian is computed in tight-binding convention I, which includes phase factors
         associated with orbital positions in the hopping terms:
 
         .. math::
 
-            H_{ij}(k) = \\sum_{\\mathbf{R}} t_{ij}(\mathbf{R}) \\exp[i \\mathbf{k} \\cdot (\\mathbf{r}_i - \\mathbf{r}_j + \\mathbf{R})]
+            H_{ij}(k) = \sum_{\mathbf{R}} t_{ij}(\mathbf{R}) \exp[i \mathbf{k} \cdot (\mathbf{r}_i - \mathbf{r}_j + \mathbf{R})]
 
-        where :math:`t_{ij}(R)` is the hopping amplitude from orbital j to i through lattice vector :math:`\\mathbf{R}`.
-        
+        where :math:`t_{ij}(R)` is the hopping amplitude from orbital j to i through lattice vector :math:`\mathbf{R}`.
+
         .. versionadded:: 2.0.0
 
         Parameters
@@ -1301,12 +1236,12 @@ class TBModel:
 
         .. math::
 
-            H(k) \\neq H(k + G), \\quad \\text{but instead} \\quad H(k) = U H(k + G) U^{\\dagger}
+            H(k) \neq H(k + G), \quad \text{but instead} \quad H(k) = U H(k + G) U^{\dagger}
 
         where :math:`G` is a reciprocal lattice vector and :math:`U` is a unitary transformation
-        relating the two. 
-        
-        Finite difference estimates of :math:`\\partial_{k_\\mu} H(k)` may not be accurate at
+        relating the two.
+
+        Finite difference estimates of :math:`\partial_{k_\mu} H(k)` may not be accurate at
         boundaries due to the gauge discontinuity inherent in convention I.        
 
         """
@@ -1488,7 +1423,7 @@ class TBModel:
             return eval, evec
 
     def solve_ham(self, k_list=None, return_eigvecs=False, keep_spin_ax=True):
-        """Diagonalize the Hamiltonian 
+        r"""Diagonalize the Hamiltonian 
         
         Solve for eigenvalues and optionally eigenvectors of the tight-binding model
         at a list of one-dimensional k-vectors.
@@ -1751,11 +1686,11 @@ class TBModel:
         return fin_model
 
     def reduce_dim(self, remove_k, value_k) -> "TBModel":
-        """Reduces dimensionality of the model by taking a reciprocal-space slice
+        r"""Reduces dimensionality of the model by taking a reciprocal-space slice
 
         This function returns a d-1 dimensional tight-binding model obtained
-        by constraining one of k-vector components in :math:`{\\cal H}_{\\bf
-        k}` to be a constant.
+        by constraining one of k-vector components in :math:`{\cal H}_{\bf k}`
+        to be a constant.
 
         Parameters
         ----------
@@ -1775,7 +1710,7 @@ class TBModel:
         Notes
         -----
         Reduces dimensionality of the model by taking a reciprocal-space
-        slice of the Bloch Hamiltonian :math:`{\\cal H}_{\\bf k}`. The Bloch
+        slice of the Bloch Hamiltonian :math:`{\cal H}_{\bf k}`. The Bloch
         Hamiltonian (defined in :download:`notes on tight-binding
         formalism </misc/pythtb-formalism.pdf>` in section 3.1 equation 3.7) of a
         d-dimensional model is a function of d-dimensional k-vector.
@@ -2482,7 +2417,7 @@ class TBModel:
         return k_uniform_mesh(self, mesh_size)
 
     def k_path(self, kpts, nk:int, report:bool=True):
-        """Interpolates a path in reciprocal space.
+        r"""Interpolates a path in reciprocal space.
 
         Interpolates a path in reciprocal space between specified
         k-points. In 2D or 3D the k-path can consist of several

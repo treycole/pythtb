@@ -397,7 +397,7 @@ class Bloch(WFArray):
 
     # Works with and without spin and lambda
     def _apply_phase(self, wfs, inverse=False):
-        """
+        r"""
         Change between cell periodic and Bloch wfs by multiplying exp(\pm i k . tau)
 
         Args:

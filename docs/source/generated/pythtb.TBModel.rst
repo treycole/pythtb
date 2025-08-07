@@ -47,7 +47,6 @@
       ~TBModel.copy
       ~TBModel.cut_piece
       ~TBModel.display
-      ~TBModel.get_k_mesh
       ~TBModel.get_lat
       ~TBModel.get_num_orbitals
       ~TBModel.get_orb
@@ -67,7 +66,6 @@
       ~TBModel.remove_orb
       ~TBModel.report
       ~TBModel.set_hop
-      ~TBModel.set_k_mesh
       ~TBModel.set_onsite
       ~TBModel.solve_all
       ~TBModel.solve_ham

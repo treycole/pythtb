@@ -244,7 +244,7 @@ class W90:
         max_distance=None,
         ignorable_imaginary_part=None,
     ):
-        """Get TBModel associated with this Wannier90 calculation.
+        r"""Get TBModel associated with this Wannier90 calculation.
 
         This function returns :class:`pythtb.TBModel` object that can
         be used to interpolate the band structure at arbitrary
@@ -409,7 +409,7 @@ class W90:
         return tb
 
     def dist_hop(self):
-        """Get distances and hopping terms of Hamiltonian in Wannier basis.
+        r"""Get distances and hopping terms of Hamiltonian in Wannier basis.
 
         This function returns all hopping terms (from orbital *i* to
         *j+R*) as well as the distances between the *i* and *j+R*
@@ -478,7 +478,7 @@ class W90:
         return (np.array(ret_dist), np.array(ret_ham))
 
     def shells(self, num_digits=2):
-        """Get all shells of distances between Wannier function centers.
+        r"""Get all shells of distances between Wannier function centers.
 
         This is one of the diagnostic tools that can be used to help
         in determining *max_distance* parameter in
@@ -522,7 +522,7 @@ class W90:
         return shells
 
     def w90_bands_consistency(self):
-        """Read interpolated band structure from Wannier90 output files.
+        r"""Read interpolated band structure from Wannier90 output files.
 
         .. versionchanged:: 2.0.0
             Returned energies now have axes `(kpts, band)` instead of `(band, kpts)`.

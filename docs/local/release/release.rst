@@ -2,7 +2,7 @@ See :doc:`changelog <CHANGELOG>` for a complete list of changes.
 
 Version 2.0.0 (current)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-xxx 2024 :download:`pythtb-2.0.0.tar.gz <misc/pythtb-2.0.0.tar.gz>`
+.. xxx 2024 :download:`pythtb-2.0.0.tar.gz <misc/pythtb-2.0.0.tar.gz>`
 
 Version 1.8.0
 ^^^^^^^^^^^^^^^^^^^^^^^

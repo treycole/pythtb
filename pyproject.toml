@@ -38,7 +38,7 @@ dev = [
   "pytest",
   "black",
   "pre-commit"
-]
+] 
 plotting = [
   "plotly"
 ]

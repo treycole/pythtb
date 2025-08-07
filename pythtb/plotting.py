@@ -33,13 +33,13 @@ def _pauli_decompose_str(M, precision=3):
     # Build a list of terms, including only those with non-negligible coefficients.
     terms = []
     if abs(a0) > 1e-10:
-        terms.append(f"{_fmt_num(a0, precision=precision)} \sigma_0")
+        terms.append(fr"{_fmt_num(a0, precision=precision)} \sigma_0")
     if abs(a1) > 1e-10:
-        terms.append(f"{_fmt_num(a1, precision=precision)} \sigma_x")
+        terms.append(fr"{_fmt_num(a1, precision=precision)} \sigma_x")
     if abs(a2) > 1e-10:
-        terms.append(f"{_fmt_num(a2, precision=precision)} \sigma_y")
+        terms.append(fr"{_fmt_num(a2, precision=precision)} \sigma_y")
     if abs(a3) > 1e-10:
-        terms.append(f"{_fmt_num(a3, precision=precision)} \sigma_z")
+        terms.append(fr"{_fmt_num(a3, precision=precision)} \sigma_z")
 
     # If all coefficients are zero, return "0".
     if not terms:
@@ -308,7 +308,7 @@ def plot_tb_model(
         if model._nspin == 2 and annotate_onsite_en:
             onsite_str = _pauli_decompose_str(model._site_energies[i])
             ax.annotate(
-                f"$\Delta_{{{i}}} = {onsite_str}$",
+                fr"$\Delta_{{{i}}} = {onsite_str}$",
                 xy=p,
                 xytext=(5, 5),
                 textcoords="offset points",
@@ -320,7 +320,7 @@ def plot_tb_model(
                 zorder=5,
             )
         elif model._nspin == 1 and annotate_onsite_en:
-            onsite_str = f"$\Delta_{{{i}}} = {model._site_energies[i]:.2f}$"
+            onsite_str = fr"$\Delta_{{{i}}} = {model._site_energies[i]:.2f}$"
             ax.annotate(
                 onsite_str,
                 xy=p,

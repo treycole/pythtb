@@ -6,9 +6,11 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-import sys, os
+import sys
 import pythtb
 import logging
+import warnings
+# warnings.filterwarnings("error", category=SyntaxWarning)
 logging.getLogger("pythtb").setLevel(logging.WARNING)
 
 project = u'PythTB'

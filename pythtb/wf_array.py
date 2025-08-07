@@ -272,7 +272,7 @@ class WFArray:
     @property
     def param_path(self):
         """The parameter path (e.g., k-points) along which the model was solved.
-        This is only set if the model was solved along a path using `solve_on_path`."""
+        This is only set if the model was solved along a path using :meth:`solve_on_path`."""
         return getattr(self, "_param_path", None)
 
     @property
@@ -317,7 +317,7 @@ class WFArray:
         return wfs
 
     def get_bloch_states(self, flatten_spin=False):
-        """Returns Bloch and cell-periodic states from the WFArray.
+        r"""Returns Bloch and cell-periodic states from the WFArray.
 
         .. versionadded:: 2.0.0
 
@@ -407,51 +407,6 @@ class WFArray:
             return P, Q
         return P
     
-    def solve_k_mesh(self, lambda_idx=None):
-        """Solve the Hamiltonian on the k-mesh for a given parameter slice."""
-        dim_k = self._mesh.dim_k
-        shape_k = self._mesh.shape_k or ()
-        shape_param = self._mesh.shape_param or ()
-        Nk = int(np.prod(shape_k)) if shape_k else 1
-        Np = int(np.prod(shape_param)) if shape_param else 1
-
-        # Parameter index check
-        if self._mesh.dim_param > 0:
-            if lambda_idx is None:
-                raise ValueError("lambda_idx must be provided when mesh has parameter dimensions")
-            if not (0 <= lambda_idx < Np):
-                raise IndexError(f"lambda_idx {lambda_idx} out of range [0, {Np})")
-            
-            k_pts = self._mesh.grid[..., lambda_idx, :dim_k] if self._mesh.dim_param > 0 else self._mesh.grid
-            # flatten
-            k_pts = k_pts.reshape(-1, dim_k)
-        else:
-            # ignore lambda_idx if no parameter dimensions
-            lambda_idx = None
-
-            k_pts = self._mesh.flat
-
-        # Solve Hamiltonian
-        evals, evecs = self._model.solve_ham(k_pts, return_eigvecs=True)
-
-        evals_shape = tuple(shape_k) + (self.model.nstate,)
-        if self.model.nspin > 1:
-            evecs_shape = tuple(shape_k) + (self.model.nstate, self.model.norb, self.model.nspin)
-        else:
-            evecs_shape = tuple(shape_k) + (self.model.nstate, self.model.nstate)
-
-        evecs = evecs.reshape(evecs_shape)
-        evals = evals.reshape(evals_shape)
-
-        # Now set the WFArray at the lambda_idx
-        if lambda_idx is not None:
-            slice_wfs = tuple([slice(None)]*len(shape_k)) + (lambda_idx,)
-        else:
-            slice_wfs = tuple([slice(None)]*len(shape_k))
-
-        self._wfs[slice_wfs] = evecs
-        self._energies[slice_wfs] = evals
-
 
     # TODO: Figure out how to solve over lambda as well
     # May want to pass model constructor to generate Hamiltonians along lambda 
@@ -827,12 +782,12 @@ class WFArray:
         return wf_new
 
     def _apply_phase(self, inverse=False):
-        """
-        Change between cell periodic and Bloch wfs by multiplying exp(\pm i k . tau)
+        r"""
+        Change between cell periodic and Bloch wfs by multiplying :math:`\exp(\pm i k \cdot \tau)`
 
         Assumes that the WFArray was populated using a regular mesh
         of k-points and none of the states are at the same k-point. This means
-        there should be no adiabatic lambda points in the mesh.
+        there should be no adiabatic :math:`\lambda` points in the mesh.
 
         Returns
         -------
@@ -1122,7 +1077,7 @@ class WFArray:
         return self.model.position_matrix(evec, dir)
 
     def position_expectation(self, k_idx, occ, dir):
-        """Position expectation value for a given k-point and set of states.
+        r"""Position expectation value for a given k-point and set of states.
 
         These elements :math:`X_{n n}` can be interpreted as an
         average position of n-th Bloch state ``evec[n]`` along
@@ -1190,7 +1145,7 @@ class WFArray:
         return self.model.position_expectation(evec, dir)
 
     def position_hwf(self, k_idx, occ, dir, hwf_evec=False, basis="wavefunction"):
-        """Eigenvalues and eigenvectors of the position operator in a given basis.
+        r"""Eigenvalues and eigenvectors of the position operator in a given basis.
 
         Parameters
         ----------
