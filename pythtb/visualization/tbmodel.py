@@ -684,56 +684,64 @@ def plot_tbmodel_3d(
 
 def plot_bands(
     model,
-    k_path,
+    k_nodes,
+    k_node_labels=None,
     nk=101,
-    evals=None,
-    evecs=None,
-    ktick_labels=None,
-    bands_label=None,
-    proj_orb_idx=None,
-    proj_spin=False,
     fig=None,
     ax=None,
+    proj_orb_idx=None,
+    proj_spin=False,
+    bands_label=None,
     scat_size=3,
     lw=2,
     lc="b",
     ls="solid",
     cmap="plasma",
     cbar=True,
+    *,
+    evals=None,
+    evecs=None,
 ):
     """Plot the band structure along a specified path in k-space.
 
-    This function allows for customization of the plot, including projection of orbitals,
-    spin projection, figure and axis objects, title, scatter size, line width,
-    line color, line style, colormap, and whether to show a color bar.
+    Bands can be drawn as lines or colored by orbital or spin weight.
 
     .. versionadded:: 2.0.0
 
     Parameters
     ----------
-    k_nodes : list[list[float]]
-        List of high symmetry points (in reduced units) to plot the bands through.
-        For example, ``[[0,0,0], [0, 1/2, 1/2]]``.
+    k_nodes : array-like or str
+        Nodes defining the path in reduced reciprocal coordinates, with shape
+        ``(n_nodes, model.dim_k)``. Passed to ``model.k_path`` for interpolation.
+        In one dimension, also accepts "full", "fullc", or "half".
     k_node_labels : list[str], optional
-        Labels of high symmetry points. Defaults to None.
+        One label per node in `k_nodes`. If None, ticks show the accumulated
+        distance along the path.
     nk : int, optional
         Total number of k-points to sample along the path. Defaults to 101.
-    proj_orb_idx : list[int], optional
-        List of orbital indices to project onto. Defaults to None.
-        This will give the bands a colorscale indicating the weight of
-        the Bloch states onto the list of orbitals.
-    proj_spin : bool, optional
-        Whether to project the spin components. Defaults to ``False``.
-        If ``True``, the bands will be colored according to their spin character.
     fig : matplotlib.figure.Figure, optional
-        Figure object to plot on. Defaults to None.
+        Figure to plot on. If supplied without `ax`, its current axes are used,
+        creating axes if needed. If both are supplied, `ax` must belong to `fig`.
+        Defaults to None.
     ax : matplotlib.axes.Axes, optional
-        Axes object to plot on. Defaults to None.
+        Axes to plot on. If supplied, its figure is used. If neither `fig` nor
+        `ax` is supplied, a new figure and axes are created. Defaults to None.
+    proj_orb_idx : list[int], optional
+        Orbital indices whose total weight determines the band colors.
+        Spinful models sum over both spin components. Defaults to None.
+        Orbital and spin projections are not combined: if `proj_orb_idx`
+        is supplied, it takes precedence over `proj_spin`.
+    proj_spin : bool, optional
+        Whether to color bands by spin weight. Requires a spinful model.
+        Ignored if `proj_orb_idx` is supplied. Defaults to False.
+    bands_label : str, optional
+        Legend label for the set of bands. Applied to the first band only.
+        If None, no legend is added.
     scat_size : float, optional
         Size of the scatter points. Defaults to 3. Only relevant if
         `proj_spin` is True or `proj_orb_idx` is not None.
     lw : float, optional
-        Line width of the band lines. Defaults to 2.
+        Line width of unprojected bands. Defaults to 2.
     lc : str, optional
         Line color of the band lines. Defaults to "b". Irrelevant
         if `proj_spin` is True or `proj_orb_idx` is not None.
@@ -746,17 +754,50 @@ def plot_bands(
     cbar : bool, optional
         Whether to show a color bar. Defaults to True.
         Only relevant if `proj_spin` is True or `proj_orb_idx` is not None.
+    evals : numpy.ndarray, optional
+        Precomputed eigenvalues with shape ``(nk, n_bands)``, ordered along
+        the interpolated path returned by ``model.k_path(k_nodes, nk)``.
+        If None, the model is diagonalized. For orbital or spin projection,
+        both `evals` and `evecs` must be supplied to avoid recomputing both.
+    evecs : numpy.ndarray, optional
+        Eigenvectors corresponding to `evals`. For spinless models, the shape
+        is ``(nk, n_bands, model.norb)``. For spinful orbital projection, accepts
+        ``(nk, n_bands, 2 * model.norb)`` or ``(nk, n_bands, model.norb, 2)``.
+        Spin projection requires ``(nk, n_bands, model.norb, 2)``, as returned by
+        ``model.solve_ham(..., return_eigvecs=True, flatten_spin_axis=False)``.
+        Ignored when neither projection is requested. Defaults to None.
 
-    Returns:
-        fig : matplotlib.figure.Figure
-        ax: matplotlib.axes.Axes
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure containing the band plot.
+    ax : matplotlib.axes.Axes
+        Axes containing the band plot.
+
+    Raises
+    ------
+    ValueError
+        If `fig` and `ax` are supplied but `ax` belongs to a different figure,
+        or spin projection is requested for a spinless model without an
+        overriding orbital projection.
+
+    Notes
+    -----
+    When calling the standalone visualization function, pass the
+    :class:`pythtb.TBModel` instance as the first argument, `model`.
     """
 
-    if fig is None:
+    if ax is not None:
+        if fig is not None and ax.figure is not fig:
+            raise ValueError("The supplied ax must belong to fig.")
+        fig = ax.figure
+    elif fig is not None:
+        ax = fig.gca()
+    else:
         fig, ax = plt.subplots()
 
     # generate k-path and labels
-    (k_vec, k_dist, k_nodes) = model.k_path(k_path, nk, report=False)
+    k_vec, k_dist, k_node_dist = model.k_path(k_nodes, nk, report=False)
 
     # scattered bands with sublattice color
     if proj_orb_idx is not None:
@@ -789,9 +830,9 @@ def plot_bands(
             )
 
         if cbar:
-            cbar = fig.colorbar(scat, ticks=[1, 0], pad=0.01)
-            cbar.ax.set_yticklabels([1, 0], size=12)
-            cbar.ax.set_title(r"$ \sum_i |\langle \psi_{nk} | \phi_i \rangle |^2$")
+            colorbar = fig.colorbar(scat, ax=ax, ticks=[1, 0], pad=0.01)
+            colorbar.ax.set_yticklabels([1, 0], size=12)
+            colorbar.ax.set_title(r"$ \sum_i |\langle \psi_{nk} | \phi_i \rangle |^2$")
 
     elif proj_spin:
         if evals is None or evecs is None:
@@ -823,14 +864,15 @@ def plot_bands(
                 label=label,
             )
 
-        cbar = fig.colorbar(scat, ticks=[1, 0])
-        cbar.ax.set_yticklabels(
-            [
-                r"$ |\langle \psi_{nk} | \chi_{\uparrow} \rangle |^2$",
-                r"$|\langle \psi_{nk} | \chi_{\downarrow} \rangle |^2$",
-            ],
-            size=12,
-        )
+        if cbar:
+            colorbar = fig.colorbar(scat, ax=ax, ticks=[1, 0])
+            colorbar.ax.set_yticklabels(
+                [
+                    r"$|\langle \psi_{nk} | \chi_{\downarrow} \rangle |^2$",
+                    r"$ |\langle \psi_{nk} | \chi_{\uparrow} \rangle |^2$",
+                ],
+                size=12,
+            )
 
     else:
         if evals is None:
@@ -848,12 +890,12 @@ def plot_bands(
     if bands_label is not None:
         ax.legend(loc="upper right", fontsize=12)
 
-    ax.set_xlim(k_nodes[0], k_nodes[-1])
-    ax.set_xticks(k_nodes)
-    for n in range(len(k_nodes)):
-        ax.axvline(x=k_nodes[n], linewidth=0.5, color="k", zorder=1)
-    if ktick_labels is not None:
-        ax.set_xticklabels(ktick_labels, size=12)
+    ax.set_xlim(k_node_dist[0], k_node_dist[-1])
+    ax.set_xticks(k_node_dist)
+    for node_dist in k_node_dist:
+        ax.axvline(x=node_dist, linewidth=0.5, color="k", zorder=1)
+    if k_node_labels is not None:
+        ax.set_xticklabels(k_node_labels, size=12)
 
     ax.set_ylabel(r"Energy $E(\mathbf{{k}})$", size=12)
     ax.yaxis.labelpad = 10
