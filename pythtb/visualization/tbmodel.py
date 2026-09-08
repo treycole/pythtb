@@ -868,8 +868,8 @@ def plot_bands(
             colorbar = fig.colorbar(scat, ax=ax, ticks=[1, 0])
             colorbar.ax.set_yticklabels(
                 [
-                    r"$ |\langle \psi_{nk} | \chi_{\uparrow} \rangle |^2$",
                     r"$|\langle \psi_{nk} | \chi_{\downarrow} \rangle |^2$",
+                    r"$ |\langle \psi_{nk} | \chi_{\uparrow} \rangle |^2$",
                 ],
                 size=12,
             )
