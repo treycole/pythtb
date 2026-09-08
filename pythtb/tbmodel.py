@@ -5398,12 +5398,17 @@ class TBModel:
         ls="solid",
         cmap="plasma",
         cbar=True,
+        *,
+        evals=None,
+        evecs=None,
     ):
         return plot_bands(
             self,
             k_nodes,
             nk=nk,
-            ktick_labels=k_node_labels,
+            evals=evals,
+            evecs=evecs,
+            k_node_labels=k_node_labels,
             bands_label=bands_label,
             proj_orb_idx=proj_orb_idx,
             proj_spin=proj_spin,
