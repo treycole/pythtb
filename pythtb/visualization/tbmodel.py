@@ -3,7 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch
-from matplotlib import cm
+from matplotlib import colormaps
 from matplotlib import colors as mcolors
 from .lattice import plot_lattice
 from .utils import _proj
@@ -114,7 +114,7 @@ def plot_tbmodel(
 
     # Draw orbitals: home-cell orbitals in red
     fig, ax = plot_lattice(model.lattice, proj_plane=proj_plane, orb_color=orb_color)
-    cmap = plt.get_cmap("hsv", model.norb)
+    cmap = colormaps["hsv"].resampled(model.norb)
 
     # to ensure proper padding, track all plotted coordinates
     all_coords = []
@@ -281,7 +281,7 @@ def plot_tbmodel(
     # If eigenstate is provided, overlay eigenstate information on the orbitals
     if eig_dr is not None:
         # For each orbital, size the marker by amplitude and color by phase
-        cmap = cm.hsv
+        cmap = colormaps["hsv"]
         for i in range(model.norb):
             pos = orb_cart[i].copy()
             p = _proj(pos, proj_plane=proj_plane)
@@ -446,7 +446,7 @@ def plot_tbmodel_3d(
     orb_text = []
     orb_marker_colors = []
     onsite_labels = []
-    cmap_orb = cm.get_cmap("viridis", model.norb)
+    cmap_orb = colormaps["viridis"].resampled(model.norb)
     orb_cart = model.get_orb_vecs(cartesian=True)
     for i in range(model.norb):
         orb_text.append(f"Orbital {i}")

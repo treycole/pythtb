@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch
 from itertools import product
-from matplotlib import cm
+from matplotlib import colormaps
 from .utils import _proj
 
 
@@ -262,7 +262,7 @@ def plot_lattice_3d(
     # --- Draw Orbitals ---
     orb_x, orb_y, orb_z = [], [], []
     orb_text = []
-    cmap_orb = cm.get_cmap("viridis", lattice.norb)
+    cmap_orb = colormaps["viridis"].resampled(lattice.norb)
     orb_cart = lattice.get_orb_vecs(cartesian=True)
     supercell_range = range(-(n_cells - 1), n_cells)
     for i in range(lattice.norb):
