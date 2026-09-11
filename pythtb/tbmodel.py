@@ -1438,15 +1438,21 @@ class TBModel:
             raise ValueError("Each element in nn_shells must be a positive integer.")
 
         max_shell = max(nn_shells)
-        shell_bonds = self.nn_bonds(max_shell)[1]
+        nn = self.nn_bonds(max_shell)
 
-        for shell_idx, shell in enumerate(shell_bonds):
+        for shell_idx, shell in enumerate(nn):
             amp = shell_hops.get(shell_idx + 1, None)
             if amp is None:
                 continue
-            for bond in shell:
-                i, j, R = bond
-                self.set_hop(amp, i, j, R, mode=mode, allow_conjugate_pair=True)
+            for bond in shell["bonds"]:
+                self.set_hop(
+                    amp,
+                    bond["i"],
+                    bond["j"],
+                    bond["lattice_vector"],
+                    mode=mode,
+                    allow_conjugate_pair=True,
+                )
 
     def _append_hops(self, hop_amps, i_idx, j_idx, R_vecs):
         hop_amps = np.asarray(hop_amps)
@@ -5392,12 +5398,17 @@ class TBModel:
         ls="solid",
         cmap="plasma",
         cbar=True,
+        *,
+        evals=None,
+        evecs=None,
     ):
         return plot_bands(
             self,
             k_nodes,
             nk=nk,
-            ktick_labels=k_node_labels,
+            evals=evals,
+            evecs=evecs,
+            k_node_labels=k_node_labels,
             bands_label=bands_label,
             proj_orb_idx=proj_orb_idx,
             proj_spin=proj_spin,
